@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   compilar:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04 # versión fija: cambiarla a mano tras probar la siguiente LTS
     permissions:
       contents: read # leer el código
       pages: read # configure-pages consulta la URL y la base del sitio
@@ -45,7 +45,7 @@ jobs:
 
   desplegar:
     needs: compilar
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04 # versión fija: cambiarla a mano tras probar la siguiente LTS
     permissions:
       pages: write # publicar en Pages
       id-token: write # demostrar que el despliegue sale de este repositorio
