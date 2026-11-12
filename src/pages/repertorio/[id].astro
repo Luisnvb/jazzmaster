@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { compases } from '../../lib/cifrado.ts';
+import { analizarAcorde, compases } from '../../lib/cifrado.ts';
 
 export async function getStaticPaths() {
   const canciones = await getCollection('repertorio');
@@ -12,6 +12,10 @@ const { cancion } = Astro.props;
 const { data } = cancion;
 const { Content } = await render(cancion);
 const tieneLetra = !data.instrumental && Boolean(cancion.body?.trim());
+
+// Para los enlaces cruzados: nombre de cada grupo y qué grupos tienen voicings.
+const grupos = Object.fromEntries((await getCollection('grupos')).map((g) => [g.id, g.data.nombre]));
+const conVoicings = [...new Set((await getCollection('acordes')).map((a) => a.data.grupo.id))];
 
 const ficha = [
   ['Tonalidad', data.tonalidad],
@@ -48,9 +52,23 @@ const ficha = [
           <ol class="compases">
             {compases(s.acordes).map((acordes) => (
               <li>
-                {acordes.map((a) => (
-                  <span class="acorde">{a}</span>
-                ))}
+                {acordes.map((a) => {
+                  const analisis = analizarAcorde(a);
+                  return analisis?.grupo ? (
+                    <button
+                      type="button"
+                      class="acorde enlazado"
+                      popovertarget="menu-acorde"
+                      data-acorde={a}
+                      data-tonica={analisis.tonica}
+                      data-grupo={analisis.grupo}
+                    >
+                      {a}
+                    </button>
+                  ) : (
+                    <span class="acorde">{a}</span>
+                  );
+                })}
               </li>
             ))}
           </ol>
@@ -60,6 +78,12 @@ const ficha = [
       <p class="suave">Sin cifrado todavía.</p>
     )
   }
+
+  <div id="menu-acorde" class="menu-acorde" popover data-grupos={JSON.stringify(grupos)} data-con-voicings={JSON.stringify(conVoicings)}>
+    <p class="menu-titulo" data-menu-titulo></p>
+    <a data-menu-voicings href="/acordes">Voicings</a>
+    <a data-menu-escalas href="/escalas">Escalas</a>
+  </div>
 
   {
     tieneLetra && (
@@ -105,6 +129,29 @@ const ficha = [
     )
   }
 </Base>
+
+<script>
+  const menu = document.getElementById('menu-acorde')!;
+  const grupos: Record<string, string> = JSON.parse(menu.dataset.grupos!);
+  const conVoicings: string[] = JSON.parse(menu.dataset.conVoicings!);
+  const titulo = menu.querySelector<HTMLElement>('[data-menu-titulo]')!;
+  const voicings = menu.querySelector<HTMLAnchorElement>('[data-menu-voicings]')!;
+  const escalas = menu.querySelector<HTMLAnchorElement>('[data-menu-escalas]')!;
+
+  // El clic llega antes de que se abra el popover: aquí se rellena con el acorde pulsado.
+  document.addEventListener('click', (e) => {
+    const boton = (e.target as Element).closest<HTMLElement>('[data-acorde]');
+    if (!boton) return;
+    const { acorde, tonica, grupo } = boton.dataset as { acorde: string; tonica: string; grupo: string };
+    const destino = (pagina: string) => `/${pagina}?tonica=${encodeURIComponent(tonica)}#grupo-${grupo}`;
+    titulo.textContent = `${acorde} · ${grupos[grupo]}`;
+    voicings.href = destino('acordes');
+    voicings.textContent = `Voicings ${grupos[grupo]} en ${tonica}`;
+    voicings.hidden = !conVoicings.includes(grupo);
+    escalas.href = destino('escalas');
+    escalas.textContent = `Escalas para ${grupos[grupo]} en ${tonica}`;
+  });
+</script>
 
 <style>
   .volver {
@@ -167,6 +214,42 @@ const ficha = [
   }
   .acorde {
     white-space: nowrap;
+  }
+  .enlazado {
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-bottom: 2px dotted var(--acento);
+    cursor: pointer;
+  }
+  .menu-acorde {
+    width: min(22rem, calc(100vw - 2rem));
+    padding: 1rem;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.3);
+  }
+  .menu-acorde::backdrop {
+    background: rgb(0 0 0 / 0.3);
+  }
+  .menu-titulo {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .menu-acorde a {
+    display: block;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    font-weight: 700;
+    text-decoration: none;
   }
   .letra {
     font-size: 1.05rem;

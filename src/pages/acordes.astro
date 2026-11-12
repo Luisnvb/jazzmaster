@@ -26,7 +26,7 @@ const notas = (t: string, grados: string[]) => tocados(grados).map((g) => format
       const voicings = acordes.filter((a) => a.data.grupo.id === g.id);
       return (
         voicings.length > 0 && (
-          <section>
+          <section id={`grupo-${g.id}`}>
             <h2>{g.data.nombre}</h2>
             <ul class="lista-tarjetas voicings">
               {voicings.map(({ data }) => {

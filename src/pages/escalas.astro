@@ -22,7 +22,7 @@ const tonica = 'C';
     grupos.map((g) => {
       const delGrupo = escalas.filter((e) => e.data.grupo.id === g.id);
       return (
-        <section data-grupo-busqueda>
+        <section id={`grupo-${g.id}`} data-grupo-busqueda>
           <h2>
             <span data-tonica-texto>{tonica}</span>{g.data.simbolo}
             {g.data.descripcion && <span class="descripcion">{g.data.descripcion}</span>}

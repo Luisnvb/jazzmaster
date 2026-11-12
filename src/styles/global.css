@@ -7,6 +7,8 @@
   --acento: #b5541c;
   --sobre-acento: #ffffff;
   --borde: #ddd8cc;
+  --bien: #2f7d3a;
+  --mal: #b3261e;
   --barra-alto: 4rem;
   font-size: 112.5%;
 }
@@ -20,6 +22,8 @@
     --acento: #f08a4b;
     --sobre-acento: #14130f;
     --borde: #36332b;
+    --bien: #6cc27a;
+    --mal: #f2766b;
   }
 }
 
@@ -42,6 +46,9 @@ main {
 }
 
 a { color: var(--acento); }
+
+/* Que los enlaces a #grupo-… no queden bajo el selector de tónica fijo. */
+section[id] { scroll-margin-top: 9.5rem; }
 h1 { font-size: 1.75rem; margin: 0.5rem 0 1rem; }
 h2 { font-size: 1.25rem; margin: 1.75rem 0 0.75rem; }
 

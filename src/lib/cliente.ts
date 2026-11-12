@@ -1,5 +1,6 @@
 // Comportamiento en el navegador compartido por varias secciones.
 import { normalizar } from './cifrado.ts';
+import { parseNota, pitchClass } from './teoria.ts';
 import { detener, tocar } from './audio.ts';
 import type { Evento } from './secuencias.ts';
 
@@ -19,10 +20,24 @@ function guardar(clave: string, valor: string) {
   }
 }
 
+/** Botón del selector que corresponde a una tónica, aceptando enarmónicos (A# → Bb). */
+function botonDeTonica(botones: HTMLButtonElement[], tonica: string | null): HTMLButtonElement | undefined {
+  if (!tonica) return undefined;
+  const exacto = botones.find((b) => b.dataset.tonica === tonica);
+  if (exacto) return exacto;
+  try {
+    const pc = pitchClass(parseNota(tonica));
+    return botones.find((b) => pitchClass(parseNota(b.dataset.tonica!)) === pc);
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Conecta el selector de tónica de la página (componente SelectorTonica).
- * Llama a `alCambiar` con la tónica inicial (la última elegida en esta sección)
- * y cada vez que cambie.
+ * Llama a `alCambiar` con la tónica inicial y cada vez que cambie. La inicial
+ * es la de la URL (?tonica=Bb, desde los enlaces del repertorio) o, si no hay,
+ * la última elegida en esta sección.
  */
 export function conectarTonica(alCambiar: (tonica: string) => void) {
   const selector = document.querySelector<HTMLElement>('[data-selector-tonica]');
@@ -37,8 +52,9 @@ export function conectarTonica(alCambiar: (tonica: string) => void) {
   };
 
   for (const b of botones) b.addEventListener('click', () => elegir(b.dataset.tonica!));
-  const guardada = leer(clave);
-  if (guardada && botones.some((b) => b.dataset.tonica === guardada)) elegir(guardada);
+  const inicial =
+    botonDeTonica(botones, new URLSearchParams(location.search).get('tonica')) ?? botonDeTonica(botones, leer(clave));
+  if (inicial) elegir(inicial.dataset.tonica!);
 }
 
 /**

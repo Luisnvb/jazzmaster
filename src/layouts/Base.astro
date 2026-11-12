@@ -22,6 +22,10 @@ const ruta = Astro.url.pathname;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#b5541c" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/iconos/apple-touch-icon.png" />
     <title>{titulo} · Práctica</title>
   </head>
   <body>
@@ -39,6 +43,13 @@ const ruta = Astro.url.pathname;
     </nav>
   </body>
 </html>
+
+<script>
+  // Modo sin conexión: solo en la web compilada (en desarrollo la caché estorbaría).
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/sw.js`).catch(console.error);
+  }
+</script>
 
 <style>
   .barra {

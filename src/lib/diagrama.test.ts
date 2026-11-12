@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { diagramaSVG, trasteInicial } from './diagrama.ts';
-import { compases, normalizar } from './cifrado.ts';
+import { analizarAcorde, compases, normalizar } from './cifrado.ts';
 
 test('traste inicial', () => {
   assert.equal(trasteInicial(['x', 3, 5, 4, 5, 'x']), 3);
@@ -35,4 +35,23 @@ test('compases del cifrado', () => {
 test('normalizar', () => {
   assert.equal(normalizar('Jónico'), 'jonico');
   assert.equal(normalizar('Antônio'), 'antonio');
+});
+
+test('analizar acordes del cifrado', () => {
+  const grupo = (s: string) => analizarAcorde(s)?.grupo ?? null;
+  const casos: Record<string, string | null> = {
+    Cmaj7: 'maj7', CΔ7: 'maj7', CM7: 'maj7', C6: 'maj7', C69: 'maj7', C: 'maj7', Cmaj9: 'maj7', 'Cmaj7#11': 'maj7',
+    Dm7: 'm7', 'D-7': 'm7', Dm: 'm7', Dm6: 'm7', Dm9: 'm7', Dmin7: 'm7',
+    CmMaj7: 'mmaj7', 'Cm(maj7)': 'mmaj7', 'C-Δ7': 'mmaj7', 'Cm^7': 'mmaj7',
+    G7: 'dom7', G9: 'dom7', G13: 'dom7', G7sus4: 'dom7', Gsus: 'dom7', 'G7#11': 'dom7',
+    G7alt: 'alt7', G7b9: 'alt7', 'G7#9': 'alt7', G7b13: 'alt7', 'G7#5': 'alt7', 'G+7': 'alt7', G13b9: 'alt7',
+    Bm7b5: 'm7b5', 'Bø': 'm7b5', 'Bø7': 'm7b5', 'B-7b5': 'm7b5',
+    'C°7': 'dim7', 'C°': 'dim7', Cdim7: 'dim7', Co7: 'dim7',
+    Cxyz: null,
+  };
+  for (const [simbolo, esperado] of Object.entries(casos)) assert.equal(grupo(simbolo), esperado, simbolo);
+  assert.deepEqual(analizarAcorde('F#m7b5/C'), { tonica: 'F#', grupo: 'm7b5' });
+  assert.deepEqual(analizarAcorde('Ebmaj7'), { tonica: 'Eb', grupo: 'maj7' });
+  assert.equal(analizarAcorde('N.C.'), null);
+  assert.equal(analizarAcorde('%'), null);
 });
