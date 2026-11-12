@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import { compases } from '../../lib/cifrado.ts';
 
 export async function getStaticPaths() {
   const canciones = await getCollection('repertorio');
@@ -10,12 +11,177 @@ export async function getStaticPaths() {
 const { cancion } = Astro.props;
 const { data } = cancion;
 const { Content } = await render(cancion);
-const tieneLetra = !data.instrumental && cancion.body?.trim();
+const tieneLetra = !data.instrumental && Boolean(cancion.body?.trim());
+
+const ficha = [
+  ['Tonalidad', data.tonalidad],
+  ['Tempo', data.tempo && `${data.tempo} BPM`],
+  ['Compás', data.compas],
+  ['Estructura', data.estructura],
+].filter((par): par is [string, string] => Boolean(par[1]));
 ---
 
 <Base titulo={data.titulo}>
+  <a class="volver" href="/repertorio">← Repertorio</a>
   <h1>{data.titulo}</h1>
-  <p>{data.autor}</p>
-  {data.secciones.map((s) => <p><strong>{s.nombre}</strong> {s.acordes}</p>)}
-  {tieneLetra && <Content />}
+  <p class="autor suave">{data.autor}{data.instrumental && ' · Instrumental'}</p>
+
+  {
+    ficha.length > 0 && (
+      <dl class="ficha">
+        {ficha.map(([nombre, valor]) => (
+          <div>
+            <dt>{nombre}</dt>
+            <dd>{valor}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+
+  <h2>Cifrado</h2>
+  {
+    data.secciones.length > 0 ? (
+      data.secciones.map((s) => (
+        <section class="seccion">
+          <h3>{s.nombre}</h3>
+          <ol class="compases">
+            {compases(s.acordes).map((acordes) => (
+              <li>
+                {acordes.map((a) => (
+                  <span class="acorde">{a}</span>
+                ))}
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    ) : (
+      <p class="suave">Sin cifrado todavía.</p>
+    )
+  }
+
+  {
+    tieneLetra && (
+      <>
+        <h2>Letra</h2>
+        <div class="letra">
+          <Content />
+        </div>
+      </>
+    )
+  }
+
+  {
+    (data.enlaces.grabacion || data.enlaces.partitura) && (
+      <>
+        <h2>Enlaces</h2>
+        <ul class="enlaces">
+          {data.enlaces.grabacion && (
+            <li>
+              <a href={data.enlaces.grabacion} target="_blank" rel="noopener noreferrer">
+                Grabación de referencia
+              </a>
+            </li>
+          )}
+          {data.enlaces.partitura && (
+            <li>
+              <a href={data.enlaces.partitura} target="_blank" rel="noopener noreferrer">
+                Partitura / tablatura
+              </a>
+            </li>
+          )}
+        </ul>
+      </>
+    )
+  }
+
+  {
+    data.notas && (
+      <>
+        <h2>Notas de práctica</h2>
+        <p class="notas">{data.notas}</p>
+      </>
+    )
+  }
 </Base>
+
+<style>
+  .volver {
+    display: inline-block;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  h1 {
+    margin-bottom: 0;
+  }
+  .autor {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+  }
+  .ficha {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .ficha div {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.75rem;
+  }
+  .ficha dt {
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+  }
+  .ficha dd {
+    margin: 0;
+    font-weight: 700;
+  }
+  .seccion h3 {
+    margin: 1rem 0 0.35rem;
+    font-size: 1rem;
+    color: var(--acento);
+  }
+  .compases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-left: 2px solid var(--texto-suave);
+  }
+  .compases li {
+    min-height: 3rem;
+    padding: 0.5rem 0.3rem;
+    border-right: 2px solid var(--texto-suave);
+    border-bottom: 1px solid var(--borde);
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 0 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .acorde {
+    white-space: nowrap;
+  }
+  .letra {
+    font-size: 1.05rem;
+  }
+  .letra :global(p) {
+    margin: 0 0 1rem;
+    white-space: pre-line;
+  }
+  .enlaces {
+    padding-left: 1.25rem;
+  }
+  .enlaces li {
+    margin-bottom: 0.5rem;
+  }
+  .notas {
+    white-space: pre-line;
+  }
+</style>

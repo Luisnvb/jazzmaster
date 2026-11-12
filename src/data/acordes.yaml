@@ -1,6 +1,7 @@
 # Voicings personales. Cada uno se escribe sobre una tónica de referencia y la web
 # lo transporta moviendo el mismo dibujo de traste.
 #
+#   nombre:    nombre del voicing (shell, drop 2…); la cuerda del bajo se añade sola
 #   grupo:     id de un tipo de acorde de grupos.yaml
 #   tonica:    tónica en la que están escritos los trastes
 #   trastes:   de 6ª a 1ª cuerda; número de traste, 0 = al aire, x = apagada
@@ -14,7 +15,7 @@
 
 - id: maj7-shell-5
   grupo: maj7
-  nombre: Maj7 (bajo en 5ª)
+  nombre: Shell
   tonica: C
   trastes: [x, 3, 5, 4, 5, x]
   grados: ['', '1', '5', '7', '3', '']
@@ -22,7 +23,7 @@
 
 - id: m7-shell-5
   grupo: m7
-  nombre: m7 (bajo en 5ª)
+  nombre: Shell
   tonica: C
   trastes: [x, 3, 5, 3, 4, x]
   grados: ['', '1', '5', 'b7', 'b3', '']
@@ -30,7 +31,7 @@
 
 - id: dom7-drop3-6
   grupo: dom7
-  nombre: 7 (bajo en 6ª)
+  nombre: Drop 3
   tonica: C
   trastes: [8, x, 8, 9, 8, x]
   grados: ['1', '', 'b7', '3', '5', '']
@@ -38,7 +39,7 @@
 
 - id: m7b5-drop3-6
   grupo: m7b5
-  nombre: m7b5 (bajo en 6ª)
+  nombre: Drop 3
   tonica: C
   trastes: [8, x, 8, 8, 7, x]
   grados: ['1', '', 'b7', 'b3', 'b5', '']
@@ -46,7 +47,7 @@
 
 - id: dim7-4
   grupo: dim7
-  nombre: °7 (bajo en 4ª)
+  nombre: Cuerdas agudas
   tonica: C
   trastes: [x, x, 10, 11, 10, 11]
   grados: ['', '', '1', 'b5', 'bb7', 'b3']

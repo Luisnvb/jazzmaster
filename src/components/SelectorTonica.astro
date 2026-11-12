@@ -1,0 +1,65 @@
+---
+import { TONICAS } from '../lib/teoria.ts';
+
+interface Props {
+  /** Clave con la que se recuerda la elección (una por sección). */
+  clave: string;
+  etiqueta?: string;
+}
+
+const { clave, etiqueta = 'Tónica' } = Astro.props;
+const inicial = 'C';
+---
+
+<div class="selector" data-selector-tonica data-clave={clave} role="group" aria-label={etiqueta}>
+  <span class="etiqueta">{etiqueta}</span>
+  <div class="botones">
+    {
+      TONICAS.map((t) => (
+        <button type="button" data-tonica={t} aria-pressed={t === inicial ? 'true' : 'false'}>
+          {t}
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .selector {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin: 0 -1rem 1rem;
+    padding: 0.5rem 1rem 0.75rem;
+    background: var(--fondo);
+    border-bottom: 1px solid var(--borde);
+  }
+  .etiqueta {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+    margin-bottom: 0.35rem;
+  }
+  .botones {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.3rem;
+  }
+  button {
+    min-height: 2.6rem;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    padding: 0;
+  }
+  button[aria-pressed='true'] {
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+</style>

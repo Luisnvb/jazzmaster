@@ -1,0 +1,27 @@
+---
+interface Props {
+  placeholder: string;
+}
+
+const { placeholder } = Astro.props;
+---
+
+<input class="buscador" type="search" data-buscador placeholder={placeholder} aria-label={placeholder} autocomplete="off" />
+<p class="sin-resultados" data-sin-resultados hidden>Sin resultados.</p>
+
+<style>
+  .buscador {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0 1rem;
+    font: inherit;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .sin-resultados {
+    color: var(--texto-suave);
+  }
+</style>

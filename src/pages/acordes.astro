@@ -1,15 +1,24 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import { cuerdaDelBajo } from '../lib/voicings.ts';
+import SelectorTonica from '../components/SelectorTonica.astro';
 import { porOrden } from '../lib/orden.ts';
+import { diagramaSVG } from '../lib/diagrama.ts';
+import { notaDeGrado, formatNota } from '../lib/teoria.ts';
+import { cuerdaDelBajo, transportar } from '../lib/voicings.ts';
 
 const grupos = porOrden(await getCollection('grupos'));
 const acordes = porOrden(await getCollection('acordes'));
+const tonica = 'C';
+
+const tocados = (grados: string[]) => grados.filter(Boolean);
+const notas = (t: string, grados: string[]) => tocados(grados).map((g) => formatNota(notaDeGrado(t, g)));
 ---
 
 <Base titulo="Acordes">
   <h1>Acordes</h1>
+  <SelectorTonica clave="acordes" />
+
   {
     grupos.map((g) => {
       const voicings = acordes.filter((a) => a.data.grupo.id === g.id);
@@ -17,13 +26,37 @@ const acordes = porOrden(await getCollection('acordes'));
         voicings.length > 0 && (
           <section>
             <h2>{g.data.nombre}</h2>
-            <ul>
-              {voicings.map(({ data }) => (
-                <li>
-                  <strong>{data.nombre}</strong> ({data.tonica}, bajo en {cuerdaDelBajo(data.trastes)}ª):{' '}
-                  {data.trastes.join(' ')} · grados {data.grados.filter(Boolean).join(' ')}
-                </li>
-              ))}
+            <ul class="lista-tarjetas voicings">
+              {voicings.map(({ data }) => {
+                const conAlAire = data.trastes.includes(0);
+                // Un voicing con cuerdas al aire solo se muestra en su tónica.
+                const t = conAlAire ? data.tonica : tonica;
+                const trastes = transportar(data.trastes, data.tonica, t);
+                return (
+                  <li
+                    class="tarjeta voicing"
+                    data-voicing={JSON.stringify({ trastes: data.trastes, grados: data.grados, tonica: data.tonica })}
+                  >
+                    <div class="diagrama-caja" data-diagrama set:html={diagramaSVG({ trastes, grados: data.grados })} />
+                    <div class="info">
+                      <h3>
+                        <span data-tonica-texto>{t}</span>{g.data.simbolo}
+                      </h3>
+                      <p class="subtitulo suave">
+                        {data.nombre} · bajo en {cuerdaDelBajo(data.trastes)}ª
+                      </p>
+                      <dl class="detalle">
+                        <dt>Grados</dt>
+                        <dd>{tocados(data.grados).join(' ')}</dd>
+                        <dt>Notas</dt>
+                        <dd data-notas>{notas(t, data.grados).join(' ')}</dd>
+                      </dl>
+                      {conAlAire && <p class="aviso suave">Con cuerdas al aire: no se transporta.</p>}
+                      {data.notas && <p class="comentario">{data.notas}</p>}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         )
@@ -31,3 +64,68 @@ const acordes = porOrden(await getCollection('acordes'));
     })
   }
 </Base>
+
+<script>
+  import { conectarTonica } from '../lib/cliente.ts';
+  import { diagramaSVG } from '../lib/diagrama.ts';
+  import { notaDeGrado, formatNota } from '../lib/teoria.ts';
+  import { transportar, type Traste } from '../lib/voicings.ts';
+
+  interface Voicing {
+    trastes: Traste[];
+    grados: string[];
+    tonica: string;
+  }
+
+  conectarTonica((tonica) => {
+    for (const tarjeta of document.querySelectorAll<HTMLElement>('[data-voicing]')) {
+      const v: Voicing = JSON.parse(tarjeta.dataset.voicing!);
+      if (v.trastes.includes(0)) continue;
+      const trastes = transportar(v.trastes, v.tonica, tonica);
+      tarjeta.querySelector('[data-tonica-texto]')!.textContent = tonica;
+      tarjeta.querySelector('[data-diagrama]')!.innerHTML = diagramaSVG({ trastes, grados: v.grados });
+      tarjeta.querySelector('[data-notas]')!.textContent = v.grados
+        .filter(Boolean)
+        .map((g) => formatNota(notaDeGrado(tonica, g)))
+        .join(' ');
+    }
+  });
+</script>
+
+<style>
+  .voicings {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+  .voicing {
+    display: grid;
+    grid-template-columns: minmax(0, 11rem) 1fr;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.75rem;
+  }
+  h3 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+  .subtitulo {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+  }
+  .detalle {
+    margin: 0.5rem 0 0;
+  }
+  .detalle dt {
+    color: var(--texto-suave);
+    font-size: 0.75rem;
+  }
+  .detalle dd {
+    margin: 0 0 0.35rem;
+    font-weight: 700;
+    word-spacing: 0.15rem;
+  }
+  .aviso,
+  .comentario {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+  }
+</style>

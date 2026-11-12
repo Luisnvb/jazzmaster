@@ -29,6 +29,7 @@ const grupos = defineCollection({
   schema: z.object({
     orden,
     nombre: z.string(),
+    simbolo: z.string(),
     descripcion: z.string().optional(),
     arpegio: z.array(grado).min(3),
   }),

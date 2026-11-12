@@ -5,6 +5,7 @@
   --texto: #1b1a17;
   --texto-suave: #5d5a52;
   --acento: #b5541c;
+  --sobre-acento: #ffffff;
   --borde: #ddd8cc;
   --barra-alto: 4rem;
   font-size: 112.5%;
@@ -17,11 +18,14 @@
     --texto: #f1ede4;
     --texto-suave: #aaa597;
     --acento: #f08a4b;
+    --sobre-acento: #14130f;
     --borde: #36332b;
   }
 }
 
 * { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -39,4 +43,37 @@ main {
 
 a { color: var(--acento); }
 h1 { font-size: 1.75rem; margin: 0.5rem 0 1rem; }
-h2 { font-size: 1.25rem; margin: 1.5rem 0 0.5rem; }
+h2 { font-size: 1.25rem; margin: 1.75rem 0 0.75rem; }
+
+.suave { color: var(--texto-suave); }
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.lista-tarjetas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* Diagramas de acorde (SVG generado en lib/diagrama.ts) */
+.diagrama { display: block; width: 100%; max-width: 13rem; margin: 0 auto; }
+.diagrama .traste, .diagrama .cuerda { stroke: var(--texto-suave); stroke-width: 1.2; }
+.diagrama .cejuela { fill: var(--texto); }
+.diagrama .num-traste { fill: var(--texto); font-size: 15px; font-weight: 700; }
+.diagrama .apagada { fill: var(--texto-suave); font-size: 18px; }
+.diagrama .nota circle { fill: var(--texto); }
+.diagrama .nota .grado { fill: var(--fondo); font-size: 12px; font-weight: 700; }
+.diagrama .nota .grado.largo { font-size: 10px; }
+.diagrama .nota.raiz circle { fill: var(--acento); }
+.diagrama .nota.raiz .grado { fill: var(--sobre-acento); }
+.diagrama .al-aire circle { fill: var(--superficie); stroke: var(--texto); stroke-width: 1.5; }
+.diagrama .al-aire .grado { fill: var(--texto); }
+.diagrama .al-aire.raiz circle { stroke: var(--acento); }
+.diagrama .al-aire.raiz .grado { fill: var(--acento); }

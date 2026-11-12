@@ -1,21 +1,97 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import SelectorTonica from '../components/SelectorTonica.astro';
 import { porOrden } from '../lib/orden.ts';
+import { notasDeFormula } from '../lib/teoria.ts';
 
 const intervalos = porOrden(await getCollection('intervalos'));
+const tonica = 'C';
 ---
 
 <Base titulo="Intervalos">
   <h1>Intervalos</h1>
-  {
-    intervalos.map(({ data }) => (
-      <section>
-        <h2>{data.nombre} · {data.semitonos} st</h2>
-        <p>{data.caracter}</p>
-        <p>↑ {data.ascendente.join(' · ')}</p>
-        {data.descendente.length > 0 && <p>↓ {data.descendente.join(' · ')}</p>}
-      </section>
-    ))
-  }
+  <SelectorTonica clave="intervalos" etiqueta="Nota de partida" />
+
+  <ul class="lista-tarjetas">
+    {
+      intervalos.map(({ data }) => {
+        const [desde, hasta] = notasDeFormula(tonica, ['1', data.grado]);
+        return (
+          <li class="tarjeta intervalo">
+            <div class="cabecera">
+              <h2>{data.nombre}</h2>
+              <span class="semitonos">{data.semitonos} st</span>
+            </div>
+            <p class="ejemplo" data-grado={data.grado}>
+              <span data-desde>{desde}</span> → <span data-hasta>{hasta}</span>
+            </p>
+            <p class="caracter">{data.caracter}</p>
+            <dl class="referencias">
+              <dt>↑ Ascendente</dt>
+              <dd>{data.ascendente.length ? data.ascendente.join(' · ') : <span class="suave">—</span>}</dd>
+              <dt>↓ Descendente</dt>
+              <dd>{data.descendente.length ? data.descendente.join(' · ') : <span class="suave">—</span>}</dd>
+            </dl>
+          </li>
+        );
+      })
+    }
+  </ul>
 </Base>
+
+<script>
+  import { conectarTonica } from '../lib/cliente.ts';
+  import { notasDeFormula } from '../lib/teoria.ts';
+
+  conectarTonica((tonica) => {
+    for (const el of document.querySelectorAll<HTMLElement>('[data-grado]')) {
+      const [desde, hasta] = notasDeFormula(tonica, ['1', el.dataset.grado!]);
+      el.querySelector('[data-desde]')!.textContent = desde;
+      el.querySelector('[data-hasta]')!.textContent = hasta;
+    }
+  });
+</script>
+
+<style>
+  .cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+  .cabecera h2 {
+    margin: 0;
+    font-size: 1.35rem;
+  }
+  .semitonos {
+    color: var(--texto-suave);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .ejemplo {
+    margin: 0.25rem 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--acento);
+  }
+  .caracter {
+    margin: 0.25rem 0 0.75rem;
+    font-style: italic;
+  }
+  .referencias {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 0.75rem;
+  }
+  .referencias dt {
+    color: var(--texto-suave);
+    font-size: 0.85rem;
+    padding-top: 0.1rem;
+    white-space: nowrap;
+  }
+  .referencias dd {
+    margin: 0;
+  }
+</style>

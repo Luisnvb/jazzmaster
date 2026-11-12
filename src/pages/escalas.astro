@@ -1,6 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import SelectorTonica from '../components/SelectorTonica.astro';
+import Buscador from '../components/Buscador.astro';
 import { notasDeFormula } from '../lib/teoria.ts';
 import { porOrden } from '../lib/orden.ts';
 
@@ -11,20 +13,99 @@ const tonica = 'C';
 
 <Base titulo="Escalas">
   <h1>Escalas</h1>
+  <SelectorTonica clave="escalas" />
+  <Buscador placeholder="Buscar escala…" />
+
   {
-    grupos.map((g) => (
-      <section>
-        <h2>{g.data.nombre} · arpegio {g.data.arpegio.join('-')}</h2>
-        <ul>
-          {escalas
-            .filter((e) => e.data.grupo.id === g.id)
-            .map(({ data }) => (
-              <li>
-                <strong>{data.nombre}</strong>: {data.formula.join(' – ')} → {notasDeFormula(tonica, data.formula).join(' ')}
+    grupos.map((g) => {
+      const delGrupo = escalas.filter((e) => e.data.grupo.id === g.id);
+      return (
+        <section data-grupo-busqueda>
+          <h2>
+            <span data-tonica-texto>{tonica}</span>{g.data.simbolo}
+            {g.data.descripcion && <span class="descripcion">{g.data.descripcion}</span>}
+          </h2>
+          <p class="arpegio suave">
+            Arpegio:{' '}
+            <span class="formula">{g.data.arpegio.join(' ')}</span> →{' '}
+            <strong data-formula={JSON.stringify(g.data.arpegio)}>{notasDeFormula(tonica, g.data.arpegio).join(' ')}</strong>
+          </p>
+          <ul class="lista-tarjetas">
+            {delGrupo.map(({ data }) => (
+              <li class="tarjeta" data-buscar={`${data.nombre} ${g.data.nombre}`}>
+                <h3>{data.nombre}</h3>
+                <ol class="notas" data-formula-tabla={JSON.stringify(data.formula)}>
+                  {notasDeFormula(tonica, data.formula).map((nota, i) => (
+                    <li>
+                      <span class="grado">{data.formula[i]}</span>
+                      <span class="nota">{nota}</span>
+                    </li>
+                  ))}
+                </ol>
               </li>
             ))}
-        </ul>
-      </section>
-    ))
+          </ul>
+        </section>
+      );
+    })
   }
 </Base>
+
+<script>
+  import { conectarBuscador, conectarTonica } from '../lib/cliente.ts';
+  import { notasDeFormula } from '../lib/teoria.ts';
+
+  conectarBuscador();
+  conectarTonica((tonica) => {
+    for (const el of document.querySelectorAll('[data-tonica-texto]')) el.textContent = tonica;
+    for (const el of document.querySelectorAll<HTMLElement>('[data-formula]')) {
+      el.textContent = notasDeFormula(tonica, JSON.parse(el.dataset.formula!)).join(' ');
+    }
+    for (const tabla of document.querySelectorAll<HTMLElement>('[data-formula-tabla]')) {
+      const notas = notasDeFormula(tonica, JSON.parse(tabla.dataset.formulaTabla!));
+      tabla.querySelectorAll('.nota').forEach((el, i) => (el.textContent = notas[i]));
+    }
+  });
+</script>
+
+<style>
+  h2 {
+    margin-bottom: 0.25rem;
+  }
+  .descripcion {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--texto-suave);
+  }
+  .arpegio {
+    margin: 0 0 0.75rem;
+  }
+  .arpegio strong {
+    color: var(--texto);
+  }
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+  .notas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.25rem;
+    text-align: center;
+  }
+  .notas li {
+    display: grid;
+  }
+  .grado {
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+  }
+  .nota {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+</style>
