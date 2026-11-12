@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  titulo: string;
+}
+
+const { titulo } = Astro.props;
+
+const secciones = [
+  { href: '/intervalos', nombre: 'Intervalos' },
+  { href: '/escalas', nombre: 'Escalas' },
+  { href: '/acordes', nombre: 'Acordes' },
+  { href: '/repertorio', nombre: 'Repertorio' },
+];
+const ruta = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{titulo} · Práctica</title>
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+    <nav class="barra" aria-label="Secciones">
+      {
+        secciones.map((s) => (
+          <a href={s.href} aria-current={ruta.startsWith(s.href) ? 'page' : undefined}>
+            {s.nombre}
+          </a>
+        ))
+      }
+    </nav>
+  </body>
+</html>
+
+<style>
+  .barra {
+    position: fixed;
+    inset: auto 0 0 0;
+    height: var(--barra-alto);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--superficie);
+    border-top: 1px solid var(--borde);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .barra a {
+    display: grid;
+    place-items: center;
+    color: var(--texto-suave);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .barra a[aria-current='page'] {
+    color: var(--acento);
+  }
+</style>

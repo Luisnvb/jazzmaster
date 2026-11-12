@@ -1,0 +1,53 @@
+# Voicings personales. Cada uno se escribe sobre una tónica de referencia y la web
+# lo transporta moviendo el mismo dibujo de traste.
+#
+#   grupo:     id de un tipo de acorde de grupos.yaml
+#   tonica:    tónica en la que están escritos los trastes
+#   trastes:   de 6ª a 1ª cuerda; número de traste, 0 = al aire, x = apagada
+#   grados:    de 6ª a 1ª cuerda; '' en las cuerdas apagadas
+#   dedos:     opcional, de 6ª a 1ª; '' donde no aplique
+#   notas:     texto libre
+#
+# La cuerda del bajo se deduce: es la primera cuerda tocada empezando por la 6ª.
+#
+# Los cinco voicings de abajo son EJEMPLOS para probar el modelo: sustitúyelos por los tuyos.
+
+- id: maj7-shell-5
+  grupo: maj7
+  nombre: Maj7 (bajo en 5ª)
+  tonica: C
+  trastes: [x, 3, 5, 4, 5, x]
+  grados: ['', '1', '5', '7', '3', '']
+  notas: Voicing de ejemplo.
+
+- id: m7-shell-5
+  grupo: m7
+  nombre: m7 (bajo en 5ª)
+  tonica: C
+  trastes: [x, 3, 5, 3, 4, x]
+  grados: ['', '1', '5', 'b7', 'b3', '']
+  notas: Voicing de ejemplo.
+
+- id: dom7-drop3-6
+  grupo: dom7
+  nombre: 7 (bajo en 6ª)
+  tonica: C
+  trastes: [8, x, 8, 9, 8, x]
+  grados: ['1', '', 'b7', '3', '5', '']
+  notas: Voicing de ejemplo.
+
+- id: m7b5-drop3-6
+  grupo: m7b5
+  nombre: m7b5 (bajo en 6ª)
+  tonica: C
+  trastes: [8, x, 8, 8, 7, x]
+  grados: ['1', '', 'b7', 'b3', 'b5', '']
+  notas: Voicing de ejemplo.
+
+- id: dim7-4
+  grupo: dim7
+  nombre: °7 (bajo en 4ª)
+  tonica: C
+  trastes: [x, x, 10, 11, 10, 11]
+  grados: ['', '', '1', 'b5', 'bb7', 'b3']
+  notas: Voicing de ejemplo.

@@ -1,0 +1,30 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { notasDeFormula } from '../lib/teoria.ts';
+import { porOrden } from '../lib/orden.ts';
+
+const grupos = porOrden(await getCollection('grupos'));
+const escalas = porOrden(await getCollection('escalas'));
+const tonica = 'C';
+---
+
+<Base titulo="Escalas">
+  <h1>Escalas</h1>
+  {
+    grupos.map((g) => (
+      <section>
+        <h2>{g.data.nombre} · arpegio {g.data.arpegio.join('-')}</h2>
+        <ul>
+          {escalas
+            .filter((e) => e.data.grupo.id === g.id)
+            .map(({ data }) => (
+              <li>
+                <strong>{data.nombre}</strong>: {data.formula.join(' – ')} → {notasDeFormula(tonica, data.formula).join(' ')}
+              </li>
+            ))}
+        </ul>
+      </section>
+    ))
+  }
+</Base>

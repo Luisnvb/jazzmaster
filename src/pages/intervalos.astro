@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { porOrden } from '../lib/orden.ts';
+
+const intervalos = porOrden(await getCollection('intervalos'));
+---
+
+<Base titulo="Intervalos">
+  <h1>Intervalos</h1>
+  {
+    intervalos.map(({ data }) => (
+      <section>
+        <h2>{data.nombre} · {data.semitonos} st</h2>
+        <p>{data.caracter}</p>
+        <p>↑ {data.ascendente.join(' · ')}</p>
+        {data.descendente.length > 0 && <p>↓ {data.descendente.join(' · ')}</p>}
+      </section>
+    ))
+  }
+</Base>

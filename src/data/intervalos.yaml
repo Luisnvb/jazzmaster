@@ -1,0 +1,103 @@
+# Intervalos. `grado` es el que se usa para calcular la segunda nota desde la tónica.
+# `ascendente` y `descendente`: canciones de referencia (solo texto).
+# `revisar`: dudas pendientes sobre las referencias; la web no lo muestra.
+
+- id: segunda-menor
+  nombre: 2ª menor
+  semitonos: 1
+  grado: b2
+  caracter: Cerrado, inquietante, tensión
+  ascendente: [Pantera Rosa, Tiburón, Ring theme]
+  descendente: [Para Elisa, Jurassic Park, Game of Thrones]
+  revisar: ['"Ring theme": no está claro a qué tema se refiere.']
+
+- id: segunda-mayor
+  nombre: 2ª mayor
+  semitonos: 2
+  grado: '2'
+  caracter: Abierto, melancólico, paso suave
+  ascendente: [Cumpleaños Feliz, Do–Re (escala), Frère Jacques]
+  descendente: [Yesterday]
+
+- id: tercera-menor
+  nombre: 3ª menor
+  semitonos: 3
+  grado: b3
+  caracter: Triste, íntima
+  ascendente: [Smoke on the Water, Greensleeves]
+  descendente: [Hey Jude, Losing My Religion]
+
+- id: tercera-mayor
+  nombre: 3ª mayor
+  semitonos: 4
+  grado: '3'
+  caracter: Alegre, luminosa
+  ascendente: [When the Saints Go Marching In]
+  descendente: [Bad Moon Rising, Cucurrucucú Paloma]
+
+- id: cuarta-justa
+  nombre: 4ª justa
+  semitonos: 5
+  grado: '4'
+  caracter: Solemne, llamada
+  ascendente: [We Wish You a Merry Christmas, Here Comes the Bride, La Marsellesa, Amazing Grace]
+  descendente: [Under Pressure (bajo)]
+
+- id: tritono
+  nombre: 5ª disminuida (tritono)
+  semitonos: 6
+  grado: b5
+  caracter: Inestable, incómoda
+  ascendente: [The Simpsons, Maria (West Side Story)]
+  descendente: [Black Sabbath (riff inicial)]
+
+- id: quinta-justa
+  nombre: 5ª justa
+  semitonos: 7
+  grado: '5'
+  caracter: Estable, épica
+  ascendente: [Twinkle Twinkle, Star Wars, Also sprach Zarathustra]
+  descendente: [Flintstones (inicio)]
+
+- id: sexta-menor
+  nombre: 6ª menor (5ª aumentada)
+  semitonos: 8
+  grado: b6
+  caracter: Extraña, flotante
+  ascendente: [The Entertainer (3ª–4ª nota), Baker Street]
+  descendente: [Blue in Green (Miles Davis – caída melódica)]
+  revisar: ['"Blue in Green": comprobar que la caída es de 8 semitonos.']
+
+- id: sexta-mayor
+  nombre: 6ª mayor
+  semitonos: 9
+  grado: '6'
+  caracter: Nostálgica, cálida
+  ascendente: [My Way, Es un muchacho excelente, Chopin Noct. nº2]
+  descendente: [Nobody Knows the Trouble I've Seen]
+
+- id: septima-menor
+  nombre: 7ª menor
+  semitonos: 10
+  grado: b7
+  caracter: Dramática, expansiva
+  ascendente: [The Winner Takes It All, Interstellar]
+  descendente: [Watermelon Man (head descendente)]
+  revisar: ['"Watermelon Man": comprobar que el salto descendente es de 7ª menor.']
+
+- id: septima-mayor
+  nombre: 7ª mayor
+  semitonos: 11
+  grado: '7'
+  caracter: Muy tensa, aspiracional
+  ascendente: [Don't Know Why, Take On Me (estribillo)]
+  descendente: [I Love You (Cole Porter)]
+
+- id: octava
+  nombre: 8ª justa
+  semitonos: 12
+  grado: '8'
+  caracter: Resolución total
+  ascendente: [Somewhere Over the Rainbow]
+  descendente: []
+  revisar: ['Falta una referencia de 8ª descendente ("Do–Do" era un unísono).']

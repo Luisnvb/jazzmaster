@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { cuerdaDelBajo } from '../lib/voicings.ts';
+import { porOrden } from '../lib/orden.ts';
+
+const grupos = porOrden(await getCollection('grupos'));
+const acordes = porOrden(await getCollection('acordes'));
+---
+
+<Base titulo="Acordes">
+  <h1>Acordes</h1>
+  {
+    grupos.map((g) => {
+      const voicings = acordes.filter((a) => a.data.grupo.id === g.id);
+      return (
+        voicings.length > 0 && (
+          <section>
+            <h2>{g.data.nombre}</h2>
+            <ul>
+              {voicings.map(({ data }) => (
+                <li>
+                  <strong>{data.nombre}</strong> ({data.tonica}, bajo en {cuerdaDelBajo(data.trastes)}ª):{' '}
+                  {data.trastes.join(' ')} · grados {data.grados.filter(Boolean).join(' ')}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      );
+    })
+  }
+</Base>

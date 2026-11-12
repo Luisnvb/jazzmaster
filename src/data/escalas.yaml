@@ -1,0 +1,100 @@
+# Diccionario de escalas. `grupo` es el id de un tipo de acorde de grupos.yaml.
+# El orden dentro de cada grupo es el de esta lista.
+
+# Maj7
+- id: jonico
+  nombre: Jónico
+  grupo: maj7
+  formula: ['1', '2', '3', '4', '5', '6', '7']
+- id: lidio
+  nombre: Lidio
+  grupo: maj7
+  formula: ['1', '2', '3', '#4', '5', '6', '7']
+- id: lidio-s2
+  nombre: 'Lidio #2'
+  grupo: maj7
+  formula: ['1', '#2', '3', '#4', '5', '6', '7']
+- id: lidio-aumentado
+  nombre: Lidio aumentado
+  grupo: maj7
+  formula: ['1', '2', '3', '#4', '#5', '6', '7']
+- id: pentatonica-mayor
+  nombre: Pentatónica mayor
+  grupo: maj7
+  formula: ['1', '2', '3', '5', '6']
+
+# m7
+- id: dorico
+  nombre: Dórico
+  grupo: m7
+  formula: ['1', '2', 'b3', '4', '5', '6', 'b7']
+- id: eolico
+  nombre: Eólico
+  grupo: m7
+  formula: ['1', '2', 'b3', '4', '5', 'b6', 'b7']
+- id: pentatonica-menor
+  nombre: Pentatónica menor
+  grupo: m7
+  formula: ['1', 'b3', '4', '5', 'b7']
+- id: blues-menor
+  nombre: Blues menor
+  grupo: m7
+  formula: ['1', 'b3', '4', 'b5', '5', 'b7']
+- id: frigio
+  nombre: Frigio
+  grupo: m7
+  formula: ['1', 'b2', 'b3', '4', '5', 'b6', 'b7']
+
+# mMaj7
+- id: menor-melodica
+  nombre: Menor melódica
+  grupo: mmaj7
+  formula: ['1', '2', 'b3', '4', '5', '6', '7']
+- id: menor-armonica
+  nombre: Menor armónica
+  grupo: mmaj7
+  formula: ['1', '2', 'b3', '4', '5', 'b6', '7']
+
+# 7 (dominante)
+- id: mixolidio
+  nombre: Mixolidio
+  grupo: dom7
+  formula: ['1', '2', '3', '4', '5', '6', 'b7']
+- id: lidio-dominante
+  nombre: Lidio dominante
+  grupo: dom7
+  formula: ['1', '2', '3', '#4', '5', '6', 'b7']
+- id: mixolidio-b6
+  nombre: Mixolidio b6
+  grupo: dom7
+  formula: ['1', '2', '3', '4', '5', 'b6', 'b7']
+
+# 7 alterado
+- id: superlocrio
+  nombre: Superlocrio (alterada)
+  grupo: alt7
+  formula: ['1', 'b2', '#2', '3', 'b5', '#5', 'b7']
+- id: disminuida-st
+  nombre: Disminuida (S–T)
+  grupo: alt7
+  formula: ['1', 'b2', '#2', '3', '#4', '5', '6', 'b7']
+- id: tonos-enteros
+  nombre: Tonos enteros
+  grupo: alt7
+  formula: ['1', '2', '3', '#4', '#5', 'b7']
+
+# m7b5
+- id: locrio
+  nombre: Locrio
+  grupo: m7b5
+  formula: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7']
+- id: locrio-s2
+  nombre: 'Locrio #2'
+  grupo: m7b5
+  formula: ['1', '2', 'b3', '4', 'b5', 'b6', 'b7']
+
+# °7
+- id: disminuida-ts
+  nombre: Disminuida (T–S)
+  grupo: dim7
+  formula: ['1', '2', 'b3', '4', 'b5', '#5', '6', '7']
