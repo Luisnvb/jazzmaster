@@ -1,11 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
+import { ruta } from '../lib/rutas.ts';
 
 const secciones = [
-  { href: '/intervalos', nombre: 'Intervalos' },
-  { href: '/escalas', nombre: 'Escalas' },
-  { href: '/acordes', nombre: 'Acordes' },
-  { href: '/repertorio', nombre: 'Repertorio' },
+  { href: ruta('intervalos'), nombre: 'Intervalos' },
+  { href: ruta('escalas'), nombre: 'Escalas' },
+  { href: ruta('acordes'), nombre: 'Acordes' },
+  { href: ruta('repertorio'), nombre: 'Repertorio' },
 ];
 ---
 

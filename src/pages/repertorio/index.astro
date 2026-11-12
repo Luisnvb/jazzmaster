@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Buscador from '../../components/Buscador.astro';
+import { ruta } from '../../lib/rutas.ts';
 
 const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titulo.localeCompare(b.data.titulo, 'es'));
 ---
@@ -13,7 +14,7 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     {
       canciones.map(({ id, data }) => (
         <li data-buscar={`${data.titulo} ${data.autor}`}>
-          <a class="tarjeta cancion" href={`/repertorio/${id}`}>
+          <a class="tarjeta cancion" href={ruta(`repertorio/${id}`)}>
             <span class="titulo">{data.titulo}</span>
             <span class="suave">
               {data.autor}

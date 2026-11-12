@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { porOrden } from '../../lib/orden.ts';
+import { ruta } from '../../lib/rutas.ts';
 import { TONICAS } from '../../lib/teoria.ts';
 
 const intervalos = porOrden(await getCollection('intervalos')).map(({ id, data }) => ({
@@ -22,7 +23,7 @@ const modos = [
 ---
 
 <Base titulo="Entrenador de oído">
-  <a class="volver" href="/intervalos">← Intervalos</a>
+  <a class="volver" href={ruta('intervalos')}>← Intervalos</a>
   <h1>Entrenador de oído</h1>
 
   <p class="marcador" aria-live="polite">

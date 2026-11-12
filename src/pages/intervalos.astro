@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import SelectorTonica from '../components/SelectorTonica.astro';
 import { porOrden } from '../lib/orden.ts';
+import { ruta } from '../lib/rutas.ts';
 import { formatNota, notaBajoGrado, notasDeFormula } from '../lib/teoria.ts';
 
 const intervalos = porOrden(await getCollection('intervalos'));
@@ -11,7 +12,7 @@ const tonica = 'C';
 
 <Base titulo="Intervalos">
   <h1>Intervalos</h1>
-  <a class="entrenador tarjeta" href="/intervalos/entrenador">🎧 Entrenador de oído →</a>
+  <a class="entrenador tarjeta" href={ruta('intervalos/entrenador')}>🎧 Entrenador de oído →</a>
   <SelectorTonica clave="intervalos" etiqueta="Nota de partida" />
 
   <ul class="lista-tarjetas">

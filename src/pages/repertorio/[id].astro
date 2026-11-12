@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { analizarAcorde, compases } from '../../lib/cifrado.ts';
+import { ruta } from '../../lib/rutas.ts';
 
 export async function getStaticPaths() {
   const canciones = await getCollection('repertorio');
@@ -26,7 +27,7 @@ const ficha = [
 ---
 
 <Base titulo={data.titulo}>
-  <a class="volver" href="/repertorio">← Repertorio</a>
+  <a class="volver" href={ruta('repertorio')}>← Repertorio</a>
   <h1>{data.titulo}</h1>
   <p class="autor suave">{data.autor}{data.instrumental && ' · Instrumental'}</p>
 
@@ -81,8 +82,8 @@ const ficha = [
 
   <div id="menu-acorde" class="menu-acorde" popover data-grupos={JSON.stringify(grupos)} data-con-voicings={JSON.stringify(conVoicings)}>
     <p class="menu-titulo" data-menu-titulo></p>
-    <a data-menu-voicings href="/acordes">Voicings</a>
-    <a data-menu-escalas href="/escalas">Escalas</a>
+    <a data-menu-voicings href={ruta('acordes')}>Voicings</a>
+    <a data-menu-escalas href={ruta('escalas')}>Escalas</a>
   </div>
 
   {
@@ -131,6 +132,8 @@ const ficha = [
 </Base>
 
 <script>
+  import { ruta } from '../../lib/rutas.ts';
+
   const menu = document.getElementById('menu-acorde')!;
   const grupos: Record<string, string> = JSON.parse(menu.dataset.grupos!);
   const conVoicings: string[] = JSON.parse(menu.dataset.conVoicings!);
@@ -143,7 +146,7 @@ const ficha = [
     const boton = (e.target as Element).closest<HTMLElement>('[data-acorde]');
     if (!boton) return;
     const { acorde, tonica, grupo } = boton.dataset as { acorde: string; tonica: string; grupo: string };
-    const destino = (pagina: string) => `/${pagina}?tonica=${encodeURIComponent(tonica)}#grupo-${grupo}`;
+    const destino = (pagina: string) => `${ruta(pagina)}?tonica=${encodeURIComponent(tonica)}#grupo-${grupo}`;
     titulo.textContent = `${acorde} · ${grupos[grupo]}`;
     voicings.href = destino('acordes');
     voicings.textContent = `Voicings ${grupos[grupo]} en ${tonica}`;

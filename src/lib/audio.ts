@@ -1,9 +1,10 @@
 // Reproductor de samples con Web Audio (solo en el navegador).
 // Hay un sample por semitono (E2–E6), así que no hace falta cambiar la afinación.
 import type { Evento } from './secuencias.ts';
+import { archivo } from './rutas.ts';
 import { RANGO_GUITARRA } from './teoria.ts';
 
-const RUTA = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/samples/guitarra-jazz/`;
+const RUTA = archivo('samples/guitarra-jazz/');
 const VOLUMEN = 0.7;
 const ATAQUE = 0.005;
 const CAIDA = 0.12;

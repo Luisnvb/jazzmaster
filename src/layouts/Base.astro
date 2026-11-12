@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { archivo, ruta } from '../lib/rutas.ts';
 
 interface Props {
   titulo: string;
@@ -8,12 +9,13 @@ interface Props {
 const { titulo } = Astro.props;
 
 const secciones = [
-  { href: '/intervalos', nombre: 'Intervalos' },
-  { href: '/escalas', nombre: 'Escalas' },
-  { href: '/acordes', nombre: 'Acordes' },
-  { href: '/repertorio', nombre: 'Repertorio' },
+  { href: ruta('intervalos'), nombre: 'Intervalos' },
+  { href: ruta('escalas'), nombre: 'Escalas' },
+  { href: ruta('acordes'), nombre: 'Acordes' },
+  { href: ruta('repertorio'), nombre: 'Repertorio' },
 ];
-const ruta = Astro.url.pathname;
+// Con barra final para comparar igual "/acordes" y "/acordes/" con ruta('acordes').
+const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
 ---
 
 <!doctype html>
@@ -23,9 +25,9 @@ const ruta = Astro.url.pathname;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#b5541c" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/favicon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/iconos/apple-touch-icon.png" />
+    <link rel="manifest" href={archivo('manifest.webmanifest')} />
+    <link rel="icon" href={archivo('favicon.png')} type="image/png" />
+    <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
     <title>{titulo} · Práctica</title>
   </head>
   <body>
@@ -35,7 +37,7 @@ const ruta = Astro.url.pathname;
     <nav class="barra" aria-label="Secciones">
       {
         secciones.map((s) => (
-          <a href={s.href} aria-current={ruta.startsWith(s.href) ? 'page' : undefined}>
+          <a href={s.href} aria-current={actual.startsWith(s.href) ? 'page' : undefined}>
             {s.nombre}
           </a>
         ))
@@ -45,9 +47,11 @@ const ruta = Astro.url.pathname;
 </html>
 
 <script>
+  import { archivo } from '../lib/rutas.ts';
+
   // Modo sin conexión: solo en la web compilada (en desarrollo la caché estorbaría).
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/sw.js`).catch(console.error);
+    navigator.serviceWorker.register(archivo('sw.js')).catch(console.error);
   }
 </script>
 
