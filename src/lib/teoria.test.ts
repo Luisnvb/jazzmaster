@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { notasDeFormula, semitonosGrado, midi, ajustarARango, notaDeGrado, formatNota } from './teoria.ts';
+import { notasDeFormula, semitonosGrado, midi, ajustarARango, notaDeGrado, notaBajoGrado, formatNota } from './teoria.ts';
 
 test('ortografía de escalas', () => {
   assert.deepEqual(notasDeFormula('C', ['1', '2', '3', '4', '5', '6', '7']), ['C', 'D', 'E', 'F', 'G', 'A', 'B']);
@@ -23,6 +23,18 @@ test('tensiones por encima de la octava', () => {
   assert.equal(semitonosGrado('8'), 12);
   assert.equal(formatNota(notaDeGrado('G', 'b9')), 'Ab');
   assert.equal(formatNota(notaDeGrado('C', '8')), 'C');
+});
+
+test('nota por debajo de la tónica', () => {
+  const bajo = (t: string, g: string) => formatNota(notaBajoGrado(t, g));
+  assert.equal(bajo('C', 'b3'), 'A');
+  assert.equal(bajo('C', 'b2'), 'B');
+  assert.equal(bajo('C', '3'), 'Ab');
+  assert.equal(bajo('C', 'b5'), 'F#');
+  assert.equal(bajo('F', '4'), 'C');
+  assert.equal(bajo('Eb', '7'), 'Fb');
+  assert.equal(bajo('D', '7'), 'Eb');
+  assert.equal(bajo('C', '8'), 'C');
 });
 
 test('midi y rango de guitarra', () => {

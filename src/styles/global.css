@@ -77,3 +77,29 @@ h2 { font-size: 1.25rem; margin: 1.75rem 0 0.75rem; }
 .diagrama .al-aire .grado { fill: var(--texto); }
 .diagrama .al-aire.raiz circle { stroke: var(--acento); }
 .diagrama .al-aire.raiz .grado { fill: var(--acento); }
+
+/* Botones de audio */
+.botones-audio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.botones-audio button {
+  flex: 1 1 auto;
+  min-height: 2.75rem;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--texto);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.botones-audio button.sonando {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--sobre-acento);
+}

@@ -1,5 +1,7 @@
 // Comportamiento en el navegador compartido por varias secciones.
 import { normalizar } from './cifrado.ts';
+import { detener, tocar } from './audio.ts';
+import type { Evento } from './secuencias.ts';
 
 function leer(clave: string): string | null {
   try {
@@ -64,4 +66,60 @@ export function conectarBuscador() {
 
   entrada.addEventListener('input', filtrar);
   filtrar();
+}
+
+/**
+ * Conecta el control de tempo de la página (componente Tempo).
+ * Devuelve una función que da el tempo actual en BPM.
+ */
+export function conectarTempo(): () => number {
+  const control = document.querySelector<HTMLInputElement>('[data-tempo]');
+  if (!control) return () => 100;
+  const clave = `tempo:${control.dataset.clave}`;
+  const valor = document.querySelector('[data-tempo-valor]');
+  const mostrar = () => {
+    if (valor) valor.textContent = control.value;
+  };
+  const guardado = Number(leer(clave));
+  if (guardado >= Number(control.min) && guardado <= Number(control.max)) control.value = String(guardado);
+  mostrar();
+  control.addEventListener('input', () => {
+    mostrar();
+    guardar(clave, control.value);
+  });
+  return () => Number(control.value);
+}
+
+/**
+ * Conecta los botones [data-audio] de la página. `construir` recibe el botón
+ * pulsado y devuelve la secuencia que debe sonar. Pulsar el botón que está
+ * sonando lo para; pulsar otro sustituye lo que suena.
+ */
+export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[]) {
+  let activo: HTMLButtonElement | null = null;
+
+  const marcar = (boton: HTMLButtonElement | null) => {
+    activo?.classList.remove('sonando');
+    activo?.setAttribute('aria-pressed', 'false');
+    activo = boton;
+    activo?.classList.add('sonando');
+    activo?.setAttribute('aria-pressed', 'true');
+  };
+
+  document.addEventListener('click', async (evento) => {
+    const boton = (evento.target as Element).closest<HTMLButtonElement>('button[data-audio]');
+    if (!boton) return;
+    if (boton === activo) {
+      detener();
+      marcar(null);
+      return;
+    }
+    marcar(boton);
+    try {
+      await tocar(construir(boton));
+    } catch (error) {
+      console.error(error);
+    }
+    if (activo === boton) marcar(null);
+  });
 }

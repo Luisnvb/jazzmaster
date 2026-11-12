@@ -75,6 +75,19 @@ export function notaDeGrado(tonica: string | Nota, grado: string | Grado): Nota 
   return { letra, alteracion };
 }
 
+/**
+ * Nota que queda un intervalo por debajo de la tónica, con ortografía correcta:
+ * 3ª menor por debajo de C → A; 2ª menor por debajo de C → B.
+ */
+export function notaBajoGrado(tonica: string | Nota, grado: string | Grado): Nota {
+  const t = typeof tonica === 'string' ? parseNota(tonica) : tonica;
+  const g = typeof grado === 'string' ? parseGrado(grado) : grado;
+  const letra = LETRAS[mod(LETRAS.indexOf(t.letra) - (g.numero - 1), 7)];
+  const objetivo = mod(pitchClass(t) - semitonosGrado(g), 12);
+  const alteracion = mod(objetivo - PC_LETRA[letra] + 6, 12) - 6;
+  return { letra, alteracion };
+}
+
 /** Notas de una fórmula: notasDeFormula('Bb', ['1','3','5','b7']) → ['Bb','D','F','Ab']. */
 export function notasDeFormula(tonica: string, formula: readonly string[]): string[] {
   return formula.map((g) => formatNota(notaDeGrado(tonica, g)));

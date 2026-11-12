@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import SelectorTonica from '../components/SelectorTonica.astro';
 import Buscador from '../components/Buscador.astro';
+import Tempo from '../components/Tempo.astro';
 import { notasDeFormula } from '../lib/teoria.ts';
 import { porOrden } from '../lib/orden.ts';
 
@@ -14,6 +15,7 @@ const tonica = 'C';
 <Base titulo="Escalas">
   <h1>Escalas</h1>
   <SelectorTonica clave="escalas" />
+  <Tempo clave="escalas" />
   <Buscador placeholder="Buscar escala…" />
 
   {
@@ -29,6 +31,16 @@ const tonica = 'C';
             Arpegio:{' '}
             <span class="formula">{g.data.arpegio.join(' ')}</span> →{' '}
             <strong data-formula={JSON.stringify(g.data.arpegio)}>{notasDeFormula(tonica, g.data.arpegio).join(' ')}</strong>
+            <button
+              type="button"
+              class="arpegio-boton"
+              data-audio="arpegio"
+              data-formula-audio={JSON.stringify(g.data.arpegio)}
+              aria-pressed="false"
+              aria-label={`Tocar arpegio ${g.data.nombre}`}
+            >
+              ▶
+            </button>
           </p>
           <ul class="lista-tarjetas">
             {delGrupo.map(({ data }) => (
@@ -42,6 +54,19 @@ const tonica = 'C';
                     </li>
                   ))}
                 </ol>
+                <div class="botones-audio">
+                  <button type="button" data-audio="escala-ascendente" data-formula-audio={JSON.stringify(data.formula)} aria-pressed="false">
+                    Escala ↑
+                  </button>
+                  <button type="button" data-audio="escala-descendente" data-formula-audio={JSON.stringify(data.formula)} aria-pressed="false">
+                    Escala ↓
+                  </button>
+                  {data.formula.length === 7 && (
+                    <button type="button" data-audio="por-grado" data-formula-audio={JSON.stringify(data.formula)} aria-pressed="false">
+                      Arpegios por grado
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -52,11 +77,30 @@ const tonica = 'C';
 </Base>
 
 <script>
-  import { conectarBuscador, conectarTonica } from '../lib/cliente.ts';
+  import { conectarAudio, conectarBuscador, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import { secuenciaArpegio, secuenciaArpegiosPorGrado, secuenciaEscala } from '../lib/secuencias.ts';
   import { notasDeFormula } from '../lib/teoria.ts';
+
+  let tonicaActual = 'C';
+  const tempo = conectarTempo();
+
+  conectarAudio((boton) => {
+    const formula: string[] = JSON.parse(boton.dataset.formulaAudio!);
+    switch (boton.dataset.audio) {
+      case 'escala-ascendente':
+        return secuenciaEscala(tonicaActual, formula, 'ascendente', tempo());
+      case 'escala-descendente':
+        return secuenciaEscala(tonicaActual, formula, 'descendente', tempo());
+      case 'por-grado':
+        return secuenciaArpegiosPorGrado(tonicaActual, formula, tempo());
+      default:
+        return secuenciaArpegio(tonicaActual, formula, tempo());
+    }
+  });
 
   conectarBuscador();
   conectarTonica((tonica) => {
+    tonicaActual = tonica;
     for (const el of document.querySelectorAll('[data-tonica-texto]')) el.textContent = tonica;
     for (const el of document.querySelectorAll<HTMLElement>('[data-formula]')) {
       el.textContent = notasDeFormula(tonica, JSON.parse(el.dataset.formula!)).join(' ');
@@ -81,8 +125,30 @@ const tonica = 'C';
   .arpegio {
     margin: 0 0 0.75rem;
   }
+  .arpegio {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 0.35rem;
+  }
   .arpegio strong {
     color: var(--texto);
+  }
+  .arpegio-boton {
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-left: auto;
+    font: inherit;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .arpegio-boton.sonando {
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--sobre-acento);
   }
   h3 {
     margin: 0 0 0.5rem;

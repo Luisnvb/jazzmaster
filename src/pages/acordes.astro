@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import SelectorTonica from '../components/SelectorTonica.astro';
+import Tempo from '../components/Tempo.astro';
 import { porOrden } from '../lib/orden.ts';
 import { diagramaSVG } from '../lib/diagrama.ts';
 import { notaDeGrado, formatNota } from '../lib/teoria.ts';
@@ -18,6 +19,7 @@ const notas = (t: string, grados: string[]) => tocados(grados).map((g) => format
 <Base titulo="Acordes">
   <h1>Acordes</h1>
   <SelectorTonica clave="acordes" />
+  <Tempo clave="acordes" />
 
   {
     grupos.map((g) => {
@@ -54,6 +56,10 @@ const notas = (t: string, grados: string[]) => tocados(grados).map((g) => format
                       {conAlAire && <p class="aviso suave">Con cuerdas al aire: no se transporta.</p>}
                       {data.notas && <p class="comentario">{data.notas}</p>}
                     </div>
+                    <div class="botones-audio">
+                      <button type="button" data-audio="rasgueo" aria-pressed="false">Rasgueo</button>
+                      <button type="button" data-audio="arpegiado" aria-pressed="false">Arpegiado</button>
+                    </div>
                   </li>
                 );
               })}
@@ -66,8 +72,9 @@ const notas = (t: string, grados: string[]) => tocados(grados).map((g) => format
 </Base>
 
 <script>
-  import { conectarTonica } from '../lib/cliente.ts';
+  import { conectarAudio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { diagramaSVG } from '../lib/diagrama.ts';
+  import { secuenciaVoicing, type ModoVoicing } from '../lib/secuencias.ts';
   import { notaDeGrado, formatNota } from '../lib/teoria.ts';
   import { transportar, type Traste } from '../lib/voicings.ts';
 
@@ -77,11 +84,23 @@ const notas = (t: string, grados: string[]) => tocados(grados).map((g) => format
     tonica: string;
   }
 
+  let tonicaActual = 'C';
+  const tempo = conectarTempo();
+
+  /** Trastes del voicing en la tónica elegida (los que tienen cuerdas al aire no se mueven). */
+  const trastesActuales = (v: Voicing) => (v.trastes.includes(0) ? v.trastes : transportar(v.trastes, v.tonica, tonicaActual));
+
+  conectarAudio((boton) => {
+    const v: Voicing = JSON.parse(boton.closest<HTMLElement>('[data-voicing]')!.dataset.voicing!);
+    return secuenciaVoicing(trastesActuales(v), boton.dataset.audio as ModoVoicing, tempo());
+  });
+
   conectarTonica((tonica) => {
+    tonicaActual = tonica;
     for (const tarjeta of document.querySelectorAll<HTMLElement>('[data-voicing]')) {
       const v: Voicing = JSON.parse(tarjeta.dataset.voicing!);
       if (v.trastes.includes(0)) continue;
-      const trastes = transportar(v.trastes, v.tonica, tonica);
+      const trastes = trastesActuales(v);
       tarjeta.querySelector('[data-tonica-texto]')!.textContent = tonica;
       tarjeta.querySelector('[data-diagrama]')!.innerHTML = diagramaSVG({ trastes, grados: v.grados });
       tarjeta.querySelector('[data-notas]')!.textContent = v.grados
@@ -102,6 +121,10 @@ const notas = (t: string, grados: string[]) => tocados(grados).map((g) => format
     gap: 0.75rem;
     align-items: start;
     padding: 0.75rem;
+  }
+  .voicing .botones-audio {
+    grid-column: 1 / -1;
+    margin-top: 0;
   }
   h3 {
     margin: 0;

@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import SelectorTonica from '../components/SelectorTonica.astro';
 import { porOrden } from '../lib/orden.ts';
-import { notasDeFormula } from '../lib/teoria.ts';
+import { formatNota, notaBajoGrado, notasDeFormula } from '../lib/teoria.ts';
 
 const intervalos = porOrden(await getCollection('intervalos'));
 const tonica = 'C';
@@ -17,6 +17,7 @@ const tonica = 'C';
     {
       intervalos.map(({ data }) => {
         const [desde, hasta] = notasDeFormula(tonica, ['1', data.grado]);
+        const abajo = formatNota(notaBajoGrado(tonica, data.grado));
         return (
           <li class="tarjeta intervalo">
             <div class="cabecera">
@@ -24,7 +25,8 @@ const tonica = 'C';
               <span class="semitonos">{data.semitonos} st</span>
             </div>
             <p class="ejemplo" data-grado={data.grado}>
-              <span data-desde>{desde}</span> → <span data-hasta>{hasta}</span>
+              <span>↑ <span data-desde>{desde}</span> → <span data-hasta>{hasta}</span></span>
+              <span>↓ <span data-desde>{desde}</span> → <span data-abajo>{abajo}</span></span>
             </p>
             <p class="caracter">{data.caracter}</p>
             <dl class="referencias">
@@ -33,6 +35,11 @@ const tonica = 'C';
               <dt>↓ Descendente</dt>
               <dd>{data.descendente.length ? data.descendente.join(' · ') : <span class="suave">—</span>}</dd>
             </dl>
+            <div class="botones-audio">
+              <button type="button" data-audio="ascendente" data-grado={data.grado} aria-pressed="false">↑ Ascendente</button>
+              <button type="button" data-audio="descendente" data-grado={data.grado} aria-pressed="false">↓ Descendente</button>
+              <button type="button" data-audio="armonico" data-grado={data.grado} aria-pressed="false">Armónico</button>
+            </div>
           </li>
         );
       })
@@ -41,16 +48,26 @@ const tonica = 'C';
 </Base>
 
 <script>
-  import { conectarTonica } from '../lib/cliente.ts';
-  import { notasDeFormula } from '../lib/teoria.ts';
+  import { conectarAudio, conectarTonica } from '../lib/cliente.ts';
+  import { secuenciaIntervalo, type ModoIntervalo } from '../lib/secuencias.ts';
+  import { formatNota, notaBajoGrado, notasDeFormula } from '../lib/teoria.ts';
+
+  let tonicaActual = 'C';
 
   conectarTonica((tonica) => {
-    for (const el of document.querySelectorAll<HTMLElement>('[data-grado]')) {
-      const [desde, hasta] = notasDeFormula(tonica, ['1', el.dataset.grado!]);
-      el.querySelector('[data-desde]')!.textContent = desde;
+    tonicaActual = tonica;
+    for (const el of document.querySelectorAll<HTMLElement>('.ejemplo[data-grado]')) {
+      const grado = el.dataset.grado!;
+      const [desde, hasta] = notasDeFormula(tonica, ['1', grado]);
+      for (const d of el.querySelectorAll('[data-desde]')) d.textContent = desde;
       el.querySelector('[data-hasta]')!.textContent = hasta;
+      el.querySelector('[data-abajo]')!.textContent = formatNota(notaBajoGrado(tonica, grado));
     }
   });
+
+  conectarAudio((boton) =>
+    secuenciaIntervalo(tonicaActual, boton.dataset.grado!, boton.dataset.audio as ModoIntervalo),
+  );
 </script>
 
 <style>
@@ -70,6 +87,9 @@ const tonica = 'C';
     white-space: nowrap;
   }
   .ejemplo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
     margin: 0.25rem 0;
     font-size: 1.2rem;
     font-weight: 700;
