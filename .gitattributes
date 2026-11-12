@@ -1,0 +1,7 @@
+# Finales de línea: LF en todos los archivos de texto, también en Windows.
+# Tiene prioridad sobre core.autocrlf, así que no hay conversiones a CRLF.
+* text=auto eol=lf
+
+# Binarios: sin conversión de finales de línea ni diffs de texto.
+*.mp3 binary
+*.png binary
