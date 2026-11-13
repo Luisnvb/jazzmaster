@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { archivo, ruta } from '../lib/rutas.ts';
+import { SECCIONES, esActual } from '../lib/secciones.ts';
 
 interface Props {
   titulo: string;
@@ -8,16 +9,10 @@ interface Props {
 
 const { titulo } = Astro.props;
 
-const secciones = [
-  { href: ruta('intervalos'), nombre: 'Intervalos' },
-  { href: ruta('progresiones'), nombre: 'Progresiones' },
-  { href: ruta('escalas'), nombre: 'Escalas' },
-  { href: ruta('patrones'), nombre: 'Patrones' },
-  { href: ruta('acordes'), nombre: 'Acordes' },
-  { href: ruta('repertorio'), nombre: 'Repertorio' },
-];
 // Con barra final para comparar igual "/acordes" y "/acordes/" con ruta('acordes').
 const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+// Sección múltiple en la que estamos (para la barra de sus partes).
+const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
 ---
 
 <!doctype html>
@@ -38,15 +33,44 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
         <a class="logo" href={ruta('')}>Práctica<span>.</span></a>
         <nav aria-label="Secciones">
           {
-            secciones.map((s) => (
-              <a href={s.href} aria-current={actual.startsWith(s.href) ? 'page' : undefined}>
-                {s.nombre}
-              </a>
-            ))
+            SECCIONES.map((s) =>
+              s.partes ? (
+                <div class="multiple">
+                  <a href={s.href} aria-current={esActual(s, actual) ? 'page' : undefined} aria-haspopup="true">
+                    {s.nombre} <span aria-hidden="true">▾</span>
+                  </a>
+                  <ul class="desplegable">
+                    {s.partes.map((p) => (
+                      <li>
+                        <a href={p.href}>{p.nombre}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <a href={s.href} aria-current={esActual(s, actual) ? 'page' : undefined}>
+                  {s.nombre}
+                </a>
+              ),
+            )
           }
         </nav>
       </div>
     </header>
+    {
+      multiple && (
+        <nav class="partes" aria-label={multiple.nombre}>
+          <div class="cabecera-dentro">
+            <a class="partes-titulo" href={multiple.href}>{multiple.nombre}</a>
+            {multiple.partes!.map((p) => (
+              <a href={p.href} aria-current={esActual(p, actual) ? 'page' : undefined}>
+                {p.nombre}
+              </a>
+            ))}
+          </div>
+        </nav>
+      )
+    }
     <main>
       <slot />
     </main>
@@ -67,14 +91,13 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
     position: sticky;
     top: 0;
     z-index: 10;
-    height: var(--cabecera-alto);
     background: #000;
     color: #fff;
     border-bottom: 1px solid #2a2a2a;
   }
   .cabecera-dentro {
     max-width: var(--ancho);
-    height: 100%;
+    height: var(--cabecera-alto);
     margin: 0 auto;
     padding: 0 var(--margen);
     display: flex;
@@ -92,14 +115,14 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
   .logo span {
     color: #3cffd0;
   }
-  nav {
+  nav[aria-label='Secciones'] {
     display: flex;
     align-items: stretch;
     height: 100%;
     gap: 2.25rem;
-    overflow-x: auto;
   }
-  nav a {
+  nav[aria-label='Secciones'] > a,
+  .multiple > a {
     display: flex;
     align-items: center;
     border-bottom: 0.25rem solid transparent;
@@ -113,11 +136,81 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
     text-decoration: none;
     white-space: nowrap;
   }
-  nav a:hover {
+  nav[aria-label='Secciones'] > a:hover,
+  .multiple > a:hover {
     color: #fff;
   }
-  nav a[aria-current='page'] {
+  nav[aria-label='Secciones'] > a[aria-current='page'],
+  .multiple > a[aria-current='page'] {
     color: #fff;
     border-bottom-color: #3cffd0;
+  }
+  .multiple > a span {
+    margin-left: 0.35rem;
+    font-size: 0.7rem;
+  }
+
+  /* Sección múltiple: desplegable al pasar el ratón o con el teclado */
+  .multiple {
+    position: relative;
+    display: flex;
+  }
+  .desplegable {
+    position: absolute;
+    top: 100%;
+    left: -1rem;
+    min-width: 14rem;
+    margin: 0;
+    padding: 0.5rem 0;
+    list-style: none;
+    background: #000;
+    border: 1px solid #2a2a2a;
+    border-top: 0.25rem solid #3cffd0;
+    display: none;
+  }
+  .multiple:hover .desplegable,
+  .multiple:focus-within .desplegable {
+    display: block;
+  }
+  .desplegable a {
+    display: block;
+    padding: 0.6rem 1rem;
+    font-family: var(--fuente-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #bdbdbd;
+    text-decoration: none;
+  }
+  .desplegable a:hover {
+    color: #3cffd0;
+    background: #141414;
+  }
+
+  /* Partes de la sección múltiple actual */
+  .partes {
+    background: #0b0b0b;
+    border-top: 1px solid #2a2a2a;
+  }
+  .partes .cabecera-dentro {
+    height: 2.75rem;
+    gap: 2rem;
+  }
+  .partes a {
+    font-family: var(--fuente-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #9a9a9a;
+    text-decoration: none;
+  }
+  .partes a:hover,
+  .partes a[aria-current='page'] {
+    color: #3cffd0;
+  }
+  .partes .partes-titulo {
+    color: #fff;
   }
 </style>

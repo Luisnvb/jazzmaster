@@ -1,0 +1,13 @@
+---
+// Sección múltiple: reúne páginas sueltas (sus partes están en lib/secciones.ts).
+import Base from '../layouts/Base.astro';
+import Mosaico from '../components/Mosaico.astro';
+import { SECCIONES } from '../lib/secciones.ts';
+
+const teoria = SECCIONES.find((s) => s.nombre === 'Teoría')!;
+---
+
+<Base titulo="Teoría">
+  <h1>Teoría</h1>
+  <Mosaico secciones={teoria.partes!} />
+</Base>

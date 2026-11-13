@@ -1,0 +1,67 @@
+---
+// Mosaico de accesos grandes (portada y secciones múltiples).
+import type { Seccion } from '../lib/secciones.ts';
+
+interface Props {
+  secciones: Seccion[];
+}
+
+const { secciones } = Astro.props;
+---
+
+<ul class="portada">
+  {
+    secciones.map((s, i) => (
+      <li>
+        <a href={s.href}>
+          <span class="kicker">{String(i + 1).padStart(2, '0')}</span>
+          <span class="nombre">{s.nombre}</span>
+          <span class="lema">{s.lema}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .portada {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1rem;
+  }
+  .portada a {
+    display: grid;
+    align-content: space-between;
+    gap: 1.5rem;
+    min-height: 20rem;
+    padding: 1.75rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    color: var(--texto);
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .portada .nombre {
+    font-family: var(--fuente-titulo);
+    font-size: clamp(2.6rem, 3.6vw, 5rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .portada .lema {
+    color: var(--texto-suave);
+    font-size: 1.05rem;
+  }
+  .portada a:hover {
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  .portada a:hover .kicker,
+  .portada a:hover .lema {
+    color: var(--sobre-acento);
+  }
+</style>
