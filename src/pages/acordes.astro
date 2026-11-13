@@ -5,6 +5,7 @@ import SelectorTonica from '../components/SelectorTonica.astro';
 import Tempo from '../components/Tempo.astro';
 import { porOrden } from '../lib/orden.ts';
 import { TONICAS } from '../lib/teoria.ts';
+import { INSTRUMENTOS } from '../lib/audio.ts';
 
 const grupos = porOrden(await getCollection('grupos')).map(({ id, data }) => ({
   id,
@@ -34,6 +35,9 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         <option value="">Todos</option>
         {grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}
       </select>
+    </label>
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
     </label>
   </SelectorTonica>
   <Tempo clave="acordes" />
@@ -83,7 +87,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 <script>
   import { aplicarCambios, aVoicing, moverEnGrupo, ordenarPorIds, erroresVoicing, gradosSugeridos, nuevoIdVoicing, voicingsAYaml, type Cambios, type Voicing } from '../lib/acordes-datos.ts';
   import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
-  import { conectarAudio, conectarFiltroArpegio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import { conectarAudio, conectarFiltroArpegio, conectarInstrumento, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { diagramaSVG } from '../lib/diagrama.ts';
   import { editorTrastes, type EditorTrastes } from '../lib/editor-trastes.ts';
   import { secuenciaVoicing, type ModoVoicing } from '../lib/secuencias.ts';
@@ -312,9 +316,10 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     }
   });
 
+  const instrumento = conectarInstrumento('acordes:sonido');
   conectarAudio((boton) => {
     const v = porId(boton.closest<HTMLElement>('[data-id]')!.dataset.id!);
-    return secuenciaVoicing(trastesEn(v), boton.dataset.audio as ModoVoicing, tempo());
+    return { eventos: secuenciaVoicing(trastesEn(v), boton.dataset.audio as ModoVoicing, tempo()), instrumento: instrumento() };
   });
 
   conectarFiltroArpegio('arpegio:acordes', (grupo) => {
