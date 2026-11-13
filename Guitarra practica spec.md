@@ -240,6 +240,7 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Color de acento por sesión:** paleta de seis colores (violeta, magenta, azul, verde, naranja, turquesa) en `lib/acento.ts`; cada sesión elige uno al azar, distinto del anterior, y lo mantiene al navegar.
 - [x] **Indicador del acorde que suena atenuado** (fondo translúcido del acento y borde) para que el acorde y su diagrama se lean bien; igual en Progresiones y Patrones.
 - [x] **Bucle en Repertorio y Patrones:** botón «⟲ Bucle»; al acabar, la siguiente vuelta se programa a tiempo y sin cortar lo que suena (`tocar` con `duracion` y `encadenar` en `lib/audio.ts`). Detener lo corta.
+- [x] **Progresiones: «∞ Continuo»** en cada progresión: se repite sin parar hasta pulsar Detener.
 - [x] **Patrones: «∞ Continuo»** en cada patrón: se repite sin parar hasta pulsar Detener, aunque el bucle general esté apagado.
 - [x] **Tempo en la barra de tónica** en Escalas, Acordes, Patrones y Progresiones; en Patrones y Progresiones también el metrónomo y el bucle, de modo que todos los controles de audio quedan en la barra fija.
 - [x] **Escalas: «∞ Continuo»** en cada escala: sube y baja sin parar (sin repetir los extremos) hasta pulsar Detener (`secuenciaEscalaContinua`).

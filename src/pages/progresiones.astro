@@ -135,6 +135,7 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
         ${cuerpo}
         <div class="botones-audio">
           <button type="button" data-audio="progresion" aria-pressed="false">▶ Tocar</button>
+          <button type="button" data-audio="continuo" aria-pressed="false" title="Se repite sin parar hasta pulsar Detener">∞ Continuo</button>
           <button type="button" data-detener>■ Detener</button>
           ${editando ? '<button type="button" data-editar>Editar</button><button type="button" data-duplicar>Duplicar</button>' : ''}
           <button type="button" class="eliminar" data-borrar>Eliminar</button>
@@ -283,7 +284,7 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     return {
       eventos,
       instrumento,
-      bucle: enBucle,
+      bucle: boton.dataset.audio === 'continuo' ? () => true : enBucle,
       duracion,
       alProgresar: (s) => marcar(tramos.findIndex((t) => s >= t.inicio && s < t.fin)),
       alTerminar: () => marcar(-1),
