@@ -24,25 +24,30 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content="#b5541c" />
+    <meta name="theme-color" content="#131313" />
     <link rel="manifest" href={archivo('manifest.webmanifest')} />
     <link rel="icon" href={archivo('favicon.png')} type="image/png" />
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
     <title>{titulo} · Práctica</title>
   </head>
   <body>
+    <header class="cabecera">
+      <div class="cabecera-dentro">
+        <a class="logo" href={ruta('')}>Práctica<span>.</span></a>
+        <nav aria-label="Secciones">
+          {
+            secciones.map((s) => (
+              <a href={s.href} aria-current={actual.startsWith(s.href) ? 'page' : undefined}>
+                {s.nombre}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </header>
     <main>
       <slot />
     </main>
-    <nav class="barra" aria-label="Secciones">
-      {
-        secciones.map((s) => (
-          <a href={s.href} aria-current={actual.startsWith(s.href) ? 'page' : undefined}>
-            {s.nombre}
-          </a>
-        ))
-      }
-    </nav>
   </body>
 </html>
 
@@ -56,25 +61,61 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
 </script>
 
 <style>
-  .barra {
-    position: fixed;
-    inset: auto 0 0 0;
-    height: var(--barra-alto);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background: var(--superficie);
-    border-top: 1px solid var(--borde);
-    padding-bottom: env(safe-area-inset-bottom);
+  .cabecera {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    height: var(--cabecera-alto);
+    background: #000;
+    color: #fff;
+    border-bottom: 1px solid #2a2a2a;
   }
-  .barra a {
-    display: grid;
-    place-items: center;
-    color: var(--texto-suave);
+  .cabecera-dentro {
+    max-width: var(--ancho);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 var(--margen);
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+  }
+  .logo {
+    font-family: var(--fuente-titulo);
+    font-size: 2.2rem;
+    line-height: 1;
+    text-transform: uppercase;
+    color: #fff;
     text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
   }
-  .barra a[aria-current='page'] {
-    color: var(--acento);
+  .logo span {
+    color: #3cffd0;
+  }
+  nav {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    gap: 2.25rem;
+    overflow-x: auto;
+  }
+  nav a {
+    display: flex;
+    align-items: center;
+    border-bottom: 0.25rem solid transparent;
+    border-top: 0.25rem solid transparent;
+    font-family: var(--fuente-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #bdbdbd;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  nav a:hover {
+    color: #fff;
+  }
+  nav a[aria-current='page'] {
+    color: #fff;
+    border-bottom-color: #3cffd0;
   }
 </style>

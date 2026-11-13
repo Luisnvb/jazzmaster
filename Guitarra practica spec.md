@@ -6,10 +6,10 @@ Documento de partida para desarrollar el proyecto en Claude Code. Recoge el plan
 
 ## 1. Objetivo
 
-Una web personal que reúna en un solo sitio el material de práctica. Se consulta durante la práctica, normalmente desde el móvil o la tablet en el atril.
+Una web personal que reúna en un solo sitio el material de práctica. Se consulta durante la práctica, principalmente en un monitor de escritorio de 27".
 
 **Principios**
-- Pensada primero para móvil: se lee de un vistazo, con botones grandes y poco texto.
+- Pensada para escritorio (27"): aprovecha el ancho con rejillas de varias columnas; sigue siendo usable en pantallas pequeñas.
 - Contenido separado del código: canciones, escalas, acordes e intervalos se guardan en archivos de datos fáciles de editar a mano. Añadir una canción o un voicing no exige tocar la lógica de la web.
 - Web estática, sin servidor ni base de datos, y que funcione sin conexión una vez cargada.
 - Uso personal y privado.
@@ -30,7 +30,7 @@ Una web personal que reúna en un solo sitio el material de práctica. Se consul
 - **Acordes**
 - **Repertorio**
 
-Navegación persistente entre secciones (barra inferior en móvil).
+Navegación persistente entre secciones en una cabecera fija arriba.
 
 ---
 
@@ -203,7 +203,7 @@ Se propone **un archivo Markdown por canción**: los metadatos y el cifrado van 
 - Un módulo de teoría compartido que, a partir de una tónica y una fórmula de grados, calcule las notas con la ortografía correcta. Lo usan escalas, arpegios, acordes e intervalos.
 - PWA con service worker para funcionar sin conexión.
 - Despliegue gratuito (GitHub Pages, Netlify o Cloudflare Pages), con acceso privado si se quiere.
-- Diseño: tipografía grande, buen contraste y modo oscuro, pensado para leerlo en el atril.
+- Diseño inspirado en The Verge: siempre oscuro, titulares condensados (Anton), texto en Space Grotesk, etiquetas en JetBrains Mono y acento menta/violeta. Fuentes alojadas en el sitio (fontsource) para funcionar sin conexión.
 
 ## 10. Fases
 
@@ -219,8 +219,8 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Letras:** incorporar al repertorio las letras de `lyrics.txt` (raíz del proyecto).
 - [x] **Wayne Shorter:** añadir al repertorio *Infant Eyes* y *Footprints* (Footprints ya tenía ficha: se completan compás, tonalidad y estructura; se crea *Infant Eyes*).
 - [x] **Cifrados:** incorporar los `.cmb.json` de la raíz para completar el repertorio (hasta ahora solo había el de *How Insensitive*). Movidos a `src/content/repertorio/<id>.cmb.json`; el compás de la ficha, si falta en el .md, se toma del cifrado.
-- [ ] **Escritorio en vez de móvil:** se rectifica el principio "pensada primero para móvil" (§1). El uso principal será un monitor de escritorio de 27". Optimizar para ese formato y rehacer los estilos inspirándose en [The Verge](https://www.theverge.com/).
-- [ ] **Navegación arriba:** mover los enlaces de secciones a la parte superior (sustituye a la barra inferior de §3).
+- [x] **Escritorio en vez de móvil:** se rectifica el principio "pensada primero para móvil" (§1). El uso principal será un monitor de escritorio de 27". Optimizar para ese formato y rehacer los estilos inspirándose en [The Verge](https://www.theverge.com/).
+- [x] **Navegación arriba:** mover los enlaces de secciones a la parte superior (sustituye a la barra inferior de §3).
 - [ ] **Acordes:** quitar la ayuda "Los grados se rellenan solos al elegir un traste; puedes cambiar la ortografía (p. ej. #9 en vez de b3)."
 - [ ] **Escalas/Acordes:** completar la frase "Dominante alterado (más tensiones b9, …".
 - [ ] **Repertorio:** botón para detener la reproducción.

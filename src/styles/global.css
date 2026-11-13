@@ -1,79 +1,125 @@
+/* Diseño de escritorio (monitor de 27") inspirado en The Verge: fondo casi negro,
+   titulares condensados enormes, etiquetas en monoespaciada y acentos menta/violeta.
+   Fuentes alojadas en el propio sitio (fontsource) para que funcione sin conexión. */
+@import '@fontsource/anton/latin-400.css';
+@import '@fontsource/anton/latin-ext-400.css';
+@import '@fontsource-variable/space-grotesk/wght.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
+
 :root {
-  color-scheme: light dark;
-  --fondo: #f7f5f0;
-  --superficie: #ffffff;
-  --texto: #1b1a17;
-  --texto-suave: #5d5a52;
-  --acento: #b5541c;
-  --sobre-acento: #ffffff;
-  --borde: #ddd8cc;
-  --bien: #2f7d3a;
-  --mal: #b3261e;
-  --barra-alto: 4rem;
-  font-size: 112.5%;
+  color-scheme: dark;
+  --fondo: #131313;
+  --superficie: #1e1e1e;
+  --superficie-2: #262626;
+  --texto: #ffffff;
+  --texto-suave: #a6a6a6;
+  --acento: #3cffd0;
+  --sobre-acento: #000000;
+  --violeta: #5200ff;
+  --borde: #343434;
+  --bien: #3cffd0;
+  --mal: #ff4f6d;
+
+  --fuente: 'Space Grotesk Variable', system-ui, 'Segoe UI', sans-serif;
+  --fuente-titulo: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+  --fuente-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --cabecera-alto: 4.25rem;
+  --margen: clamp(1rem, 3vw, 4rem);
+  --ancho: 150rem;
+  --radio: 0.25rem;
+  --barra-alto: 0rem;
+
+  /* 18 px en un portátil, ~19-20 px en un 27" de 2560 px. */
+  font-size: clamp(16px, 0.3vw + 11.5px, 20px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fondo: #14130f;
-    --superficie: #1f1d18;
-    --texto: #f1ede4;
-    --texto-suave: #aaa597;
-    --acento: #f08a4b;
-    --sobre-acento: #14130f;
-    --borde: #36332b;
-    --bien: #6cc27a;
-    --mal: #f2766b;
-  }
-}
+/* Siempre oscuro, como The Verge: el contraste del menta sobre negro es la seña del diseño. */
 
 * { box-sizing: border-box; }
 
 [hidden] { display: none !important; }
 
+html { scroll-padding-top: calc(var(--cabecera-alto) + 1rem); }
+
 body {
   margin: 0;
   background: var(--fondo);
   color: var(--texto);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--fuente);
+  font-size: 1rem;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 main {
-  max-width: 48rem;
+  max-width: var(--ancho);
   margin: 0 auto;
-  padding: 1rem 1rem calc(var(--barra-alto) + 1.5rem);
+  padding: 2rem var(--margen) 5rem;
 }
 
-a { color: var(--acento); }
+a { color: var(--acento); text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 2px; }
 
-/* Que los enlaces a #grupo-… no queden bajo el selector de tónica fijo. */
-section[id] { scroll-margin-top: 9.5rem; }
-h1 { font-size: 1.75rem; margin: 0.5rem 0 1rem; }
-h2 { font-size: 1.25rem; margin: 1.75rem 0 0.75rem; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+/* Que los enlaces a #grupo-… no queden bajo la cabecera y el selector de tónica fijos. */
+section[id] { scroll-margin-top: calc(var(--cabecera-alto) + 6rem); }
+
+h1, h2 {
+  font-family: var(--fuente-titulo);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+h1 {
+  font-size: clamp(3rem, 5vw, 6.5rem);
+  text-transform: uppercase;
+  margin: 0.5rem 0 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 0.4rem solid var(--acento);
+}
+h2 { font-size: 2.1rem; margin: 3rem 0 1rem; }
+h3 { font-weight: 700; letter-spacing: -0.01em; }
 
 .suave { color: var(--texto-suave); }
+
+/* Etiqueta pequeña en monoespaciada (el "kicker" de las portadas). */
+.kicker {
+  font-family: var(--fuente-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acento);
+}
+
+code { font-family: var(--fuente-mono); font-size: 0.9em; }
 
 .tarjeta {
   background: var(--superficie);
   border: 1px solid var(--borde);
-  border-radius: 0.75rem;
-  padding: 1rem;
+  border-radius: var(--radio);
+  padding: 1.25rem;
+  transition: border-color 0.15s;
 }
+.tarjeta:hover { border-color: var(--texto-suave); }
 
 .lista-tarjetas {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+  gap: 1rem;
 }
 
 /* Diagramas de acorde (SVG generado en lib/diagrama.ts) */
 .diagrama { display: block; width: 100%; max-width: 13rem; margin: 0 auto; }
 .diagrama .traste, .diagrama .cuerda { stroke: var(--texto-suave); stroke-width: 1.2; }
 .diagrama .cejuela { fill: var(--texto); }
-.diagrama .num-traste { fill: var(--texto); font-size: 15px; font-weight: 700; }
+.diagrama .num-traste { fill: var(--texto); font-size: 15px; font-weight: 700; font-family: var(--fuente-mono); }
 .diagrama .apagada { fill: var(--texto-suave); font-size: 18px; }
 .diagrama .nota circle { fill: var(--texto); }
 .diagrama .nota .grado { fill: var(--fondo); font-size: 12px; font-weight: 700; }
@@ -85,89 +131,98 @@ h2 { font-size: 1.25rem; margin: 1.75rem 0 0.75rem; }
 .diagrama .al-aire.raiz circle { stroke: var(--acento); }
 .diagrama .al-aire.raiz .grado { fill: var(--acento); }
 
-/* Botones de audio */
+/* Botones: píldoras con texto en monoespaciada */
 .botones-audio {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
-.botones-audio button {
-  flex: 1 1 auto;
-  min-height: 2.75rem;
-  padding: 0 0.9rem;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--texto);
-  background: var(--fondo);
-  border: 1px solid var(--borde);
-  border-radius: 0.5rem;
-  cursor: pointer;
-}
-.botones-audio button.sonando {
-  background: var(--acento);
-  border-color: var(--acento);
-  color: var(--sobre-acento);
-}
-
-/* Botones y formularios de edición */
+.botones-audio button,
 .boton {
-  min-height: 2.6rem;
-  padding: 0 0.9rem;
-  font: inherit;
-  font-size: 0.9rem;
+  min-height: 2.5rem;
+  padding: 0 1.1rem;
+  font-family: var(--fuente-mono);
+  font-size: 0.8rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--texto);
-  background: var(--superficie);
+  background: transparent;
   border: 1px solid var(--borde);
-  border-radius: 0.5rem;
+  border-radius: 999px;
   cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
 }
+.botones-audio button:hover,
+.boton:hover:not(:disabled) { border-color: var(--acento); color: var(--acento); }
+.botones-audio button.sonando,
 .boton.principal,
 .boton[aria-pressed='true'] {
   background: var(--acento);
   border-color: var(--acento);
   color: var(--sobre-acento);
 }
+.botones-audio button.sonando:hover,
+.boton.principal:hover:not(:disabled),
+.boton[aria-pressed='true']:hover:not(:disabled) { color: var(--sobre-acento); filter: brightness(1.1); }
 .boton.peligro { color: var(--mal); }
-.boton:disabled { opacity: 0.45; cursor: default; }
+.boton.peligro:hover:not(:disabled) { border-color: var(--mal); color: var(--mal); }
+.boton:disabled { opacity: 0.4; cursor: default; }
 
-label { font-size: 0.85rem; color: var(--texto-suave); }
-label > input, label > select, label > textarea { margin-top: 0.2rem; }
-label.bloque { display: block; margin: 0.5rem 0; }
+/* Formularios */
+label {
+  font-family: var(--fuente-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+label > input, label > select, label > textarea { margin-top: 0.3rem; text-transform: none; letter-spacing: normal; }
+label.bloque { display: block; margin: 0.75rem 0; }
 .campos label { display: grid; }
 input:not([type='checkbox']):not([type='range']), select, textarea {
   width: 100%;
   min-height: 2.5rem;
-  padding: 0.35rem 0.5rem;
+  padding: 0.35rem 0.6rem;
   font: inherit;
+  font-family: var(--fuente);
   font-size: 1rem;
   color: var(--texto);
   background: var(--fondo);
   border: 1px solid var(--borde);
-  border-radius: 0.4rem;
+  border-radius: var(--radio);
 }
+input:focus, select:focus, textarea:focus { border-color: var(--acento); outline: none; }
 textarea { min-height: 4rem; resize: vertical; }
-label.casilla { display: flex; align-items: center; gap: 0.4rem; color: var(--texto); }
-label.casilla input { width: 1.2rem; height: 1.2rem; margin: 0; }
+label.casilla {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+label.casilla input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--acento); }
 
 .dialogo {
-  width: min(34rem, calc(100vw - 1rem));
-  max-height: calc(100dvh - 1rem);
-  padding: 1rem;
+  width: min(44rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 1.5rem;
   color: var(--texto);
   background: var(--superficie);
   border: 1px solid var(--borde);
-  border-radius: 0.75rem;
+  border-top: 0.3rem solid var(--acento);
+  border-radius: var(--radio);
 }
-.dialogo::backdrop { background: rgb(0 0 0 / 0.45); }
+.dialogo::backdrop { background: rgb(0 0 0 / 0.6); }
 .dialogo h2 { margin-top: 0; }
-.dialogo .acciones { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
+.dialogo .acciones { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
 
 /* Editor de trastes (lib/editor-trastes.ts) */
-.et { display: grid; grid-template-columns: minmax(0, 9rem) 1fr; gap: 0.75rem; align-items: start; }
-.et-cuerdas { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.25rem; }
+.et { display: grid; grid-template-columns: minmax(0, 10rem) 1fr; gap: 1rem; align-items: start; }
+.et-cuerdas { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.3rem; }
 .et-cuerda { display: grid; gap: 0.2rem; text-align: center; font-size: 0.75rem; }
 .et-cuerda select, .et-cuerda input { padding: 0.2rem; text-align: center; font-size: 0.95rem; }
 .et-cuerda input[readonly] { border-style: dashed; }

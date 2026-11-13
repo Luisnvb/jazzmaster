@@ -34,11 +34,14 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
 <div class="aviso suave" data-aviso hidden></div>
 <form class="meta" data-meta hidden onsubmit="return false"></form>
 
-<h2>Cifrado</h2>
-<div data-cifrado></div>
-<div class="panel" data-panel hidden></div>
-
-<div data-resto></div>
+<div class="ficha-cuerpo">
+  <div class="ficha-principal">
+    <h2>Cifrado</h2>
+    <div data-cifrado></div>
+    <div class="panel" data-panel hidden></div>
+  </div>
+  <aside class="ficha-lateral" data-resto></aside>
+</div>
 
 <div id="menu-acorde" class="menu-acorde" popover>
   <p class="menu-titulo" data-menu-titulo></p>
@@ -55,6 +58,28 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
 </script>
 
 <style is:global>
+  .ficha-cuerpo {
+    display: grid;
+    gap: 0 3rem;
+  }
+  @media (min-width: 85rem) {
+    .ficha-cuerpo {
+      grid-template-columns: minmax(0, 1fr) 26rem;
+      align-items: start;
+    }
+    .ficha-lateral {
+      position: sticky;
+      top: calc(var(--cabecera-alto) + 1rem);
+      max-height: calc(100dvh - var(--cabecera-alto) - 2rem);
+      overflow-y: auto;
+    }
+  }
+  .ficha-lateral:empty {
+    display: none;
+  }
+  .ficha-lateral h2:first-child {
+    margin-top: 3rem;
+  }
   .volver {
     display: inline-block;
     padding: 0.5rem 0;
@@ -66,7 +91,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   }
   .autor {
     margin: 0 0 1rem;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
   }
   .ficha {
     margin: 0;
@@ -77,16 +102,20 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   .ficha div {
     background: var(--superficie);
     border: 1px solid var(--borde);
-    border-radius: 0.5rem;
-    padding: 0.35rem 0.75rem;
+    border-radius: var(--radio);
+    padding: 0.5rem 1rem;
   }
   .ficha dt {
-    font-size: 0.75rem;
+    font-family: var(--fuente-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--texto-suave);
   }
   .ficha dd {
     margin: 0;
     font-weight: 700;
+    font-size: 1.15rem;
   }
   .barra-ficha {
     display: flex;
@@ -216,7 +245,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   }
   .celda .simbolo {
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.3rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -239,7 +268,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   /* Panel de edición del acorde elegido */
   .panel {
     position: sticky;
-    bottom: calc(var(--barra-alto) + 0.5rem);
+    bottom: 1rem;
     z-index: 2;
     margin-top: 1rem;
     max-height: 50dvh;
@@ -333,7 +362,8 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     text-decoration: none;
   }
   .letra {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
   }
   .letra p {
     margin: 0 0 1rem;

@@ -12,14 +12,20 @@ const { placeholder } = Astro.props;
 <style>
   .buscador {
     width: 100%;
+    max-width: 40rem;
     min-height: 3rem;
-    padding: 0 1rem;
+    padding: 0 1.25rem;
     font: inherit;
+    font-size: 1.05rem;
     color: var(--texto);
     background: var(--superficie);
     border: 1px solid var(--borde);
-    border-radius: 0.75rem;
-    margin-bottom: 0.5rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  .buscador:focus {
+    border-color: var(--acento);
+    outline: none;
   }
   .sin-resultados {
     color: var(--texto-suave);

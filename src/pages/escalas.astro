@@ -23,25 +23,27 @@ const tonica = 'C';
       const delGrupo = escalas.filter((e) => e.data.grupo.id === g.id);
       return (
         <section id={`grupo-${g.id}`} data-grupo-busqueda>
-          <h2>
-            <span data-tonica-texto>{tonica}</span>{g.data.simbolo}
-            {g.data.descripcion && <span class="descripcion">{g.data.descripcion}</span>}
-          </h2>
-          <p class="arpegio suave">
-            Arpegio:{' '}
-            <span class="formula">{g.data.arpegio.join(' ')}</span> →{' '}
-            <strong data-formula={JSON.stringify(g.data.arpegio)}>{notasDeFormula(tonica, g.data.arpegio).join(' ')}</strong>
-            <button
-              type="button"
-              class="arpegio-boton"
-              data-audio="arpegio"
-              data-formula-audio={JSON.stringify(g.data.arpegio)}
-              aria-pressed="false"
-              aria-label={`Tocar arpegio ${g.data.nombre}`}
-            >
-              ▶
+            <div class="cabecera-grupo">
+            <h2>
+              <span data-tonica-texto>{tonica}</span>{g.data.simbolo}
+              {g.data.descripcion && <span class="descripcion">{g.data.descripcion}</span>}
+            </h2>
+            <p class="arpegio suave">
+              Arpegio:{' '}
+              <span class="formula">{g.data.arpegio.join(' ')}</span> →{' '}
+              <strong data-formula={JSON.stringify(g.data.arpegio)}>{notasDeFormula(tonica, g.data.arpegio).join(' ')}</strong>
+              <button
+                type="button"
+                class="arpegio-boton"
+                data-audio="arpegio"
+                data-formula-audio={JSON.stringify(g.data.arpegio)}
+                aria-pressed="false"
+                aria-label={`Tocar arpegio ${g.data.nombre}`}
+              >
+                ▶
             </button>
           </p>
+          </div>
           <ul class="lista-tarjetas">
             {delGrupo.map(({ data }) => (
               <li class="tarjeta" data-buscar={`${data.nombre} ${g.data.nombre}`}>
@@ -113,65 +115,98 @@ const tonica = 'C';
 </script>
 
 <style>
+  /* En escritorio cada grupo es una fila: cabecera a la izquierda, escalas a la derecha. */
+  section[data-grupo-busqueda] {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 2.5rem;
+    padding: 1.5rem 0 2rem;
+    border-top: 1px solid var(--borde);
+  }
+  @media (min-width: 75rem) {
+    section[data-grupo-busqueda] {
+      grid-template-columns: 20rem minmax(0, 1fr);
+      align-items: start;
+    }
+    .cabecera-grupo {
+      position: sticky;
+      top: calc(var(--cabecera-alto) + 5.5rem);
+    }
+  }
   h2 {
-    margin-bottom: 0.25rem;
+    margin: 0 0 0.5rem;
+    font-size: 3rem;
   }
   .descripcion {
     display: block;
-    font-size: 0.85rem;
-    font-weight: 400;
+    margin-top: 0.4rem;
+    font-family: var(--fuente);
+    font-size: 0.95rem;
+    line-height: 1.4;
     color: var(--texto-suave);
-  }
-  .arpegio {
-    margin: 0 0 0.75rem;
   }
   .arpegio {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0 0.35rem;
+    gap: 0.35rem 0.5rem;
+    margin: 0 0 1rem;
+  }
+  .formula {
+    font-family: var(--fuente-mono);
+    font-size: 0.85rem;
   }
   .arpegio strong {
     color: var(--texto);
+    font-family: var(--fuente-mono);
   }
   .arpegio-boton {
-    width: 2.75rem;
-    height: 2.75rem;
-    margin-left: auto;
+    width: 2.6rem;
+    height: 2.6rem;
     font: inherit;
     color: var(--texto);
-    background: var(--superficie);
+    background: transparent;
     border: 1px solid var(--borde);
     border-radius: 50%;
     cursor: pointer;
+  }
+  .arpegio-boton:hover {
+    border-color: var(--acento);
+    color: var(--acento);
   }
   .arpegio-boton.sonando {
     background: var(--acento);
     border-color: var(--acento);
     color: var(--sobre-acento);
   }
+  .lista-tarjetas {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+  }
   h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.1rem;
+    margin: 0 0 0.75rem;
+    font-size: 1.3rem;
   }
   .notas {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0.75rem 0;
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
     gap: 0.25rem;
     text-align: center;
+    border-top: 1px solid var(--borde);
+    border-bottom: 1px solid var(--borde);
   }
   .notas li {
     display: grid;
   }
   .grado {
-    font-size: 0.8rem;
-    color: var(--texto-suave);
+    font-family: var(--fuente-mono);
+    font-size: 0.75rem;
+    color: var(--acento);
   }
   .nota {
-    font-size: 1.15rem;
+    font-size: 1.35rem;
     font-weight: 700;
   }
 </style>

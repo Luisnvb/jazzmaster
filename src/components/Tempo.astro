@@ -16,18 +16,18 @@ const { clave, inicial = 100 } = Astro.props;
 <style>
   .tempo {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 28rem);
+    justify-content: start;
     align-items: center;
-    gap: 1rem;
-    margin: 0 0 0.75rem;
-    font-size: 0.9rem;
-    color: var(--texto-suave);
+    gap: 1.25rem;
+    margin: 0 0 1rem;
   }
   .tempo strong {
     color: var(--texto);
     display: inline-block;
-    min-width: 2ch;
+    min-width: 3ch;
     text-align: right;
+    font-size: 1rem;
   }
   input {
     width: 100%;

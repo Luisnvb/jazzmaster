@@ -1,7 +1,7 @@
 # Práctica de guitarra
 
 Web personal de práctica: intervalos (con entrenador de oído), escalas, acordes y repertorio.
-Estática, pensada para el móvil y con modo sin conexión. La especificación está en `Guitarra practica spec.md`.
+Estática, pensada para un monitor de escritorio y con modo sin conexión. La especificación está en `Guitarra practica spec.md`.
 
 ## Uso en local
 
