@@ -260,6 +260,28 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   .cifrado.editando .celda {
     outline: 1px dashed var(--borde);
   }
+  /* Acorde que suena durante la reproducción */
+  .celda.sonando-ahora {
+    background: var(--acento);
+    color: var(--sobre-acento);
+    box-shadow: 0 0 0 2px var(--acento);
+  }
+  .celda.sonando-ahora .simbolo {
+    border-bottom-color: var(--sobre-acento);
+  }
+  .celda.sonando-ahora .diagrama .traste,
+  .celda.sonando-ahora .diagrama .cuerda {
+    stroke: var(--sobre-acento);
+  }
+  .celda.sonando-ahora .diagrama .num-traste,
+  .celda.sonando-ahora .diagrama .cejuela,
+  .celda.sonando-ahora .diagrama .apagada {
+    fill: var(--sobre-acento);
+  }
+  html:not(.reproduciendo) .boton.detener {
+    opacity: 0.4;
+    pointer-events: none;
+  }
   .celda.sel {
     background: color-mix(in srgb, var(--acento) 18%, transparent);
     outline: 2px solid var(--acento) !important;

@@ -74,3 +74,15 @@ test('cifrado nuevo', () => {
   assert.equal(new Set(cmb.bars.flatMap((b) => [b.id, ...b.cells.map((c) => c.id)])).size, 8, 'ids distintos');
   assert.equal(simbolo(cmb.bars[0].cells[0]), 'Cmaj7');
 });
+
+test('los tiempos de cada acorde cuadran con la secuencia del cifrado', async () => {
+  const { tiemposCifrado } = await import('./cifrado-vista.ts');
+  const cmb = validarCmb(ejemplo);
+  const tramos = tiemposCifrado(cmb, 120);
+  assert.equal(tramos.length, cmb.bars.reduce((n, b) => n + b.cells.length, 0));
+  assert.equal(tramos[0].inicio, 0);
+  for (let k = 1; k < tramos.length; k++) assert.ok(Math.abs(tramos[k].inicio - tramos[k - 1].fin) < 1e-9);
+  // A 120 BPM un compás de 4/4 dura 2 s.
+  const primerCompas = tramos.filter((t) => t.compas === 0);
+  assert.ok(Math.abs(primerCompas.at(-1)!.fin - 2) < 1e-9);
+});

@@ -106,12 +106,20 @@ export function conectarTempo(): () => number {
   return () => Number(control.value);
 }
 
+/** Secuencia con avisos de progreso (p. ej. para marcar el acorde que suena). */
+export interface Reproduccion {
+  eventos: Evento[];
+  alProgresar?: (segundos: number) => void;
+  alTerminar?: () => void;
+}
+
 /**
  * Conecta los botones [data-audio] de la página. `construir` recibe el botón
  * pulsado y devuelve la secuencia que debe sonar. Pulsar el botón que está
- * sonando lo para; pulsar otro sustituye lo que suena.
+ * sonando lo para; pulsar otro sustituye lo que suena. Los botones
+ * [data-detener] paran cualquier reproducción.
  */
-export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[]) {
+export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[] | Reproduccion) {
   let activo: HTMLButtonElement | null = null;
 
   const marcar = (boton: HTMLButtonElement | null) => {
@@ -120,9 +128,15 @@ export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[])
     activo = boton;
     activo?.classList.add('sonando');
     activo?.setAttribute('aria-pressed', 'true');
+    document.documentElement.classList.toggle('reproduciendo', activo !== null);
   };
 
   document.addEventListener('click', async (evento) => {
+    if ((evento.target as Element).closest('button[data-detener]')) {
+      detener();
+      marcar(null);
+      return;
+    }
     const boton = (evento.target as Element).closest<HTMLButtonElement>('button[data-audio]');
     if (!boton) return;
     if (boton === activo) {
@@ -131,11 +145,15 @@ export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[])
       return;
     }
     marcar(boton);
+    let reproduccion: Reproduccion | null = null;
     try {
-      await tocar(construir(boton));
+      const construida = construir(boton);
+      reproduccion = Array.isArray(construida) ? { eventos: construida } : construida;
+      await tocar(reproduccion.eventos, reproduccion.alProgresar);
     } catch (error) {
       console.error(error);
     }
+    reproduccion?.alTerminar?.();
     if (activo === boton) marcar(null);
   });
 }

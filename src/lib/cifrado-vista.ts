@@ -75,6 +75,23 @@ function rasgueo(forma: FormaCelda | null, inicio: number, duracion: number): Ev
 
 export const secuenciaAcorde = (forma: FormaCelda | null) => rasgueo(forma, 0, 2.5);
 
+/** Cuándo empieza y acaba cada acorde del cifrado (segundos), con el mismo reparto que secuenciaCifrado. */
+export function tiemposCifrado(cmb: Cmb, bpm: number, desde = 0): { compas: number; celda: number; inicio: number; fin: number }[] {
+  const pulso = 60 / bpm;
+  const tiempos = tiemposPorCompas(cmb);
+  const resultado: { compas: number; celda: number; inicio: number; fin: number }[] = [];
+  let t = 0;
+  cmb.bars.forEach((compas, i) => {
+    if (i < desde) return;
+    const porCelda = (tiempos[i] * pulso) / Math.max(1, compas.cells.length);
+    compas.cells.forEach((_, j) => {
+      resultado.push({ compas: i, celda: j, inicio: t, fin: t + porCelda });
+      t += porCelda;
+    });
+  });
+  return resultado;
+}
+
 /**
  * El cifrado entero a un tempo, desde el compás `desde`: cada compás se reparte
  * a partes iguales entre sus acordes. Las repeticiones no se tocan.

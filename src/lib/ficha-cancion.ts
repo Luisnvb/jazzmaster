@@ -3,7 +3,7 @@
 import { aplicarCambios, type Cambios, type Voicing } from './acordes-datos.ts';
 import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from './almacen.ts';
 import { cancionACmb, claveCancion as clave, cmbACancion, nombreArchivo, type Cancion } from './cancion.ts';
-import { analizarCelda, htmlCifrado, secuenciaAcorde, secuenciaCifrado } from './cifrado-vista.ts';
+import { analizarCelda, htmlCifrado, secuenciaAcorde, secuenciaCifrado, tiemposCifrado } from './cifrado-vista.ts';
 import { conectarAudio } from './cliente.ts';
 import {
   clonar,
@@ -167,7 +167,8 @@ export function iniciarFicha() {
          ${modificada ? '<button type="button" class="boton peligro" data-accion="restaurar">Descartar cambios</button>' : ''}
          ${local ? '<button type="button" class="boton peligro" data-accion="eliminar">Borrar canción</button>' : ''}`
       : `<button type="button" class="boton" data-accion="editar">Editar</button>
-         ${cmb()?.bars.length ? `<button type="button" class="boton" data-audio="cifrado" aria-pressed="false">▶ Tocar</button>` : ''}
+         ${cmb()?.bars.length ? `<button type="button" class="boton" data-audio="cifrado" aria-pressed="false">▶ Tocar</button>
+            <button type="button" class="boton detener" data-detener>■ Detener</button>` : ''}
          ${cmb()?.bars.length ? `<button type="button" class="boton" data-accion="diagramas" aria-pressed="${diagramas}">Diagramas</button>` : ''}`;
     aviso.hidden = !(local || modificada);
     aviso.textContent = local
@@ -710,7 +711,22 @@ export function iniciarFicha() {
       pos ? analizarCelda(c.bars[pos.compas].cells[pos.celda], c, personales).forma : null;
     if (boton.dataset.audio === 'acorde') return secuenciaAcorde(forma(acordeMenu));
     if (boton.dataset.audio === 'celda') return secuenciaAcorde(forma(seleccion));
-    return secuenciaCifrado(c, cancion.tempo ?? c.tempoBpm ?? 100, personales);
+    const bpm = cancion.tempo ?? c.tempoBpm ?? 100;
+    // Marca el acorde que suena (sin desplazar la página).
+    const tramos = tiemposCifrado(c, bpm);
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      zonaCifrado.querySelector('.celda.sonando-ahora')?.classList.remove('sonando-ahora');
+      const tramo = tramos[k];
+      if (tramo) zonaCifrado.querySelector(`.celda[data-compas="${tramo.compas}"][data-celda="${tramo.celda}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos: secuenciaCifrado(c, bpm, personales),
+      alProgresar: (t) => marcar(tramos.findIndex((x) => t >= x.inicio && t < x.fin)),
+      alTerminar: () => marcar(-1),
+    };
   });
 
   // Si no hay nada que editar ni mostrar, se entra directamente a editar una canción recién creada.

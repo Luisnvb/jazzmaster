@@ -223,9 +223,9 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Navegación arriba:** mover los enlaces de secciones a la parte superior (sustituye a la barra inferior de §3).
 - [x] **Acordes:** quitar la ayuda "Los grados se rellenan solos al elegir un traste; puedes cambiar la ortografía (p. ej. #9 en vez de b3)."
 - [x] **Escalas/Acordes:** completar la frase "Dominante alterado (más tensiones b9, …". Se cortaba porque en YAML " #" abre un comentario; ahora va entre comillas.
-- [ ] **Repertorio:** botón para detener la reproducción.
+- [x] **Repertorio:** botón para detener la reproducción.
 - [ ] **Todas las secciones:** botón para eliminar un registro.
-- [ ] **Repertorio:** marcar el acorde que suena durante la reproducción, sin desplazamiento automático.
+- [x] **Repertorio:** marcar el acorde que suena durante la reproducción, sin desplazamiento automático.
 - [ ] **Acordes:** añadir grupos Sus y Aug.
 - [ ] **Progresiones (sección nueva):** progresiones básicas del jazz y un editor.
 - [ ] **Patrones (sección nueva):** patrones básicos para practicar escalas y arpegios.

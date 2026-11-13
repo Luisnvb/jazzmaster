@@ -64,9 +64,11 @@ export function detener() {
 /**
  * Reproduce una secuencia (sustituye a la anterior). La promesa se resuelve
  * cuando termina de sonar, o antes si otra reproducción la interrumpe.
+ * `alProgresar` recibe, en cada fotograma mientras suena, los segundos
+ * transcurridos desde el inicio de la secuencia.
  * Debe llamarse desde un gesto del usuario (clic) la primera vez.
  */
-export async function tocar(eventos: Evento[]): Promise<void> {
+export async function tocar(eventos: Evento[], alProgresar?: (segundos: number) => void): Promise<void> {
   detener();
   const miTurno = turno;
   const ctx = obtenerContexto();
@@ -93,6 +95,15 @@ export async function tocar(eventos: Evento[]): Promise<void> {
     sonando.push({ fuente, ganancia });
     fin = Math.max(fin, final);
   });
+
+  if (alProgresar) {
+    const fotograma = () => {
+      if (miTurno !== turno || ctx.currentTime >= fin) return;
+      alProgresar(ctx.currentTime - t0);
+      requestAnimationFrame(fotograma);
+    };
+    requestAnimationFrame(fotograma);
+  }
 
   await new Promise<void>((resolver) => {
     const comprobar = () => (miTurno !== turno || ctx.currentTime >= fin ? resolver() : setTimeout(comprobar, 100));
