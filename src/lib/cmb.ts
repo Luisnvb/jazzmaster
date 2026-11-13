@@ -226,6 +226,11 @@ export function simboloCelda(celda: CeldaCmb, grados: readonly string[] = [], se
   switch (celda.type) {
     case 'Major': {
       const nueve = tiene(2);
+      // Aumentado: #5 sin 5 justa (C+, Cmaj7#5).
+      if (tiene(8) && !tiene(7)) {
+        calidad = tiene(11) ? 'maj7#5' : '+';
+        break;
+      }
       if (tiene(11)) calidad = nueve ? 'maj9' : 'maj7';
       else if (tiene(9)) calidad = nueve ? '6/9' : '6';
       else calidad = conForma ? (nueve ? 'add9' : '') : 'maj7';
@@ -274,11 +279,12 @@ export function grupoDeCelda(celda: CeldaCmb, grados: readonly string[] = []): s
   const s = semitonosPresentes(grados);
   switch (celda.type) {
     case 'Major':
-      return 'maj7';
+      return s.has(8) && !s.has(7) ? 'aug' : 'maj7';
     case 'Minor':
       return s.has(11) && !s.has(10) ? 'mmaj7' : 'm7';
     case 'Dominant':
-      return [1, 3, 8].some((n) => s.has(n) && !(n === 3 && !s.has(4))) ? 'alt7' : 'dom7';
+      if ([1, 3, 8].some((n) => s.has(n) && !(n === 3 && !s.has(4)))) return 'alt7';
+      return s.has(5) && !s.has(4) ? 'sus' : 'dom7';
     case 'Half-Diminished':
       return 'm7b5';
     case 'Diminished':
@@ -294,7 +300,9 @@ export const TIPO_DE_GRUPO: Record<string, Tipo> = {
   m7: 'Minor',
   mmaj7: 'Minor',
   dom7: 'Dominant',
+  sus: 'Dominant',
   alt7: 'Dominant',
+  aug: 'Major',
   m7b5: 'Half-Diminished',
   dim7: 'Diminished',
 };
