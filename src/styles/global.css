@@ -81,9 +81,9 @@ h3 { font-weight: 700; letter-spacing: -0.01em; }
 
 .suave { color: var(--texto-suave); }
 
-/* Etiqueta pequeña en monoespaciada (el "kicker" de las portadas). */
+/* Etiqueta pequeña (el "kicker" de las portadas). */
 .kicker {
-  font-family: var(--fuente-mono);
+  font-family: var(--fuente);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -167,7 +167,7 @@ code { font-family: var(--fuente-mono); font-size: 0.9em; }
 
 /* Formularios */
 label {
-  font-family: var(--fuente-mono);
+  font-family: var(--fuente);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
