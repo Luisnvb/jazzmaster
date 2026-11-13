@@ -1,0 +1,361 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import SelectorTonica from '../components/SelectorTonica.astro';
+import Tempo from '../components/Tempo.astro';
+import { porOrden } from '../lib/orden.ts';
+import { SUFIJOS } from '../lib/progresiones.ts';
+
+const progresiones = porOrden(await getCollection('progresiones')).map(({ id, data }) => ({
+  id,
+  nombre: data.nombre,
+  ...(data.descripcion ? { descripcion: data.descripcion } : {}),
+  ...(data.pulsos ? { pulsos: data.pulsos } : {}),
+  compases: data.compases,
+}));
+// JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
+const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
+---
+
+<Base titulo="Progresiones">
+  <h1>Progresiones</h1>
+  <SelectorTonica clave="progresiones" />
+  <Tempo clave="progresiones" inicial={120} />
+
+  <div class="barra-edicion">
+    <button type="button" class="boton" data-modo-edicion aria-pressed="false">Editar</button>
+    <button type="button" class="boton principal" data-nueva>+ Nueva progresión</button>
+    <span class="suave aviso-local" data-aviso-local hidden>Con cambios guardados en este navegador.</span>
+  </div>
+  <div class="herramientas" data-herramientas hidden>
+    <button type="button" class="boton" data-exportar>Exportar YAML</button>
+    <button type="button" class="boton peligro" data-restaurar>Descartar cambios</button>
+    <p class="suave ayuda">
+      Los cambios se guardan en este navegador. Para llevarlos al repositorio, exporta y sustituye
+      <code>src/data/progresiones.yaml</code> por el archivo descargado.
+    </p>
+  </div>
+
+  <div class="lista-progresiones" data-lista></div>
+
+  <dialog class="dialogo" data-dialogo>
+    <form method="dialog" data-formulario>
+      <h2 data-dialogo-titulo>Progresión</h2>
+      <div class="campos">
+        <label>Nombre <input name="nombre" required placeholder="ii–V–I mayor" /></label>
+        <label>Pulsos por compás <input name="pulsos" type="number" min="1" max="12" value="4" /></label>
+      </div>
+      <label class="bloque">Descripción <input name="descripcion" placeholder="Opcional" /></label>
+      <label class="bloque"
+        >Compases (separados por |; acordes del mismo compás separados por espacios)
+        <textarea name="compases" rows="3" placeholder="IIm7 V7 | Imaj7 | VIm7 | IIm7 V7"></textarea>
+      </label>
+      <p class="suave ayuda">
+        Grado en romanos (I…VII, con b o # delante) y calidad: {SUFIJOS.join(' · ')}.
+      </p>
+      <div class="vista-previa" data-vista-previa></div>
+      <ul class="errores" data-errores></ul>
+      <div class="acciones">
+        <button type="button" class="boton" data-cancelar>Cancelar</button>
+        <button type="submit" class="boton principal" value="guardar">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="application/json" id="datos-progresiones" set:html={datos} />
+</Base>
+
+<script>
+  import { borrar, descargar, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
+  import { conectarAudio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import {
+    analizarProgresion,
+    aplicarCambiosProgresiones,
+    compasesDeTexto,
+    progresionesAYaml,
+    secuenciaProgresion,
+    simboloEn,
+    textoDeCompases,
+    type CambiosProgresiones,
+    type Progresion,
+  } from '../lib/progresiones.ts';
+
+  const CLAVE = 'progresiones:cambios';
+  const base: Progresion[] = JSON.parse(document.getElementById('datos-progresiones')!.textContent!);
+
+  let cambios: CambiosProgresiones = leerJSON<CambiosProgresiones>(CLAVE) ?? {};
+  let lista = aplicarCambiosProgresiones(base, cambios);
+  let tonicaActual = 'C';
+  let editando = false;
+  const tempo = conectarTempo();
+
+  const contenedor = document.querySelector<HTMLElement>('[data-lista]')!;
+  const avisoLocal = document.querySelector<HTMLElement>('[data-aviso-local]')!;
+  const herramientas = document.querySelector<HTMLElement>('[data-herramientas]')!;
+  const botonEdicion = document.querySelector<HTMLButtonElement>('[data-modo-edicion]')!;
+
+  const porId = (id: string) => lista.find((p) => p.id === id)!;
+
+  function htmlCompases(p: Progresion, tonica: string): string {
+    const compases = analizarProgresion(p.compases);
+    return `<div class="compases">${compases
+      .map(
+        (acordes, i) =>
+          `<div class="compas">${acordes
+            .map(
+              (a, j) =>
+                `<span class="acorde" data-compas="${i}" data-acorde="${j}"><span class="simbolo">${esc(simboloEn(tonica, a))}</span><span class="grado">${esc(a.texto)}</span></span>`,
+            )
+            .join('')}</div>`,
+      )
+      .join('')}</div>`;
+  }
+
+  function tarjeta(p: Progresion): string {
+    let cuerpo: string;
+    try {
+      cuerpo = htmlCompases(p, tonicaActual);
+    } catch (error) {
+      cuerpo = `<p class="errores">${esc((error as Error).message)}</p>`;
+    }
+    return `
+      <article class="tarjeta progresion" data-id="${esc(p.id)}">
+        <header>
+          <h2>${esc(p.nombre)}</h2>
+          ${p.descripcion ? `<p class="suave">${esc(p.descripcion)}</p>` : ''}
+        </header>
+        ${cuerpo}
+        <div class="botones-audio">
+          <button type="button" data-audio="progresion" aria-pressed="false">▶ Tocar</button>
+          <button type="button" data-detener>■ Detener</button>
+          ${editando ? '<button type="button" data-editar>Editar</button><button type="button" data-duplicar>Duplicar</button>' : ''}
+          <button type="button" class="eliminar" data-borrar>Eliminar</button>
+        </div>
+      </article>`;
+  }
+
+  function pintar() {
+    contenedor.innerHTML = lista.length ? lista.map(tarjeta).join('') : '<p class="suave">No hay progresiones.</p>';
+    avisoLocal.hidden = Object.keys(cambios).length === 0;
+    herramientas.hidden = !editando;
+    botonEdicion.setAttribute('aria-pressed', String(editando));
+  }
+
+  function guardar(nuevos: CambiosProgresiones) {
+    cambios = nuevos;
+    if (Object.keys(cambios).length) guardarJSON(CLAVE, cambios);
+    else borrar(CLAVE);
+    lista = aplicarCambiosProgresiones(base, cambios);
+    pintar();
+  }
+
+  // --- Diálogo de edición ---------------------------------------------------
+
+  const dialogo = document.querySelector<HTMLDialogElement>('[data-dialogo]')!;
+  const formulario = document.querySelector<HTMLFormElement>('[data-formulario]')!;
+  const errores = document.querySelector<HTMLElement>('[data-errores]')!;
+  const vistaPrevia = document.querySelector<HTMLElement>('[data-vista-previa]')!;
+  const campo = (nombre: string) => formulario.elements.namedItem(nombre) as HTMLInputElement | HTMLTextAreaElement;
+  let editandoId: string | null = null;
+
+  function leerFormulario(): Progresion {
+    const pulsos = Number(campo('pulsos').value) || 4;
+    const descripcion = campo('descripcion').value.trim();
+    return {
+      id: editandoId ?? '',
+      nombre: campo('nombre').value.trim(),
+      ...(descripcion ? { descripcion } : {}),
+      ...(pulsos !== 4 ? { pulsos } : {}),
+      compases: compasesDeTexto(campo('compases').value),
+    };
+  }
+
+  function comprobar(): string[] {
+    const p = leerFormulario();
+    const lista: string[] = [];
+    if (!p.nombre) lista.push('Falta el nombre.');
+    try {
+      vistaPrevia.innerHTML = htmlCompases(p, tonicaActual);
+    } catch (error) {
+      vistaPrevia.innerHTML = '';
+      lista.push((error as Error).message);
+    }
+    return lista;
+  }
+
+  function abrir(p: Progresion, id: string | null) {
+    editandoId = id;
+    document.querySelector('[data-dialogo-titulo]')!.textContent = id ? 'Editar progresión' : 'Nueva progresión';
+    campo('nombre').value = p.nombre;
+    campo('descripcion').value = p.descripcion ?? '';
+    campo('pulsos').value = String(p.pulsos ?? 4);
+    campo('compases').value = textoDeCompases(p.compases);
+    errores.innerHTML = '';
+    comprobar();
+    dialogo.showModal();
+  }
+
+  formulario.addEventListener('input', () => {
+    comprobar();
+    errores.innerHTML = '';
+  });
+
+  formulario.addEventListener('submit', (e) => {
+    const lista = comprobar();
+    if (lista.length) {
+      e.preventDefault();
+      errores.innerHTML = lista.map((m) => `<li>${esc(m)}</li>`).join('');
+      return;
+    }
+    const p = leerFormulario();
+    const id = editandoId ?? `local-${Date.now().toString(36)}`;
+    guardar({ ...cambios, [id]: { ...p, id } });
+  });
+
+  document.querySelector('[data-cancelar]')!.addEventListener('click', () => dialogo.close());
+
+  // --- Botones ----------------------------------------------------------------
+
+  document.addEventListener('click', (e) => {
+    const el = (e.target as Element).closest<HTMLElement>('button');
+    if (!el) return;
+    const id = el.closest<HTMLElement>('[data-id]')?.dataset.id;
+    if (el.hasAttribute('data-modo-edicion')) {
+      editando = !editando;
+      pintar();
+    } else if (el.hasAttribute('data-nueva')) {
+      abrir({ id: '', nombre: '', compases: [] }, null);
+    } else if (el.hasAttribute('data-editar') && id) {
+      abrir(porId(id), id);
+    } else if (el.hasAttribute('data-duplicar') && id) {
+      abrir({ ...porId(id), nombre: `${porId(id).nombre} (copia)` }, null);
+    } else if (el.hasAttribute('data-borrar') && id) {
+      if (!confirm(`¿Eliminar la progresión «${porId(id).nombre}»?`)) return;
+      const nuevos = { ...cambios };
+      if (base.some((p) => p.id === id)) nuevos[id] = null;
+      else delete nuevos[id];
+      guardar(nuevos);
+    } else if (el.hasAttribute('data-exportar')) {
+      descargar('progresiones.yaml', progresionesAYaml(lista), 'text/yaml');
+    } else if (el.hasAttribute('data-restaurar')) {
+      if (confirm('¿Descartar todos los cambios hechos en este navegador y volver a las progresiones del repositorio?')) guardar({});
+    }
+  });
+
+  conectarAudio((boton) => {
+    const tarjetaEl = boton.closest<HTMLElement>('[data-id]')!;
+    const p = porId(tarjetaEl.dataset.id!);
+    const { eventos, tramos } = secuenciaProgresion(tonicaActual, analizarProgresion(p.compases), tempo(), p.pulsos ?? 4);
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      tarjetaEl.querySelector('.acorde.sonando-ahora')?.classList.remove('sonando-ahora');
+      const t = tramos[k];
+      if (t) tarjetaEl.querySelector(`.acorde[data-compas="${t.compas}"][data-acorde="${t.acorde}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      alProgresar: (s) => marcar(tramos.findIndex((t) => s >= t.inicio && s < t.fin)),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((tonica) => {
+    tonicaActual = tonica;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .barra-edicion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+  .herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0 0;
+  }
+  .ayuda {
+    flex-basis: 100%;
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+  }
+  .aviso-local {
+    font-size: 0.85rem;
+  }
+  .lista-progresiones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 36rem), 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  :global(.progresion header h2) {
+    margin: 0;
+    font-size: 2.2rem;
+  }
+  :global(.progresion header p) {
+    margin: 0.4rem 0 1rem;
+  }
+  :global(.compases) {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-left: 2px solid var(--texto-suave);
+  }
+  :global(.compases .compas) {
+    display: flex;
+    min-height: 4.5rem;
+    border-right: 2px solid var(--texto-suave);
+    border-bottom: 1px solid var(--borde);
+  }
+  :global(.compases .acorde) {
+    flex: 1 1 0;
+    min-width: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0.15rem;
+    margin: 0.2rem;
+    padding: 0.4rem 0.2rem;
+    border-radius: var(--radio);
+  }
+  :global(.compases .simbolo) {
+    font-size: 1.3rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  :global(.compases .grado) {
+    font-family: var(--fuente-mono);
+    font-size: 0.75rem;
+    color: var(--acento);
+  }
+  :global(.compases .acorde.sonando-ahora) {
+    background: var(--acento);
+    color: var(--sobre-acento);
+  }
+  :global(.compases .acorde.sonando-ahora .grado) {
+    color: var(--sobre-acento);
+  }
+  :global(html:not(.reproduciendo) [data-detener]) {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .campos {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0.75rem;
+  }
+  .vista-previa {
+    margin: 0.75rem 0;
+  }
+  .errores {
+    color: var(--mal);
+    font-weight: 600;
+    padding-left: 1.25rem;
+  }
+</style>

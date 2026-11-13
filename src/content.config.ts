@@ -3,6 +3,7 @@ import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { parse } from 'yaml';
 import { parseGrado, parseNota } from './lib/teoria.ts';
+import { parseAcordeGrado } from './lib/progresiones.ts';
 
 // Astro devuelve las entradas ordenadas por id; guardamos la posición en el
 // archivo para respetar el orden escrito a mano (ver lib/orden.ts).
@@ -80,6 +81,29 @@ const acordes = defineCollection({
     }),
 });
 
+const acordeGrado = z.string().superRefine((compas, ctx) => {
+  const acordes = compas.trim().split(/\s+/).filter(Boolean);
+  if (acordes.length === 0) ctx.addIssue({ code: 'custom', message: 'Compás vacío.' });
+  for (const a of acordes) {
+    try {
+      parseAcordeGrado(a);
+    } catch (error) {
+      ctx.addIssue({ code: 'custom', message: (error as Error).message });
+    }
+  }
+});
+
+const progresiones = defineCollection({
+  loader: archivo('src/data/progresiones.yaml'),
+  schema: z.object({
+    orden,
+    nombre: z.string(),
+    descripcion: z.string().optional(),
+    pulsos: z.number().int().min(1).max(12).optional(),
+    compases: z.array(acordeGrado).min(1),
+  }),
+});
+
 const repertorio = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: 'src/content/repertorio' }),
   schema: z.object({
@@ -112,4 +136,4 @@ const cifrados = defineCollection({
   }),
 });
 
-export const collections = { grupos, intervalos, escalas, acordes, repertorio, cifrados };
+export const collections = { grupos, intervalos, escalas, acordes, progresiones, repertorio, cifrados };

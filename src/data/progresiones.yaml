@@ -1,0 +1,68 @@
+# Progresiones en grados romanos. La web las transporta a la tónica elegida.
+#
+#   compases:  un texto por compás; si hay varios acordes, separados por espacios.
+#              Grado (I…VII, con b o # delante) + calidad: maj7, 6, m7, m6, mMaj7, 7,
+#              9, 13, 7sus4, 7alt, 7b9, 7#9, 7#5, +, maj7#5, m7b5 (o ø7), °7…
+#   pulsos:    opcional, pulsos por compás (4 por defecto).
+#
+# Ojo: los textos con # van entre comillas (en YAML, " #" empieza un comentario).
+
+- id: ii-v-i-mayor
+  nombre: 'ii–V–I mayor'
+  descripcion: 'La cadencia básica del jazz.'
+  compases: ['IIm7', 'V7', 'Imaj7', 'Imaj7']
+
+- id: ii-v-i-menor
+  nombre: 'ii–V–i menor'
+  descripcion: 'Semidisminuido, dominante alterado y tónica menor.'
+  compases: ['IIm7b5', 'V7alt', 'Im6', 'Im6']
+
+- id: ii-v-corto
+  nombre: 'ii–V–I en dos compases'
+  descripcion: 'El ii y el V comparten compás, como en tantos standards.'
+  compases: ['IIm7 V7', 'Imaj7']
+
+- id: turnaround
+  nombre: 'Turnaround I–vi–ii–V'
+  descripcion: 'Para volver al principio de la forma.'
+  compases: ['Imaj7 VIm7', 'IIm7 V7']
+
+- id: turnaround-dominantes
+  nombre: 'Turnaround III–VI–II–V'
+  descripcion: 'Turnaround con dominantes secundarios.'
+  compases: ['IIIm7 VI7', 'IIm7 V7', 'Imaj7', 'Imaj7']
+
+- id: cadena-dominantes
+  nombre: 'Cadena de dominantes'
+  descripcion: 'Dominantes encadenados por quintas hasta la tónica.'
+  compases: ['III7', 'VI7', 'II7', 'V7', 'Imaj7']
+
+- id: sustitucion-tritonal
+  nombre: 'Sustitución tritonal'
+  descripcion: 'El V7 se cambia por el dominante a un tritono: bII7.'
+  compases: ['IIm7', 'bII7', 'Imaj7', 'Imaj7']
+
+- id: backdoor
+  nombre: 'ii–V por la puerta de atrás'
+  descripcion: 'IVm7 y bVII7 resolviendo a la tónica.'
+  compases: ['IVm7', 'bVII7', 'Imaj7', 'Imaj7']
+
+- id: blues-jazz
+  nombre: 'Blues de jazz'
+  descripcion: 'Blues de 12 compases con ii–V y disminuido de paso.'
+  compases: ['I7', 'IV7', 'I7', 'Vm7 I7', 'IV7', '#IV°7', 'I7', 'VI7alt', 'IIm7', 'V7', 'I7 VI7', 'IIm7 V7']
+
+- id: blues-menor
+  nombre: 'Blues menor'
+  descripcion: 'Blues menor de 12 compases.'
+  compases: ['Im7', 'Im7', 'Im7', 'Im7', 'IVm7', 'IVm7', 'Im7', 'Im7', 'bVI7', 'V7alt', 'Im7', 'V7alt']
+
+- id: rhythm-changes-a
+  nombre: 'Rhythm changes (A)'
+  descripcion: 'La A de I Got Rhythm.'
+  compases: ['Imaj7 VIm7', 'IIm7 V7', 'Imaj7 VIm7', 'IIm7 V7', 'Imaj7 I7', 'IVmaj7 #IV°7', 'IIIm7 VI7', 'IIm7 V7']
+
+- id: rhythm-changes-b
+  nombre: 'Rhythm changes (puente)'
+  descripcion: 'Dominantes por quintas, dos compases cada uno.'
+  compases: ['III7', 'III7', 'VI7', 'VI7', 'II7', 'II7', 'V7', 'V7']

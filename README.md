@@ -23,6 +23,7 @@ Todo el contenido está en archivos de datos; no hace falta tocar el código.
 | Escalas | `src/data/escalas.yaml` |
 | Voicings | `src/data/acordes.yaml` (formato explicado al principio del archivo) |
 | Tipos de acorde | `src/data/grupos.yaml` |
+| Progresiones | `src/data/progresiones.yaml` (grados romanos; formato al principio del archivo) |
 | Canciones | `src/content/repertorio/*.md` (ficha y letra) — copia `_plantilla.md` |
 | Cifrados | `src/content/repertorio/<canción>.cmb.json` (formato del [Chord Melody Builder](https://www.noeljohnston.com/chord-melody-builder.html)) |
 
