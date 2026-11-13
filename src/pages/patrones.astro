@@ -50,12 +50,12 @@ const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u00
       >Sonido
       <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
     </label>
-  </SelectorTonica>
-  <Tempo clave="patrones" inicial={90} />
-
-  <div class="eleccion">
+    <Tempo clave="patrones" inicial={90} />
     <label class="casilla"><input type="checkbox" data-metronomo /> Metrónomo</label>
     <button type="button" class="boton" data-bucle aria-pressed="false" title="Al acabar, vuelve a empezar">⟲ Bucle</button>
+  </SelectorTonica>
+
+  <div class="eleccion">
     <button type="button" class="boton" data-restaurar-eliminados hidden>Restaurar eliminados</button>
   </div>
 
@@ -132,6 +132,7 @@ const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u00
         <ol class="grupos">${chips}</ol>
         <div class="botones-audio">
           <button type="button" data-audio="patron" aria-pressed="false">▶ Tocar</button>
+          <button type="button" data-audio="continuo" aria-pressed="false" title="Se repite sin parar hasta pulsar Detener">∞ Continuo</button>
           <button type="button" data-detener>■ Detener</button>
           <button type="button" class="eliminar" data-eliminar>Eliminar</button>
         </div>
@@ -187,7 +188,7 @@ const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u00
     return {
       eventos,
       instrumento: selInstrumento.value as Instrumento,
-      bucle: enBucle,
+      bucle: boton.dataset.audio === 'continuo' ? () => true : enBucle,
       duracion,
       alProgresar: (s) => marcar(tramos.findIndex((t) => s >= t.inicio && s < t.fin)),
       alTerminar: () => marcar(-1),

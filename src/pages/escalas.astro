@@ -25,8 +25,8 @@ const tonica = 'C';
     <label>Sonido
       <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
     </label>
+    <Tempo clave="escalas" />
   </SelectorTonica>
-  <Tempo clave="escalas" />
   <Buscador placeholder="Buscar escala…" />
   <button type="button" class="boton" data-restaurar-eliminados hidden>Restaurar eliminados</button>
 

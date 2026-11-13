@@ -39,8 +39,8 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     <label>Sonido
       <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
     </label>
+    <Tempo clave="acordes" />
   </SelectorTonica>
-  <Tempo clave="acordes" />
 
   <div class="barra-edicion">
     <button type="button" class="boton" data-modo-edicion aria-pressed="false">Editar</button>
