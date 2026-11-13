@@ -221,8 +221,8 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Cifrados:** incorporar los `.cmb.json` de la raíz para completar el repertorio (hasta ahora solo había el de *How Insensitive*). Movidos a `src/content/repertorio/<id>.cmb.json`; el compás de la ficha, si falta en el .md, se toma del cifrado.
 - [x] **Escritorio en vez de móvil:** se rectifica el principio "pensada primero para móvil" (§1). El uso principal será un monitor de escritorio de 27". Optimizar para ese formato y rehacer los estilos inspirándose en [The Verge](https://www.theverge.com/).
 - [x] **Navegación arriba:** mover los enlaces de secciones a la parte superior (sustituye a la barra inferior de §3).
-- [ ] **Acordes:** quitar la ayuda "Los grados se rellenan solos al elegir un traste; puedes cambiar la ortografía (p. ej. #9 en vez de b3)."
-- [ ] **Escalas/Acordes:** completar la frase "Dominante alterado (más tensiones b9, …".
+- [x] **Acordes:** quitar la ayuda "Los grados se rellenan solos al elegir un traste; puedes cambiar la ortografía (p. ej. #9 en vez de b3)."
+- [x] **Escalas/Acordes:** completar la frase "Dominante alterado (más tensiones b9, …". Se cortaba porque en YAML " #" abre un comentario; ahora va entre comillas.
 - [ ] **Repertorio:** botón para detener la reproducción.
 - [ ] **Todas las secciones:** botón para eliminar un registro.
 - [ ] **Repertorio:** marcar el acorde que suena durante la reproducción, sin desplazamiento automático.
