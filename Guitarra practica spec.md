@@ -204,7 +204,7 @@ Se propone **un archivo Markdown por canción**: los metadatos y el cifrado van 
 - Un módulo de teoría compartido que, a partir de una tónica y una fórmula de grados, calcule las notas con la ortografía correcta. Lo usan escalas, arpegios, acordes e intervalos.
 - PWA con service worker para funcionar sin conexión.
 - Despliegue gratuito (GitHub Pages, Netlify o Cloudflare Pages), con acceso privado si se quiere.
-- Diseño inspirado en The Verge: siempre oscuro, titulares condensados (Anton), texto en Space Grotesk, etiquetas en JetBrains Mono y acento menta/violeta. Fuentes alojadas en el sitio (fontsource) para funcionar sin conexión.
+- Diseño inspirado en The Verge en versión clara: fondo blanco, titulares condensados (Anton) de tamaño contenido, texto en Space Grotesk, etiquetas en JetBrains Mono y acento violeta. Fuentes alojadas en el sitio (fontsource) para funcionar sin conexión.
 
 ## 10. Fases
 
@@ -231,6 +231,13 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Progresiones (sección nueva):** progresiones básicas del jazz y un editor. Datos en `src/data/progresiones.yaml` (grados romanos, p. ej. `IIm7 V7 | Imaj7`), lógica en `lib/progresiones.ts`. La página transporta a la tónica elegida, toca con marca del acorde que suena y permite crear, editar, duplicar, eliminar y exportar a YAML (cambios guardados en el navegador, como en Acordes).
 - [x] **Patrones (sección nueva):** patrones básicos para practicar escalas y arpegios. Datos en `src/data/patrones.yaml` (una «célula» de posiciones que se repite desde cada nota, con aproximaciones cromáticas `0-`/`0+`), lógica en `lib/patrones.ts`. Se elige escala y arpegio; suena en corcheas, sube y baja, con marca del grupo que suena.
 - [x] **Orden de secciones:** invertir el orden (Repertorio, Acordes, Escalas, …) y agrupar Intervalos y Progresiones en una sección múltiple ampliable. Orden: Repertorio, Acordes, Escalas, Patrones y Teoría (desplegable en la cabecera, página propia en `/teoria/` y barra con sus partes). Las direcciones de Intervalos y Progresiones no cambian.
+
+## 10 ter. Tareas pendientes (segunda iteración)
+
+- [x] **Estilo claro:** fondo blanco, títulos más pequeños y secciones algo más compactas.
+- [ ] **Cifrado centrado** cuando el tema no tiene letra.
+- [ ] **Sonido del cifrado:** selector de instrumento, con algún pad que suene de forma continua cuando el acorde se repite.
+- [ ] **Repertorio:** metrónomo opcional y selector de tempo.
 
 ## 11. Fuera de alcance
 - Visualizador de escalas en el mástil.

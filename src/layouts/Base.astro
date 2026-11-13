@@ -21,7 +21,7 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content="#131313" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href={archivo('manifest.webmanifest')} />
     <link rel="icon" href={archivo('favicon.png')} type="image/png" />
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
@@ -91,9 +91,9 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     position: sticky;
     top: 0;
     z-index: 10;
-    background: #000;
-    color: #fff;
-    border-bottom: 1px solid #2a2a2a;
+    background: var(--fondo);
+    color: var(--texto);
+    border-bottom: 1px solid var(--borde);
   }
   .cabecera-dentro {
     max-width: var(--ancho);
@@ -106,14 +106,14 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
   }
   .logo {
     font-family: var(--fuente-titulo);
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     line-height: 1;
     text-transform: uppercase;
-    color: #fff;
+    color: var(--texto);
     text-decoration: none;
   }
   .logo span {
-    color: #3cffd0;
+    color: var(--acento);
   }
   nav[aria-label='Secciones'] {
     display: flex;
@@ -132,18 +132,18 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #bdbdbd;
+    color: var(--texto-suave);
     text-decoration: none;
     white-space: nowrap;
   }
   nav[aria-label='Secciones'] > a:hover,
   .multiple > a:hover {
-    color: #fff;
+    color: var(--texto);
   }
   nav[aria-label='Secciones'] > a[aria-current='page'],
   .multiple > a[aria-current='page'] {
-    color: #fff;
-    border-bottom-color: #3cffd0;
+    color: var(--texto);
+    border-bottom-color: var(--acento);
   }
   .multiple > a span {
     margin-left: 0.35rem;
@@ -163,9 +163,10 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     margin: 0;
     padding: 0.5rem 0;
     list-style: none;
-    background: #000;
-    border: 1px solid #2a2a2a;
-    border-top: 0.25rem solid #3cffd0;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-top: 0.25rem solid var(--acento);
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.08);
     display: none;
   }
   .multiple:hover .desplegable,
@@ -180,21 +181,21 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #bdbdbd;
+    color: var(--texto-suave);
     text-decoration: none;
   }
   .desplegable a:hover {
-    color: #3cffd0;
-    background: #141414;
+    color: var(--acento);
+    background: var(--superficie);
   }
 
   /* Partes de la sección múltiple actual */
   .partes {
-    background: #0b0b0b;
-    border-top: 1px solid #2a2a2a;
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borde);
   }
   .partes .cabecera-dentro {
-    height: 2.75rem;
+    height: 2.5rem;
     gap: 2rem;
   }
   .partes a {
@@ -203,14 +204,14 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #9a9a9a;
+    color: var(--texto-suave);
     text-decoration: none;
   }
   .partes a:hover,
   .partes a[aria-current='page'] {
-    color: #3cffd0;
+    color: var(--acento);
   }
   .partes .partes-titulo {
-    color: #fff;
+    color: var(--texto);
   }
 </style>

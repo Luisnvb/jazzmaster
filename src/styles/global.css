@@ -1,5 +1,5 @@
-/* Diseño de escritorio (monitor de 27") inspirado en The Verge: fondo casi negro,
-   titulares condensados enormes, etiquetas en monoespaciada y acentos menta/violeta.
+/* Diseño de escritorio (monitor de 27") inspirado en The Verge, en versión clara:
+   fondo blanco, titulares condensados, etiquetas en monoespaciada y acento violeta.
    Fuentes alojadas en el propio sitio (fontsource) para que funcione sin conexión. */
 @import '@fontsource/anton/latin-400.css';
 @import '@fontsource/anton/latin-ext-400.css';
@@ -8,24 +8,24 @@
 @import '@fontsource/jetbrains-mono/latin-700.css';
 
 :root {
-  color-scheme: dark;
-  --fondo: #131313;
-  --superficie: #1e1e1e;
-  --superficie-2: #262626;
-  --texto: #ffffff;
-  --texto-suave: #a6a6a6;
-  --acento: #3cffd0;
-  --sobre-acento: #000000;
+  color-scheme: light;
+  --fondo: #ffffff;
+  --superficie: #f6f6f4;
+  --superficie-2: #ececea;
+  --texto: #111111;
+  --texto-suave: #5e5e5e;
+  --acento: #5200ff;
+  --sobre-acento: #ffffff;
   --violeta: #5200ff;
-  --borde: #343434;
-  --bien: #3cffd0;
-  --mal: #ff4f6d;
+  --borde: #dcdcd8;
+  --bien: #00875a;
+  --mal: #d6002f;
 
   --fuente: 'Space Grotesk Variable', system-ui, 'Segoe UI', sans-serif;
   --fuente-titulo: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
   --fuente-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
-  --cabecera-alto: 4.25rem;
+  --cabecera-alto: 3.5rem;
   --margen: clamp(1rem, 3vw, 4rem);
   --ancho: 150rem;
   --radio: 0.25rem;
@@ -35,7 +35,7 @@
   font-size: clamp(16px, 0.3vw + 11.5px, 20px);
 }
 
-/* Siempre oscuro, como The Verge: el contraste del menta sobre negro es la seña del diseño. */
+/* Siempre claro (decisión del usuario, 2026-11-13). */
 
 * { box-sizing: border-box; }
 
@@ -56,7 +56,7 @@ body {
 main {
   max-width: var(--ancho);
   margin: 0 auto;
-  padding: 2rem var(--margen) 5rem;
+  padding: 1.5rem var(--margen) 4rem;
 }
 
 a { color: var(--acento); text-underline-offset: 0.2em; }
@@ -74,13 +74,13 @@ h1, h2 {
   line-height: 1;
 }
 h1 {
-  font-size: clamp(3rem, 5vw, 6.5rem);
+  font-size: clamp(2.2rem, 3vw, 3.5rem);
   text-transform: uppercase;
-  margin: 0.5rem 0 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 0.4rem solid var(--acento);
+  margin: 0.25rem 0 1.25rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 0.3rem solid var(--acento);
 }
-h2 { font-size: 2.1rem; margin: 3rem 0 1rem; }
+h2 { font-size: 1.6rem; margin: 2.25rem 0 0.75rem; }
 h3 { font-weight: 700; letter-spacing: -0.01em; }
 
 .suave { color: var(--texto-suave); }
@@ -101,7 +101,7 @@ code { font-family: var(--fuente-mono); font-size: 0.9em; }
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
-  padding: 1.25rem;
+  padding: 1rem;
   transition: border-color 0.15s;
 }
 .tarjeta:hover { border-color: var(--texto-suave); }
@@ -111,8 +111,8 @@ code { font-family: var(--fuente-mono); font-size: 0.9em; }
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: 0.75rem;
 }
 
 /* Diagramas de acorde (SVG generado en lib/diagrama.ts) */
@@ -216,7 +216,7 @@ label.casilla input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: va
   border-top: 0.3rem solid var(--acento);
   border-radius: var(--radio);
 }
-.dialogo::backdrop { background: rgb(0 0 0 / 0.6); }
+.dialogo::backdrop { background: rgb(0 0 0 / 0.35); }
 .dialogo h2 { margin-top: 0; }
 .dialogo .acciones { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
 
