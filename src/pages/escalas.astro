@@ -6,6 +6,7 @@ import Buscador from '../components/Buscador.astro';
 import Tempo from '../components/Tempo.astro';
 import { notasDeFormula } from '../lib/teoria.ts';
 import { porOrden } from '../lib/orden.ts';
+import { INSTRUMENTOS } from '../lib/audio.ts';
 
 const grupos = porOrden(await getCollection('grupos'));
 const escalas = porOrden(await getCollection('escalas'));
@@ -20,6 +21,9 @@ const tonica = 'C';
         <option value="">Todos</option>
         {grupos.map((g) => <option value={g.id}>{g.data.nombre}</option>)}
       </select>
+    </label>
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
     </label>
   </SelectorTonica>
   <Tempo clave="escalas" />
@@ -88,7 +92,7 @@ const tonica = 'C';
 </Base>
 
 <script>
-  import { conectarAudio, conectarBuscador, conectarFiltroArpegio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import { conectarAudio, conectarBuscador, conectarFiltroArpegio, conectarInstrumento, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { conectarEliminados } from '../lib/eliminados.ts';
   import { secuenciaArpegio, secuenciaArpegiosPorGrado, secuenciaEscala } from '../lib/secuencias.ts';
   import { notasDeFormula } from '../lib/teoria.ts';
@@ -96,7 +100,8 @@ const tonica = 'C';
   let tonicaActual = 'C';
   const tempo = conectarTempo();
 
-  conectarAudio((boton) => {
+  const instrumento = conectarInstrumento('escalas:sonido');
+  const secuencia = (boton: HTMLButtonElement) => {
     const formula: string[] = JSON.parse(boton.dataset.formulaAudio!);
     switch (boton.dataset.audio) {
       case 'escala-ascendente':
@@ -108,7 +113,8 @@ const tonica = 'C';
       default:
         return secuenciaArpegio(tonicaActual, formula, tempo());
     }
-  });
+  };
+  conectarAudio((boton) => ({ eventos: secuencia(boton), instrumento: instrumento() }));
 
   conectarBuscador();
   // Selector de arpegio: muestra solo el grupo elegido.

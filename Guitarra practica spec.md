@@ -240,6 +240,7 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Color de acento por sesión:** paleta de seis colores (violeta, magenta, azul, verde, naranja, turquesa) en `lib/acento.ts`; cada sesión elige uno al azar, distinto del anterior, y lo mantiene al navegar.
 - [x] **Indicador del acorde que suena atenuado** (fondo translúcido del acento y borde) para que el acorde y su diagrama se lean bien; igual en Progresiones y Patrones.
 - [x] **Bucle en Repertorio y Patrones:** botón «⟲ Bucle»; al acabar, la siguiente vuelta se programa a tiempo y sin cortar lo que suena (`tocar` con `duracion` y `encadenar` en `lib/audio.ts`). Detener lo corta.
+- [x] **Escalas:** selector de sonido en la barra de tónica, junto al de arpegio (escalas, arpegios y arpegios por grado).
 - [x] **Intervalos:** selector de sonido en la barra de tónica (lo comparte el entrenador de oído, en Ajustes).
 - [x] **Selector de arpegio en la barra de tónica:** en Escalas y Acordes filtra por tipo de acorde («Todos» por defecto; un enlace a #grupo-… lo abre en ese grupo); en Patrones, los selectores de escala y arpegio pasan a esa barra. En Intervalos y Progresiones no se pone porque no hay un tipo de acorde que elegir.
 - [x] **Progresiones:** selector de sonido, metrónomo y bucle, como en Patrones (con órgano y pad, los acordes repetidos se ligan).
