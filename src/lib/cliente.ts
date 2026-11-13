@@ -1,7 +1,7 @@
 // Comportamiento en el navegador compartido por varias secciones.
 import { normalizar } from './cifrado.ts';
 import { parseNota, pitchClass } from './teoria.ts';
-import { detener, tocar } from './audio.ts';
+import { detener, tocar, type Instrumento } from './audio.ts';
 import type { Evento } from './secuencias.ts';
 
 function leer(clave: string): string | null {
@@ -112,6 +112,7 @@ export interface Reproduccion {
   eventos: Evento[];
   alProgresar?: (segundos: number) => void;
   alTerminar?: () => void;
+  instrumento?: Instrumento;
 }
 
 /**
@@ -150,7 +151,7 @@ export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[] 
     try {
       const construida = construir(boton);
       reproduccion = Array.isArray(construida) ? { eventos: construida } : construida;
-      await tocar(reproduccion.eventos, reproduccion.alProgresar);
+      await tocar(reproduccion.eventos, reproduccion.alProgresar, reproduccion.instrumento);
     } catch (error) {
       console.error(error);
     }

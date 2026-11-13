@@ -60,3 +60,23 @@ test('todo cae en el rango de la guitarra', () => {
     assert.ok(ev.every((e) => e.midi >= RANGO_GUITARRA.min && e.midi <= RANGO_GUITARRA.max), t);
   }
 });
+
+test('ligar notas repetidas seguidas (pad continuo)', async () => {
+  const { ligarRepetidos } = await import('./secuencias.ts');
+  const ligados = ligarRepetidos([
+    { midi: 60, inicio: 0, duracion: 1 },
+    { midi: 64, inicio: 0, duracion: 1 },
+    { midi: 60, inicio: 1, duracion: 1 },
+    { midi: 67, inicio: 1, duracion: 1 },
+    { midi: 60, inicio: 3, duracion: 1 },
+  ]);
+  assert.deepEqual(
+    ligados.map((e) => [e.midi, e.inicio, e.duracion]),
+    [
+      [60, 0, 2],
+      [64, 0, 1],
+      [67, 1, 1],
+      [60, 3, 1],
+    ],
+  );
+});

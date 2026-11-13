@@ -4,7 +4,7 @@ import { esc } from './almacen.ts';
 import { formaDeCelda, grupoDeCelda, lineas, simboloCelda, tiemposPorCompas, type CeldaCmb, type Cmb, type FormaCelda } from './cmb.ts';
 import { diagramaSVG } from './diagrama.ts';
 import type { Forma } from './formas.ts';
-import { AFINACION, type Evento } from './secuencias.ts';
+import { AFINACION, ligarRepetidos, type Evento } from './secuencias.ts';
 import { raizWeb } from './cmb.ts';
 
 export interface OpcionesVista {
@@ -92,22 +92,40 @@ export function tiemposCifrado(cmb: Cmb, bpm: number, desde = 0): { compas: numb
   return resultado;
 }
 
+export interface OpcionesSecuencia {
+  /** Acordes mantenidos y ligados (pad, órgano) en vez de rasgueados. */
+  sostenido?: boolean;
+  /** Añade un clic por pulso, más fuerte en el primero de cada compás. */
+  metronomo?: boolean;
+}
+
 /**
  * El cifrado entero a un tempo, desde el compás `desde`: cada compás se reparte
  * a partes iguales entre sus acordes. Las repeticiones no se tocan.
  */
-export function secuenciaCifrado(cmb: Cmb, bpm: number, personales: Record<string, Forma[]>, desde = 0): Evento[] {
+export function secuenciaCifrado(
+  cmb: Cmb,
+  bpm: number,
+  personales: Record<string, Forma[]>,
+  desde = 0,
+  op: OpcionesSecuencia = {},
+): Evento[] {
   const pulso = 60 / bpm;
   const tiempos = tiemposPorCompas(cmb);
   const eventos: Evento[] = [];
   let t = 0;
   cmb.bars.forEach((compas, i) => {
     if (i < desde) return;
+    if (op.metronomo) {
+      for (let p = 0; p < tiempos[i]; p++) eventos.push({ midi: 0, inicio: t + p * pulso, duracion: 0.05, clic: p === 0 ? 'fuerte' : 'debil' });
+    }
     const porCelda = (tiempos[i] * pulso) / Math.max(1, compas.cells.length);
     for (const celda of compas.cells) {
-      eventos.push(...rasgueo(analizarCelda(celda, cmb, personales).forma, t, porCelda));
+      const forma = analizarCelda(celda, cmb, personales).forma;
+      if (op.sostenido) eventos.push(...alturas(forma).map((m) => ({ midi: m, inicio: t, duracion: porCelda })));
+      else eventos.push(...rasgueo(forma, t, porCelda));
       t += porCelda;
     }
   });
-  return eventos;
+  return op.sostenido ? ligarRepetidos(eventos) : eventos;
 }

@@ -6,6 +6,7 @@ import { eliminar } from './eliminados.ts';
 import { cancionACmb, claveCancion as clave, cmbACancion, nombreArchivo, type Cancion } from './cancion.ts';
 import { analizarCelda, htmlCifrado, secuenciaAcorde, secuenciaCifrado, tiemposCifrado } from './cifrado-vista.ts';
 import { conectarAudio } from './cliente.ts';
+import { INSTRUMENTOS, SOSTENIDOS, type Instrumento } from './audio.ts';
 import {
   clonar,
   cmbNuevo,
@@ -75,6 +76,15 @@ export function iniciarFicha() {
   const zonaCifrado = $('[data-cifrado]');
   const panel = $('[data-panel]');
   const resto = $('[data-resto]');
+
+  // --- Controles de audio del cifrado (sonido; se recuerdan en este navegador) ---
+  const controlesAudio = $('[data-controles-audio]');
+  const selInstrumento = $<HTMLSelectElement>('[data-instrumento]');
+  const sonido = leerJSON<{ instrumento?: Instrumento }>('repertorio:sonido') ?? {};
+  if (INSTRUMENTOS.some((i) => i.id === sonido.instrumento)) selInstrumento.value = sonido.instrumento!;
+  const instrumento = () => selInstrumento.value as Instrumento;
+  const guardarSonido = () => guardarJSON('repertorio:sonido', { instrumento: instrumento() });
+  selInstrumento.addEventListener('change', guardarSonido);
 
   // --- Guardado e historial ---------------------------------------------------
 
@@ -158,6 +168,7 @@ export function iniciarFicha() {
   }
 
   function pintarBarra() {
+    controlesAudio.hidden = editando || !cmb()?.bars.length;
     const local = !base;
     const modificada = base && JSON.stringify(cancion) !== JSON.stringify(base);
     barra.innerHTML = editando
@@ -718,8 +729,8 @@ export function iniciarFicha() {
     const c = cmb()!;
     const forma = (pos: { compas: number; celda: number } | null) =>
       pos ? analizarCelda(c.bars[pos.compas].cells[pos.celda], c, personales).forma : null;
-    if (boton.dataset.audio === 'acorde') return secuenciaAcorde(forma(acordeMenu));
-    if (boton.dataset.audio === 'celda') return secuenciaAcorde(forma(seleccion));
+    if (boton.dataset.audio === 'acorde') return { eventos: secuenciaAcorde(forma(acordeMenu)), instrumento: instrumento() };
+    if (boton.dataset.audio === 'celda') return { eventos: secuenciaAcorde(forma(seleccion)), instrumento: instrumento() };
     const bpm = cancion.tempo ?? c.tempoBpm ?? 100;
     // Marca el acorde que suena (sin desplazar la página).
     const tramos = tiemposCifrado(c, bpm);
@@ -732,7 +743,8 @@ export function iniciarFicha() {
       if (tramo) zonaCifrado.querySelector(`.celda[data-compas="${tramo.compas}"][data-celda="${tramo.celda}"]`)?.classList.add('sonando-ahora');
     };
     return {
-      eventos: secuenciaCifrado(c, bpm, personales),
+      eventos: secuenciaCifrado(c, bpm, personales, 0, { sostenido: SOSTENIDOS.includes(instrumento()) }),
+      instrumento: instrumento(),
       alProgresar: (t) => marcar(tramos.findIndex((x) => t >= x.inicio && t < x.fin)),
       alTerminar: () => marcar(-1),
     };

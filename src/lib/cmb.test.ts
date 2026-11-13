@@ -90,3 +90,18 @@ test('los tiempos de cada acorde cuadran con la secuencia del cifrado', async ()
   const primerCompas = tramos.filter((t) => t.compas === 0);
   assert.ok(Math.abs(primerCompas.at(-1)!.fin - 2) < 1e-9);
 });
+
+test('cifrado sostenido y con metrónomo', async () => {
+  const { secuenciaCifrado } = await import('./cifrado-vista.ts');
+  const cmb = validarCmb(ejemplo);
+  const normal = secuenciaCifrado(cmb, 120, {});
+  const sostenido = secuenciaCifrado(cmb, 120, {}, 0, { sostenido: true });
+  // Ligadas las repeticiones, hay menos notas y ninguna empieza con retardo de rasgueo.
+  assert.ok(sostenido.length < normal.length);
+  const conClic = secuenciaCifrado(cmb, 120, {}, 0, { metronomo: true });
+  const clics = conClic.filter((e) => e.clic);
+  assert.equal(clics.length, cmb.bars.length * 4);
+  assert.equal(clics[0].clic, 'fuerte');
+  assert.equal(clics[1].clic, 'debil');
+  assert.equal(clics[1].inicio, 0.5);
+});

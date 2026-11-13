@@ -9,6 +9,27 @@ export interface Evento {
   inicio: number;
   /** Segundos que suena. */
   duracion: number;
+  /** Clic de metrónomo en vez de nota (fuerte = primera parte del compás). */
+  clic?: 'fuerte' | 'debil';
+}
+
+/**
+ * Liga las notas repetidas que se tocan seguidas (la misma altura que empieza
+ * justo donde acaba la anterior) en una sola más larga: así un pad o un órgano
+ * suenan de forma continua cuando el acorde se repite.
+ */
+export function ligarRepetidos(eventos: readonly Evento[], margen = 0.02): Evento[] {
+  const ordenados = [...eventos].sort((a, b) => a.midi - b.midi || a.inicio - b.inicio);
+  const res: Evento[] = [];
+  for (const e of ordenados) {
+    const previo = res[res.length - 1];
+    if (previo && !e.clic && !previo.clic && previo.midi === e.midi && e.inicio <= previo.inicio + previo.duracion + margen) {
+      previo.duracion = Math.max(previo.duracion, e.inicio + e.duracion - previo.inicio);
+    } else {
+      res.push({ ...e });
+    }
+  }
+  return res.sort((a, b) => a.inicio - b.inicio || a.midi - b.midi);
 }
 
 export type ModoIntervalo = 'ascendente' | 'descendente' | 'armonico';
