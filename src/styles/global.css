@@ -1,20 +1,22 @@
 /* Diseño de escritorio (monitor de 27") inspirado en The Verge, en versión clara:
-   fondo blanco, una sola fuente (Inter) y un color de acento que cambia en cada
-   sesión (lib/acento.ts).
+   fondo y superficies teñidos con el color de acento, que cambia en cada sesión
+   (lib/acento.ts), y una sola fuente (Inter).
    Fuente alojada en el propio sitio (fontsource) para que funcione sin conexión. */
 @import '@fontsource-variable/inter/wght.css';
 
 :root {
   color-scheme: light;
-  --fondo: #ffffff;
-  --superficie: #f6f6f4;
-  --superficie-2: #ececea;
+  /* Todo teñido con el acento de la sesión, sin blancos: la página en un tono
+     suave y tarjetas, selectores y paneles en uno más intenso. */
+  --fondo: color-mix(in srgb, var(--acento) 5%, #fbfbfa);
+  --superficie: color-mix(in srgb, var(--acento) 11%, #fbfbfa);
+  --superficie-2: color-mix(in srgb, var(--acento) 18%, #fbfbfa);
   --texto: #111111;
   --texto-suave: #5e5e5e;
   --acento: #5200ff; /* por defecto; Base.astro elige otro de la paleta en cada sesión */
   --acento-suave: color-mix(in srgb, var(--acento) 16%, transparent);
   --sobre-acento: #ffffff;
-  --borde: #dcdcd8;
+  --borde: color-mix(in srgb, var(--acento) 22%, #d4d4d0);
   --bien: #00875a;
   --mal: #d6002f;
 
@@ -179,7 +181,7 @@ input:not([type='checkbox']):not([type='range']), select, textarea {
   font-family: var(--fuente);
   font-size: 1rem;
   color: var(--texto);
-  background: var(--fondo);
+  background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
 }
