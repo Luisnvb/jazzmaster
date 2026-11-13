@@ -228,7 +228,7 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Repertorio:** marcar el acorde que suena durante la reproducción, sin desplazamiento automático.
 - [x] **Acordes:** añadir grupos Sus y Aug. Grupos `sus` (7sus4: 1 4 5 b7) y `aug` (+: 1 3 #5) en `grupos.yaml`, con escalas (Mixolidio; Tonos enteros, Lidio aumentado) y un voicing de ejemplo cada uno. En los cifrados, un dominante con 4 y sin 3 enlaza a Sus y un mayor con #5 sin 5 a Aug (se escribe C+).
 - [x] **Progresiones (sección nueva):** progresiones básicas del jazz y un editor. Datos en `src/data/progresiones.yaml` (grados romanos, p. ej. `IIm7 V7 | Imaj7`), lógica en `lib/progresiones.ts`. La página transporta a la tónica elegida, toca con marca del acorde que suena y permite crear, editar, duplicar, eliminar y exportar a YAML (cambios guardados en el navegador, como en Acordes).
-- [ ] **Patrones (sección nueva):** patrones básicos para practicar escalas y arpegios.
+- [x] **Patrones (sección nueva):** patrones básicos para practicar escalas y arpegios. Datos en `src/data/patrones.yaml` (una «célula» de posiciones que se repite desde cada nota, con aproximaciones cromáticas `0-`/`0+`), lógica en `lib/patrones.ts`. Se elige escala y arpegio; suena en corcheas, sube y baja, con marca del grupo que suena.
 - [ ] **Orden de secciones:** invertir el orden (Repertorio, Acordes, Escalas, …) y agrupar Intervalos y Progresiones en una sección múltiple ampliable.
 
 ## 11. Fuera de alcance

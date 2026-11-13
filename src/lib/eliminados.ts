@@ -24,8 +24,9 @@ export function restaurarEliminados(seccion: string) {
  * se ocultan, sus botones [data-eliminar] los eliminan (tras confirmar) y el botón
  * [data-restaurar-eliminados] los recupera. `alEliminar`, si devuelve true, se
  * encarga él del borrado (p. ej. canciones que solo existen en el navegador).
+ * Devuelve una función para volver a aplicarlo si la página repinta los registros.
  */
-export function conectarEliminados(seccion: string, alEliminar?: (id: string, el: HTMLElement) => boolean) {
+export function conectarEliminados(seccion: string, alEliminar?: (id: string, el: HTMLElement) => boolean): () => void {
   const restaurar = document.querySelector<HTMLButtonElement>('[data-restaurar-eliminados]');
 
   const aplicar = () => {
@@ -62,4 +63,5 @@ export function conectarEliminados(seccion: string, alEliminar?: (id: string, el
   });
 
   aplicar();
+  return aplicar;
 }

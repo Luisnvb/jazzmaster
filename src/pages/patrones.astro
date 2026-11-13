@@ -1,0 +1,238 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import SelectorTonica from '../components/SelectorTonica.astro';
+import Tempo from '../components/Tempo.astro';
+import { porOrden } from '../lib/orden.ts';
+
+const grupos = porOrden(await getCollection('grupos')).map(({ id, data }) => ({
+  id,
+  nombre: data.nombre,
+  simbolo: data.simbolo,
+  arpegio: data.arpegio,
+}));
+const escalas = porOrden(await getCollection('escalas')).map(({ id, data }) => ({
+  id,
+  nombre: data.nombre,
+  grupo: data.grupo.id,
+  formula: data.formula,
+}));
+const patrones = porOrden(await getCollection('patrones')).map(({ id, data }) => ({ id, ...data }));
+// JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
+const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u003c');
+---
+
+<Base titulo="Patrones">
+  <h1>Patrones</h1>
+  <SelectorTonica clave="patrones" />
+  <Tempo clave="patrones" inicial={90} />
+
+  <div class="eleccion">
+    <label
+      >Escala
+      <select data-escala>
+        {
+          grupos.map((g) => (
+            <optgroup label={g.nombre}>
+              {escalas
+                .filter((e) => e.grupo === g.id)
+                .map((e) => (
+                  <option value={e.id}>{e.nombre}</option>
+                ))}
+            </optgroup>
+          ))
+        }
+      </select>
+    </label>
+    <label
+      >Arpegio
+      <select data-arpegio>{grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}</select>
+    </label>
+    <button type="button" class="boton" data-restaurar-eliminados hidden>Restaurar eliminados</button>
+  </div>
+
+  <section>
+    <h2>Escalas <span class="sobre" data-sobre-escala></span></h2>
+    <ul class="lista-tarjetas patrones" data-patrones="escala"></ul>
+  </section>
+  <section>
+    <h2>Arpegios <span class="sobre" data-sobre-arpegio></span></h2>
+    <ul class="lista-tarjetas patrones" data-patrones="arpegio"></ul>
+  </section>
+
+  <script type="application/json" id="datos-patrones" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
+  import { conectarAudio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import { conectarEliminados } from '../lib/eliminados.ts';
+  import { etiquetaGrupo, gruposDelPatron, notaDePaso, secuenciaPatron, type Patron } from '../lib/patrones.ts';
+  import { formatNota, notaDeGrado } from '../lib/teoria.ts';
+
+  interface Grupo {
+    id: string;
+    nombre: string;
+    simbolo: string;
+    arpegio: string[];
+  }
+  interface Escala {
+    id: string;
+    nombre: string;
+    grupo: string;
+    formula: string[];
+  }
+
+  const { grupos, escalas, patrones }: { grupos: Grupo[]; escalas: Escala[]; patrones: Patron[] } = JSON.parse(
+    document.getElementById('datos-patrones')!.textContent!,
+  );
+  const selEscala = document.querySelector<HTMLSelectElement>('[data-escala]')!;
+  const selArpegio = document.querySelector<HTMLSelectElement>('[data-arpegio]')!;
+  const tempo = conectarTempo();
+  let tonicaActual = 'C';
+  let aplicarEliminados: (() => void) | null = null;
+
+  // Recordar la escala y el arpegio elegidos.
+  const elegidos = leerJSON<{ escala?: string; arpegio?: string }>('patrones:eleccion') ?? {};
+  if (escalas.some((e) => e.id === elegidos.escala)) selEscala.value = elegidos.escala!;
+  if (grupos.some((g) => g.id === elegidos.arpegio)) selArpegio.value = elegidos.arpegio!;
+
+  /** Fórmula sobre la que se aplica cada patrón y su nombre visible. */
+  function material(p: Patron): { formula: string[]; titulo: string } {
+    if (p.sobre === 'escala') {
+      const e = escalas.find((x) => x.id === selEscala.value)!;
+      return { formula: e.formula, titulo: `${tonicaActual} ${e.nombre}` };
+    }
+    const g = grupos.find((x) => x.id === selArpegio.value)!;
+    return { formula: g.arpegio, titulo: formatNota(notaDeGrado(tonicaActual, '1')) + g.simbolo };
+  }
+
+  function tarjeta(p: Patron): string {
+    const { formula } = material(p);
+    const grupos = gruposDelPatron(p, formula.length);
+    const chips = grupos
+      .map(
+        (g, i) =>
+          `<li class="grupo" data-grupo="${i}"><span class="notas">${g.map((paso) => esc(notaDePaso(tonicaActual, formula, paso))).join(' ')}</span><span class="grados">${esc(etiquetaGrupo(formula, g))}</span></li>`,
+      )
+      .join('');
+    return `
+      <li class="tarjeta patron" data-id="${esc(p.id)}" data-eliminable="${esc(p.id)}" data-nombre="${esc(p.nombre)}">
+        <h3>${esc(p.nombre)}</h3>
+        ${p.descripcion ? `<p class="suave">${esc(p.descripcion)}</p>` : ''}
+        <ol class="grupos">${chips}</ol>
+        <div class="botones-audio">
+          <button type="button" data-audio="patron" aria-pressed="false">▶ Tocar</button>
+          <button type="button" data-detener>■ Detener</button>
+          <button type="button" class="eliminar" data-eliminar>Eliminar</button>
+        </div>
+      </li>`;
+  }
+
+  function pintar() {
+    for (const sobre of ['escala', 'arpegio'] as const) {
+      const lista = patrones.filter((p) => p.sobre === sobre);
+      document.querySelector(`[data-patrones="${sobre}"]`)!.innerHTML = lista.map(tarjeta).join('');
+      const ejemplo = lista[0] ?? ({ sobre } as Patron);
+      document.querySelector(`[data-sobre-${sobre}]`)!.textContent = `· ${material(ejemplo).titulo}`;
+    }
+    guardarJSON('patrones:eleccion', { escala: selEscala.value, arpegio: selArpegio.value });
+    aplicarEliminados?.();
+  }
+
+  selEscala.addEventListener('change', pintar);
+  selArpegio.addEventListener('change', pintar);
+
+  conectarAudio((boton) => {
+    const el = boton.closest<HTMLElement>('[data-id]')!;
+    const p = patrones.find((x) => x.id === el.dataset.id)!;
+    const { formula } = material(p);
+    const { eventos, tramos } = secuenciaPatron(tonicaActual, formula, gruposDelPatron(p, formula.length), tempo());
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      el.querySelector('.grupo.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) el.querySelector(`.grupo[data-grupo="${k}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      alProgresar: (s) => marcar(tramos.findIndex((t) => s >= t.inicio && s < t.fin)),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((tonica) => {
+    tonicaActual = tonica;
+    pintar();
+  });
+  pintar();
+  aplicarEliminados = conectarEliminados('patrones');
+</script>
+
+<style>
+  .eleccion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .eleccion label {
+    display: grid;
+    min-width: 18rem;
+  }
+  .eleccion [data-restaurar-eliminados] {
+    margin: 0;
+  }
+  h2 {
+    padding-top: 1rem;
+    border-top: 1px solid var(--borde);
+  }
+  .sobre {
+    color: var(--acento);
+  }
+  .patrones {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 38rem), 1fr));
+  }
+  :global(.patron h3) {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+  :global(.patron > p) {
+    margin: 0.25rem 0 0.75rem;
+  }
+  :global(.patron .grupos) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  :global(.patron .grupo) {
+    display: grid;
+    justify-items: center;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  :global(.patron .notas) {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  :global(.patron .grados) {
+    font-family: var(--fuente-mono);
+    font-size: 0.68rem;
+    color: var(--acento);
+    white-space: nowrap;
+  }
+  :global(.patron .grupo.sonando-ahora) {
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  :global(.patron .grupo.sonando-ahora .grados) {
+    color: var(--sobre-acento);
+  }
+</style>

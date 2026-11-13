@@ -341,10 +341,6 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
   :global(.compases .acorde.sonando-ahora .grado) {
     color: var(--sobre-acento);
   }
-  :global(html:not(.reproduciendo) [data-detener]) {
-    opacity: 0.4;
-    pointer-events: none;
-  }
   .campos {
     display: grid;
     grid-template-columns: 2fr 1fr;

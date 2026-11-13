@@ -4,6 +4,7 @@ import { z } from 'astro/zod';
 import { parse } from 'yaml';
 import { parseGrado, parseNota } from './lib/teoria.ts';
 import { parseAcordeGrado } from './lib/progresiones.ts';
+import { parsePaso } from './lib/patrones.ts';
 
 // Astro devuelve las entradas ordenadas por id; guardamos la posición en el
 // archivo para respetar el orden escrito a mano (ver lib/orden.ts).
@@ -13,7 +14,7 @@ const yamlConOrden = (texto: string) =>
 const archivo = (ruta: string) => file(ruta, { parser: yamlConOrden });
 const orden = z.number().int();
 
-const esValido = (parse: (s: string) => unknown) => (s: string) => {
+const esValido = <T,>(parse: (s: T) => unknown) => (s: T) => {
   try {
     parse(s);
     return true;
@@ -104,6 +105,20 @@ const progresiones = defineCollection({
   }),
 });
 
+const patrones = defineCollection({
+  loader: archivo('src/data/patrones.yaml'),
+  schema: z.object({
+    orden,
+    nombre: z.string(),
+    descripcion: z.string().optional(),
+    sobre: z.enum(['escala', 'arpegio']),
+    celula: z
+      .array(z.union([z.number().int(), z.string()]).refine(esValido(parsePaso), { message: 'Paso no válido (p. ej. 0, 2, "0-", "1+")' }))
+      .min(1),
+    idaYVuelta: z.boolean().optional(),
+  }),
+});
+
 const repertorio = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: 'src/content/repertorio' }),
   schema: z.object({
@@ -136,4 +151,4 @@ const cifrados = defineCollection({
   }),
 });
 
-export const collections = { grupos, intervalos, escalas, acordes, progresiones, repertorio, cifrados };
+export const collections = { grupos, intervalos, escalas, acordes, progresiones, patrones, repertorio, cifrados };

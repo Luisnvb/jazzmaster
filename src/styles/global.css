@@ -244,3 +244,6 @@ label.casilla input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: va
 }
 [data-restaurar-eliminados] { margin: 0 0 1rem; }
 .herramientas [data-restaurar-eliminados] { margin: 0; }
+
+/* Los botones Detener solo se activan mientras suena algo (lib/cliente.ts marca <html>). */
+html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
