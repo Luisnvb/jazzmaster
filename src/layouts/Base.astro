@@ -1,14 +1,20 @@
 ---
 import '../styles/global.css';
-import { archivo, ruta } from '../lib/rutas.ts';
+import { archivo } from '../lib/rutas.ts';
 import { SECCIONES, esActual } from '../lib/secciones.ts';
 import { PALETA_ACENTO } from '../lib/acento.ts';
 
 interface Props {
+  /** Título de la pestaña. */
   titulo: string;
+  /** Título que se ve en la cabecera, junto a la navegación (por defecto, `titulo`). */
+  encabezado?: string;
+  /** Si el título de la cabecera es el <h1> de la página (las fichas de canción tienen el suyo). */
+  conH1?: boolean;
 }
 
-const { titulo } = Astro.props;
+const { titulo, encabezado = titulo, conH1 = true } = Astro.props;
+const Titulo = conH1 ? 'h1' : 'p';
 
 // Con barra final para comparar igual "/acordes" y "/acordes/" con ruta('acordes').
 const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
@@ -53,7 +59,7 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
   <body>
     <header class="cabecera">
       <div class="cabecera-dentro">
-        <a class="logo" href={ruta('')}>Práctica<span>.</span></a>
+        <Titulo class="titulo-seccion">{encabezado}</Titulo>
         <nav aria-label="Secciones">
           {
             SECCIONES.map((s) =>
@@ -127,16 +133,18 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     align-items: center;
     gap: 3rem;
   }
-  .logo {
+  .titulo-seccion {
+    margin: 0;
+    padding: 0;
+    border: 0;
     font-family: var(--fuente-titulo);
-    font-size: 1.6rem;
+    font-weight: 400;
+    font-size: 1.5rem;
+    letter-spacing: 0.01em;
     line-height: 1;
     text-transform: uppercase;
+    white-space: nowrap;
     color: var(--texto);
-    text-decoration: none;
-  }
-  .logo span {
-    color: var(--acento);
   }
   nav[aria-label='Secciones'] {
     display: flex;

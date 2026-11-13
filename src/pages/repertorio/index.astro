@@ -8,7 +8,6 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
 ---
 
 <Base titulo="Repertorio">
-  <h1>Repertorio</h1>
   <Buscador placeholder="Buscar por título o autor…" />
   <div class="herramientas">
     <button type="button" class="boton" data-nueva>+ Canción nueva</button>
