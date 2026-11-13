@@ -160,7 +160,7 @@ Navegación persistente entre secciones en una cabecera fija arriba.
   - Enlaces: grabación de referencia y partitura o tablatura
   - Notas personales de práctica
 - **Sin estado de aprendizaje.**
-- Enlaces cruzados, más adelante: desde un acorde del cifrado al voicing correspondiente y a las escalas de su grupo.
+- Enlaces cruzados: al pulsar un acorde del cifrado se abre un menú para escucharlo e ir a los voicings de su grupo (en Acordes) y a sus escalas (en Escalas), ya en la tónica del acorde y filtrados por ese grupo.
 
 ### 7.2 Contenido inicial
 
