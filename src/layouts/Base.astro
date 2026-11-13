@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { archivo, ruta } from '../lib/rutas.ts';
 import { SECCIONES, esActual } from '../lib/secciones.ts';
+import { PALETA_ACENTO } from '../lib/acento.ts';
 
 interface Props {
   titulo: string;
@@ -26,6 +27,28 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     <link rel="icon" href={archivo('favicon.png')} type="image/png" />
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
     <title>{titulo} · Práctica</title>
+    <script is:inline define:vars={{ paleta: PALETA_ACENTO }}>
+      // Color de acento de esta sesión: se elige al abrir la pestaña (distinto del
+      // de la sesión anterior) y se mantiene al cambiar de página. Va en <head>
+      // para que no se vea el color por defecto un instante.
+      let acento = null;
+      try {
+        acento = sessionStorage.getItem('acento');
+      } catch {}
+      if (!paleta.includes(acento)) {
+        let anterior = null;
+        try {
+          anterior = localStorage.getItem('acento:ultimo');
+        } catch {}
+        const opciones = paleta.filter((c) => c !== anterior);
+        acento = opciones[Math.floor(Math.random() * opciones.length)];
+        try {
+          sessionStorage.setItem('acento', acento);
+          localStorage.setItem('acento:ultimo', acento);
+        } catch {}
+      }
+      document.documentElement.style.setProperty('--acento', acento);
+    </script>
   </head>
   <body>
     <header class="cabecera">

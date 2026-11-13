@@ -204,7 +204,7 @@ Se propone **un archivo Markdown por canción**: los metadatos y el cifrado van 
 - Un módulo de teoría compartido que, a partir de una tónica y una fórmula de grados, calcule las notas con la ortografía correcta. Lo usan escalas, arpegios, acordes e intervalos.
 - PWA con service worker para funcionar sin conexión.
 - Despliegue gratuito (GitHub Pages, Netlify o Cloudflare Pages), con acceso privado si se quiere.
-- Diseño inspirado en The Verge en versión clara: fondo blanco, titulares condensados (Anton) de tamaño contenido, texto en Space Grotesk, etiquetas en JetBrains Mono y acento violeta. Fuentes alojadas en el sitio (fontsource) para funcionar sin conexión.
+- Diseño inspirado en The Verge en versión clara: fondo blanco, titulares condensados (Anton) de tamaño contenido, texto en Space Grotesk, etiquetas en JetBrains Mono y un color de acento que cambia en cada sesión. Fuentes alojadas en el sitio (fontsource) para funcionar sin conexión.
 
 ## 10. Fases
 
@@ -237,6 +237,8 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Estilo claro:** fondo blanco, títulos más pequeños y secciones algo más compactas.
 - [x] **Cifrado centrado** cuando el tema no tiene letra (una columna de hasta 80rem; enlaces y notas debajo).
 - [x] **Sonido del cifrado:** selector de instrumento, con algún pad que suene de forma continua cuando el acorde se repite. Guitarra jazz (samples), piano eléctrico, órgano y pad sintetizados con Web Audio (`lib/audio.ts`); con órgano y pad los acordes se mantienen y las notas repetidas se ligan (`ligarRepetidos`). La elección se recuerda en el navegador.
+- [x] **Color de acento por sesión:** paleta de seis colores (violeta, magenta, azul, verde, naranja, turquesa) en `lib/acento.ts`; cada sesión elige uno al azar, distinto del anterior, y lo mantiene al navegar.
+- [x] **Indicador del acorde que suena atenuado** (fondo translúcido del acento y borde) para que el acorde y su diagrama se lean bien; igual en Progresiones y Patrones.
 - [x] **Repertorio:** metrónomo opcional y selector de tempo. Tempo de 40 a 320 BPM (por defecto el de la ficha, con «↺ Original» para volver; no modifica la canción). El metrónomo marca cada pulso, con la primera parte del compás acentuada, y se recuerda en el navegador.
 
 ## 11. Fuera de alcance

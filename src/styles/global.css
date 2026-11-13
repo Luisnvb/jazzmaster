@@ -1,5 +1,6 @@
 /* Diseño de escritorio (monitor de 27") inspirado en The Verge, en versión clara:
-   fondo blanco, titulares condensados, etiquetas en monoespaciada y acento violeta.
+   fondo blanco, titulares condensados, etiquetas en monoespaciada y un color de acento
+   que cambia en cada sesión (lib/acento.ts).
    Fuentes alojadas en el propio sitio (fontsource) para que funcione sin conexión. */
 @import '@fontsource/anton/latin-400.css';
 @import '@fontsource/anton/latin-ext-400.css';
@@ -14,9 +15,9 @@
   --superficie-2: #ececea;
   --texto: #111111;
   --texto-suave: #5e5e5e;
-  --acento: #5200ff;
+  --acento: #5200ff; /* por defecto; Base.astro elige otro de la paleta en cada sesión */
+  --acento-suave: color-mix(in srgb, var(--acento) 16%, transparent);
   --sobre-acento: #ffffff;
-  --violeta: #5200ff;
   --borde: #dcdcd8;
   --bien: #00875a;
   --mal: #d6002f;
