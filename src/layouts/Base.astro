@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { archivo } from '../lib/rutas.ts';
+import { archivo, ruta } from '../lib/rutas.ts';
 import { SECCIONES, esActual } from '../lib/secciones.ts';
 import { PALETA_ACENTO } from '../lib/acento.ts';
 
@@ -61,6 +61,7 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
       <div class="cabecera-dentro">
         <Titulo class="titulo-seccion">{encabezado}</Titulo>
         <nav aria-label="Secciones">
+          <a href={ruta('')} aria-current={actual === ruta('') ? 'page' : undefined}>Inicio</a>
           {
             SECCIONES.map((s) =>
               s.partes ? (
@@ -137,12 +138,15 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     margin: 0;
     padding: 0;
     border: 0;
-    font-family: var(--fuente-titulo);
-    font-weight: 400;
-    font-size: 1.5rem;
-    letter-spacing: 0.01em;
-    line-height: 1;
-    text-transform: uppercase;
+    /* Ancho fijo para que la navegación no se mueva al cambiar de página. */
+    flex: 0 0 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--fuente);
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
     white-space: nowrap;
     color: var(--texto);
   }
