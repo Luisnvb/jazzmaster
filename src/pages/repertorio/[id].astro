@@ -34,7 +34,7 @@ const cancion: Cancion = {
   instrumental: data.instrumental,
   tonalidad: data.tonalidad ?? null,
   tempo: data.tempo ?? cmb?.tempoBpm ?? null,
-  compas: data.compas ?? null,
+  compas: data.compas ?? (cmb?.timeSigLabel || null),
   estructura: data.estructura ?? null,
   estilo: data.estilo ?? (cmb?.style || null),
   enlaces: data.enlaces,

@@ -2,10 +2,10 @@
 titulo: "Footprints"
 autor: Wayne Shorter
 instrumental: true
-tonalidad:
+tonalidad: Cm
 tempo:
-compas:
-estructura:
+compas: 3/4
+estructura: Blues menor de 24 compases
 enlaces: {}
 notas:
 ---

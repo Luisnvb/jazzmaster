@@ -212,6 +212,25 @@ Se propone **un archivo Markdown por canción**: los metadatos y el cifrado van 
 3. **Audio:** intervalos (ascendente, descendente y armónico), escalas y arpegios con selector de tónica y tempo, y audio de los voicings.
 4. **Extras:** entrenador de oído de intervalos, enlaces cruzados entre repertorio, acordes y escalas, y modo sin conexión.
 
+## 10 bis. Tareas pendientes (iteración 2026-11-13)
+
+Se hacen en este orden. Marcar `[x]` al terminar.
+
+- [x] **Letras:** incorporar al repertorio las letras de `lyrics.txt` (raíz del proyecto).
+- [x] **Wayne Shorter:** añadir al repertorio *Infant Eyes* y *Footprints* (Footprints ya tenía ficha: se completan compás, tonalidad y estructura; se crea *Infant Eyes*).
+- [x] **Cifrados:** incorporar los `.cmb.json` de la raíz para completar el repertorio (hasta ahora solo había el de *How Insensitive*). Movidos a `src/content/repertorio/<id>.cmb.json`; el compás de la ficha, si falta en el .md, se toma del cifrado.
+- [ ] **Escritorio en vez de móvil:** se rectifica el principio "pensada primero para móvil" (§1). El uso principal será un monitor de escritorio de 27". Optimizar para ese formato y rehacer los estilos inspirándose en [The Verge](https://www.theverge.com/).
+- [ ] **Navegación arriba:** mover los enlaces de secciones a la parte superior (sustituye a la barra inferior de §3).
+- [ ] **Acordes:** quitar la ayuda "Los grados se rellenan solos al elegir un traste; puedes cambiar la ortografía (p. ej. #9 en vez de b3)."
+- [ ] **Escalas/Acordes:** completar la frase "Dominante alterado (más tensiones b9, …".
+- [ ] **Repertorio:** botón para detener la reproducción.
+- [ ] **Todas las secciones:** botón para eliminar un registro.
+- [ ] **Repertorio:** marcar el acorde que suena durante la reproducción, sin desplazamiento automático.
+- [ ] **Acordes:** añadir grupos Sus y Aug.
+- [ ] **Progresiones (sección nueva):** progresiones básicas del jazz y un editor.
+- [ ] **Patrones (sección nueva):** patrones básicos para practicar escalas y arpegios.
+- [ ] **Orden de secciones:** invertir el orden (Repertorio, Acordes, Escalas, …) y agrupar Intervalos y Progresiones en una sección múltiple ampliable.
+
 ## 11. Fuera de alcance
 - Visualizador de escalas en el mástil.
 - Estado de aprendizaje o seguimiento del repertorio.
