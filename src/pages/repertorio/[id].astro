@@ -1,273 +1,49 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { analizarAcorde, compases } from '../../lib/cifrado.ts';
-import { ruta } from '../../lib/rutas.ts';
+import FichaCancion from '../../components/FichaCancion.astro';
+import type { Cancion } from '../../lib/cancion.ts';
+import { validarCmb } from '../../lib/cmb.ts';
 
 export async function getStaticPaths() {
   const canciones = await getCollection('repertorio');
-  return canciones.map((cancion) => ({ params: { id: cancion.id }, props: { cancion } }));
+  const cifrados = await getCollection('cifrados');
+  return canciones.map((cancion) => ({
+    params: { id: cancion.id },
+    props: { cancion, cifrado: cifrados.find((c) => c.id === cancion.id) },
+  }));
 }
 
-const { cancion } = Astro.props;
-const { data } = cancion;
-const { Content } = await render(cancion);
-const tieneLetra = !data.instrumental && Boolean(cancion.body?.trim());
+const { cancion: entrada, cifrado } = Astro.props;
+const { data } = entrada;
 
-// Para los enlaces cruzados: nombre de cada grupo y qué grupos tienen voicings.
-const grupos = Object.fromEntries((await getCollection('grupos')).map((g) => [g.id, g.data.nombre]));
-const conVoicings = [...new Set((await getCollection('acordes')).map((a) => a.data.grupo.id))];
+// El .cmb.json se comprueba entero al compilar: si está mal, la compilación falla y dice dónde.
+let cmb = null;
+if (cifrado) {
+  try {
+    cmb = validarCmb(cifrado.data);
+  } catch (error) {
+    throw new Error(`src/content/repertorio/${entrada.id}.cmb.json: ${(error as Error).message}`);
+  }
+}
 
-const ficha = [
-  ['Tonalidad', data.tonalidad],
-  ['Tempo', data.tempo && `${data.tempo} BPM`],
-  ['Compás', data.compas],
-  ['Estructura', data.estructura],
-].filter((par): par is [string, string] => Boolean(par[1]));
+const cancion: Cancion = {
+  id: entrada.id,
+  titulo: data.titulo,
+  autor: data.autor,
+  instrumental: data.instrumental,
+  tonalidad: data.tonalidad ?? null,
+  tempo: data.tempo ?? cmb?.tempoBpm ?? null,
+  compas: data.compas ?? null,
+  estructura: data.estructura ?? null,
+  estilo: data.estilo ?? (cmb?.style || null),
+  enlaces: data.enlaces,
+  notas: data.notas ?? null,
+  letra: entrada.body?.trim() ?? '',
+  cifrado: cmb,
+};
 ---
 
 <Base titulo={data.titulo}>
-  <a class="volver" href={ruta('repertorio')}>← Repertorio</a>
-  <h1>{data.titulo}</h1>
-  <p class="autor suave">{data.autor}{data.instrumental && ' · Instrumental'}</p>
-
-  {
-    ficha.length > 0 && (
-      <dl class="ficha">
-        {ficha.map(([nombre, valor]) => (
-          <div>
-            <dt>{nombre}</dt>
-            <dd>{valor}</dd>
-          </div>
-        ))}
-      </dl>
-    )
-  }
-
-  <h2>Cifrado</h2>
-  {
-    data.secciones.length > 0 ? (
-      data.secciones.map((s) => (
-        <section class="seccion">
-          <h3>{s.nombre}</h3>
-          <ol class="compases">
-            {compases(s.acordes).map((acordes) => (
-              <li>
-                {acordes.map((a) => {
-                  const analisis = analizarAcorde(a);
-                  return analisis?.grupo ? (
-                    <button
-                      type="button"
-                      class="acorde enlazado"
-                      popovertarget="menu-acorde"
-                      data-acorde={a}
-                      data-tonica={analisis.tonica}
-                      data-grupo={analisis.grupo}
-                    >
-                      {a}
-                    </button>
-                  ) : (
-                    <span class="acorde">{a}</span>
-                  );
-                })}
-              </li>
-            ))}
-          </ol>
-        </section>
-      ))
-    ) : (
-      <p class="suave">Sin cifrado todavía.</p>
-    )
-  }
-
-  <div id="menu-acorde" class="menu-acorde" popover data-grupos={JSON.stringify(grupos)} data-con-voicings={JSON.stringify(conVoicings)}>
-    <p class="menu-titulo" data-menu-titulo></p>
-    <a data-menu-voicings href={ruta('acordes')}>Voicings</a>
-    <a data-menu-escalas href={ruta('escalas')}>Escalas</a>
-  </div>
-
-  {
-    tieneLetra && (
-      <>
-        <h2>Letra</h2>
-        <div class="letra">
-          <Content />
-        </div>
-      </>
-    )
-  }
-
-  {
-    (data.enlaces.grabacion || data.enlaces.partitura) && (
-      <>
-        <h2>Enlaces</h2>
-        <ul class="enlaces">
-          {data.enlaces.grabacion && (
-            <li>
-              <a href={data.enlaces.grabacion} target="_blank" rel="noopener noreferrer">
-                Grabación de referencia
-              </a>
-            </li>
-          )}
-          {data.enlaces.partitura && (
-            <li>
-              <a href={data.enlaces.partitura} target="_blank" rel="noopener noreferrer">
-                Partitura / tablatura
-              </a>
-            </li>
-          )}
-        </ul>
-      </>
-    )
-  }
-
-  {
-    data.notas && (
-      <>
-        <h2>Notas de práctica</h2>
-        <p class="notas">{data.notas}</p>
-      </>
-    )
-  }
+  <FichaCancion cancion={cancion} />
 </Base>
-
-<script>
-  import { ruta } from '../../lib/rutas.ts';
-
-  const menu = document.getElementById('menu-acorde')!;
-  const grupos: Record<string, string> = JSON.parse(menu.dataset.grupos!);
-  const conVoicings: string[] = JSON.parse(menu.dataset.conVoicings!);
-  const titulo = menu.querySelector<HTMLElement>('[data-menu-titulo]')!;
-  const voicings = menu.querySelector<HTMLAnchorElement>('[data-menu-voicings]')!;
-  const escalas = menu.querySelector<HTMLAnchorElement>('[data-menu-escalas]')!;
-
-  // El clic llega antes de que se abra el popover: aquí se rellena con el acorde pulsado.
-  document.addEventListener('click', (e) => {
-    const boton = (e.target as Element).closest<HTMLElement>('[data-acorde]');
-    if (!boton) return;
-    const { acorde, tonica, grupo } = boton.dataset as { acorde: string; tonica: string; grupo: string };
-    const destino = (pagina: string) => `${ruta(pagina)}?tonica=${encodeURIComponent(tonica)}#grupo-${grupo}`;
-    titulo.textContent = `${acorde} · ${grupos[grupo]}`;
-    voicings.href = destino('acordes');
-    voicings.textContent = `Voicings ${grupos[grupo]} en ${tonica}`;
-    voicings.hidden = !conVoicings.includes(grupo);
-    escalas.href = destino('escalas');
-    escalas.textContent = `Escalas para ${grupos[grupo]} en ${tonica}`;
-  });
-</script>
-
-<style>
-  .volver {
-    display: inline-block;
-    padding: 0.5rem 0;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  h1 {
-    margin-bottom: 0;
-  }
-  .autor {
-    margin: 0 0 1rem;
-    font-size: 1.1rem;
-  }
-  .ficha {
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .ficha div {
-    background: var(--superficie);
-    border: 1px solid var(--borde);
-    border-radius: 0.5rem;
-    padding: 0.35rem 0.75rem;
-  }
-  .ficha dt {
-    font-size: 0.75rem;
-    color: var(--texto-suave);
-  }
-  .ficha dd {
-    margin: 0;
-    font-weight: 700;
-  }
-  .seccion h3 {
-    margin: 1rem 0 0.35rem;
-    font-size: 1rem;
-    color: var(--acento);
-  }
-  .compases {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    border-left: 2px solid var(--texto-suave);
-  }
-  .compases li {
-    min-height: 3rem;
-    padding: 0.5rem 0.3rem;
-    border-right: 2px solid var(--texto-suave);
-    border-bottom: 1px solid var(--borde);
-    display: flex;
-    flex-wrap: wrap;
-    align-content: center;
-    gap: 0 0.4rem;
-    font-size: 1rem;
-    font-weight: 700;
-  }
-  .acorde {
-    white-space: nowrap;
-  }
-  .enlazado {
-    padding: 0;
-    font: inherit;
-    font-weight: 700;
-    color: inherit;
-    background: none;
-    border: 0;
-    border-bottom: 2px dotted var(--acento);
-    cursor: pointer;
-  }
-  .menu-acorde {
-    width: min(22rem, calc(100vw - 2rem));
-    padding: 1rem;
-    color: var(--texto);
-    background: var(--superficie);
-    border: 1px solid var(--borde);
-    border-radius: 0.75rem;
-    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.3);
-  }
-  .menu-acorde::backdrop {
-    background: rgb(0 0 0 / 0.3);
-  }
-  .menu-titulo {
-    margin: 0 0 0.75rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-  }
-  .menu-acorde a {
-    display: block;
-    padding: 0.75rem 1rem;
-    margin-top: 0.5rem;
-    border: 1px solid var(--borde);
-    border-radius: 0.5rem;
-    font-weight: 700;
-    text-decoration: none;
-  }
-  .letra {
-    font-size: 1.05rem;
-  }
-  .letra :global(p) {
-    margin: 0 0 1rem;
-    white-space: pre-line;
-  }
-  .enlaces {
-    padding-left: 1.25rem;
-  }
-  .enlaces li {
-    margin-bottom: 0.5rem;
-  }
-  .notas {
-    white-space: pre-line;
-  }
-</style>

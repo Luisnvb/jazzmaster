@@ -23,9 +23,26 @@ Todo el contenido está en archivos de datos; no hace falta tocar el código.
 | Escalas | `src/data/escalas.yaml` |
 | Voicings | `src/data/acordes.yaml` (formato explicado al principio del archivo) |
 | Tipos de acorde | `src/data/grupos.yaml` |
-| Canciones | `src/content/repertorio/*.md` — copia `_plantilla.md` |
+| Canciones | `src/content/repertorio/*.md` (ficha y letra) — copia `_plantilla.md` |
+| Cifrados | `src/content/repertorio/<canción>.cmb.json` (formato del [Chord Melody Builder](https://www.noeljohnston.com/chord-melody-builder.html)) |
 
 Si algo está mal escrito (un grado, una nota, un traste), `npm run build` falla y dice dónde.
+
+### Editar desde la web
+
+Acordes y Repertorio tienen un botón **Editar**. Lo editado se guarda en el navegador
+(localStorage), así que solo existe en ese dispositivo hasta que se exporta:
+
+- **Acordes → Exportar YAML** descarga la lista completa; sustituye con ella `src/data/acordes.yaml`.
+- **Canción → Exportar .cmb.json** descarga el cifrado (con la ficha y la letra dentro, en el campo
+  `practica`). Guárdalo como `src/content/repertorio/<canción>.cmb.json`. El mismo archivo se puede
+  abrir en el Chord Melody Builder, y lo que se guarde allí se puede importar aquí.
+- **Repertorio → + Canción nueva / Importar .cmb.json** crea canciones que viven solo en el navegador
+  hasta que las pases al repositorio (un `.md` copiado de la plantilla y su `.cmb.json`).
+
+En el cifrado, cada acorde se edita como en el Builder: raíz, calidad, nota de la melodía (▼▲) y forma
+(◀▶, empezando por tus voicings de la sección Acordes), o trastes a mano. También secciones,
+repeticiones, finales, cambios de compás y saltos de línea.
 
 ## Publicar en GitHub Pages
 

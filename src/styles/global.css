@@ -110,3 +110,68 @@ h2 { font-size: 1.25rem; margin: 1.75rem 0 0.75rem; }
   border-color: var(--acento);
   color: var(--sobre-acento);
 }
+
+/* Botones y formularios de edición */
+.boton {
+  min-height: 2.6rem;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.boton.principal,
+.boton[aria-pressed='true'] {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--sobre-acento);
+}
+.boton.peligro { color: var(--mal); }
+.boton:disabled { opacity: 0.45; cursor: default; }
+
+label { font-size: 0.85rem; color: var(--texto-suave); }
+label > input, label > select, label > textarea { margin-top: 0.2rem; }
+label.bloque { display: block; margin: 0.5rem 0; }
+.campos label { display: grid; }
+input:not([type='checkbox']):not([type='range']), select, textarea {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--texto);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 0.4rem;
+}
+textarea { min-height: 4rem; resize: vertical; }
+label.casilla { display: flex; align-items: center; gap: 0.4rem; color: var(--texto); }
+label.casilla input { width: 1.2rem; height: 1.2rem; margin: 0; }
+
+.dialogo {
+  width: min(34rem, calc(100vw - 1rem));
+  max-height: calc(100dvh - 1rem);
+  padding: 1rem;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 0.75rem;
+}
+.dialogo::backdrop { background: rgb(0 0 0 / 0.45); }
+.dialogo h2 { margin-top: 0; }
+.dialogo .acciones { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
+
+/* Editor de trastes (lib/editor-trastes.ts) */
+.et { display: grid; grid-template-columns: minmax(0, 9rem) 1fr; gap: 0.75rem; align-items: start; }
+.et-cuerdas { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.25rem; }
+.et-cuerda { display: grid; gap: 0.2rem; text-align: center; font-size: 0.75rem; }
+.et-cuerda select, .et-cuerda input { padding: 0.2rem; text-align: center; font-size: 0.95rem; }
+.et-cuerda input[readonly] { border-style: dashed; }
+@media (max-width: 30rem) {
+  .et { grid-template-columns: 1fr; }
+  .et-diagrama .diagrama { max-width: 9rem; }
+}

@@ -10,13 +10,17 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
 <Base titulo="Repertorio">
   <h1>Repertorio</h1>
   <Buscador placeholder="Buscar por título o autor…" />
-  <ul class="lista-tarjetas">
+  <div class="herramientas">
+    <button type="button" class="boton" data-nueva>+ Canción nueva</button>
+    <button type="button" class="boton" data-importar>Importar .cmb.json</button>
+  </div>
+  <ul class="lista-tarjetas" data-lista>
     {
       canciones.map(({ id, data }) => (
-        <li data-buscar={`${data.titulo} ${data.autor}`}>
+        <li data-buscar={`${data.titulo} ${data.autor}`} data-id={id} data-titulo={data.titulo}>
           <a class="tarjeta cancion" href={ruta(`repertorio/${id}`)}>
             <span class="titulo">{data.titulo}</span>
-            <span class="suave">
+            <span class="suave" data-detalle>
               {data.autor}
               {data.tonalidad && ` · ${data.tonalidad}`}
               {data.instrumental && ' · Instrumental'}
@@ -29,11 +33,64 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
 </Base>
 
 <script>
+  import { elegirArchivo, esc } from '../../lib/almacen.ts';
+  import { cancionesGuardadas, cmbACancion, crearCancionLocal } from '../../lib/cancion.ts';
   import { conectarBuscador } from '../../lib/cliente.ts';
+  import { ruta } from '../../lib/rutas.ts';
+  import type { Cancion } from '../../lib/cancion.ts';
+
+  const lista = document.querySelector<HTMLElement>('[data-lista]')!;
+  const detalle = (c: Cancion) =>
+    `${esc(c.autor)}${c.tonalidad ? ` · ${esc(c.tonalidad)}` : ''}${c.instrumental ? ' · Instrumental' : ''}`;
+  const urlLocal = (id: string) => `${ruta('repertorio/local')}?id=${encodeURIComponent(id)}`;
+
+  // Lo guardado en este navegador: cambios a canciones del repositorio y canciones nuevas.
+  for (const c of cancionesGuardadas()) {
+    const li = lista.querySelector<HTMLElement>(`[data-id="${CSS.escape(c.id)}"]`);
+    if (li) {
+      li.dataset.buscar = `${c.titulo} ${c.autor}`;
+      li.querySelector('.titulo')!.textContent = c.titulo;
+      li.querySelector('[data-detalle]')!.innerHTML = `${detalle(c)} · <em>editada</em>`;
+      continue;
+    }
+    const nuevo = document.createElement('li');
+    nuevo.dataset.buscar = `${c.titulo} ${c.autor}`;
+    nuevo.dataset.titulo = c.titulo;
+    nuevo.innerHTML = `<a class="tarjeta cancion" href="${urlLocal(c.id)}">
+      <span class="titulo">${esc(c.titulo)}</span>
+      <span class="suave">${detalle(c)}${c.autor || c.tonalidad || c.instrumental ? ' · ' : ''}<em>solo en este navegador</em></span></a>`;
+    lista.append(nuevo);
+  }
+  // Orden alfabético con las nuevas incluidas.
+  [...lista.children]
+    .sort((a, b) => (a as HTMLElement).dataset.titulo!.localeCompare((b as HTMLElement).dataset.titulo!, 'es'))
+    .forEach((li) => lista.append(li));
+
   conectarBuscador();
+
+  document.querySelector('[data-nueva]')!.addEventListener('click', () => {
+    location.href = `${urlLocal(crearCancionLocal())}&nueva`;
+  });
+
+  document.querySelector('[data-importar]')!.addEventListener('click', async () => {
+    const archivo = await elegirArchivo('.json,application/json');
+    if (!archivo) return;
+    try {
+      const cancion = cmbACancion(JSON.parse(archivo.texto), '');
+      location.href = urlLocal(crearCancionLocal(cancion));
+    } catch (error) {
+      alert(`No se pudo importar: ${(error as Error).message}`);
+    }
+  });
 </script>
 
 <style>
+  .herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 0.75rem;
+  }
   .cancion {
     display: grid;
     text-decoration: none;

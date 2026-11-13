@@ -1,0 +1,351 @@
+---
+// Ficha de canción (vista y edición). La pinta el navegador a partir de los datos
+// del repositorio y de lo editado en este navegador (localStorage).
+import { getCollection } from 'astro:content';
+import type { Cancion } from '../lib/cancion.ts';
+import { ruta } from '../lib/rutas.ts';
+import { porOrden } from '../lib/orden.ts';
+
+interface Props {
+  /** Canción del repositorio; null en la página de canciones creadas en el navegador. */
+  cancion: Cancion | null;
+}
+
+const { cancion } = Astro.props;
+const grupos = Object.fromEntries((await getCollection('grupos')).map((g) => [g.id, g.data.nombre]));
+const voicings = porOrden(await getCollection('acordes')).map(({ id, data }) => ({
+  id,
+  grupo: data.grupo.id,
+  nombre: data.nombre,
+  tonica: data.tonica,
+  trastes: data.trastes,
+  grados: data.grados,
+}));
+// JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
+const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u003c');
+---
+
+<a class="volver" href={ruta('repertorio')}>← Repertorio</a>
+<div data-cabecera>
+  <h1>{cancion?.titulo ?? 'Canción'}</h1>
+</div>
+
+<div class="barra-ficha" data-barra></div>
+<div class="aviso suave" data-aviso hidden></div>
+<form class="meta" data-meta hidden onsubmit="return false"></form>
+
+<h2>Cifrado</h2>
+<div data-cifrado></div>
+<div class="panel" data-panel hidden></div>
+
+<div data-resto></div>
+
+<div id="menu-acorde" class="menu-acorde" popover>
+  <p class="menu-titulo" data-menu-titulo></p>
+  <button type="button" class="boton" data-audio="acorde" aria-pressed="false">Escuchar</button>
+  <a data-menu-voicings href={ruta('acordes')}>Voicings</a>
+  <a data-menu-escalas href={ruta('escalas')}>Escalas</a>
+</div>
+
+<script type="application/json" id="datos-ficha" set:html={datos} />
+
+<script>
+  import { iniciarFicha } from '../lib/ficha-cancion.ts';
+  iniciarFicha();
+</script>
+
+<style is:global>
+  .volver {
+    display: inline-block;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  [data-cabecera] h1 {
+    margin-bottom: 0;
+  }
+  .autor {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+  }
+  .ficha {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .ficha div {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.75rem;
+  }
+  .ficha dt {
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+  }
+  .ficha dd {
+    margin: 0;
+    font-weight: 700;
+  }
+  .barra-ficha {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 1rem 0 0;
+  }
+  .aviso {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+  }
+  .meta {
+    margin: 1rem 0 0;
+    padding: 0.75rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.75rem;
+  }
+  .meta .campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.5rem;
+  }
+  .meta .casillas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0.75rem 0 0;
+  }
+  .meta summary {
+    cursor: pointer;
+    font-weight: 700;
+    margin-top: 0.75rem;
+  }
+
+  /* Cifrado */
+  .cifrado {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .cifrado .linea {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    border-left: 2px solid var(--texto-suave);
+  }
+  @media (max-width: 40rem) {
+    .cifrado.con-diagramas .linea {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .compas {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 3rem;
+    padding: 0.2rem 0.25rem 0.3rem;
+    border-right: 2px solid var(--texto-suave);
+    border-bottom: 1px solid var(--borde);
+  }
+  .compas.rep-ini {
+    border-left: 5px double var(--texto);
+  }
+  .compas.rep-fin {
+    border-right: 5px double var(--texto);
+  }
+  .compas.rep-ini::before,
+  .compas.rep-fin::after {
+    content: '⁚';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .compas.rep-ini::before {
+    left: 0.1rem;
+  }
+  .compas.rep-fin::after {
+    right: 0.1rem;
+  }
+  .compas.con-final {
+    border-top: 2px solid var(--texto-suave);
+  }
+  .marcas {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    min-height: 1.3rem;
+  }
+  .seccion-marca {
+    padding: 0 0.35rem;
+    border: 2px solid var(--acento);
+    border-radius: 0.3rem;
+    color: var(--acento);
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+  .final-marca {
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .metrica {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .celdas {
+    display: flex;
+    align-items: stretch;
+    gap: 0.15rem;
+  }
+  .celda {
+    flex: 1 1 0;
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 0.2rem;
+    padding: 0.3rem 0.1rem;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-radius: 0.4rem;
+    cursor: pointer;
+  }
+  .celda .simbolo {
+    font-weight: 700;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .celda.enlazada .simbolo {
+    border-bottom: 2px dotted var(--acento);
+  }
+  .celda .diagrama {
+    max-width: 8rem;
+  }
+  .cifrado.editando .celda {
+    outline: 1px dashed var(--borde);
+  }
+  .celda.sel {
+    background: color-mix(in srgb, var(--acento) 18%, transparent);
+    outline: 2px solid var(--acento) !important;
+  }
+
+  /* Panel de edición del acorde elegido */
+  .panel {
+    position: sticky;
+    bottom: calc(var(--barra-alto) + 0.5rem);
+    z-index: 2;
+    margin-top: 1rem;
+    max-height: 50dvh;
+    overflow-y: auto;
+    padding: 0.75rem;
+    background: var(--superficie);
+    border: 2px solid var(--acento);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.25);
+  }
+  .panel h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  .panel .fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+  .panel .fila > label {
+    flex: 1 1 7rem;
+  }
+  .panel .paso {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .panel .paso output {
+    min-width: 3.2rem;
+    text-align: center;
+    font-weight: 800;
+  }
+  .panel .cabeza {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .panel .vista {
+    display: grid;
+    grid-template-columns: minmax(0, 8rem) 1fr;
+    gap: 0.75rem;
+    align-items: start;
+    margin-top: 0.6rem;
+  }
+  .panel .vista .simbolo-grande {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+  }
+  .panel fieldset {
+    margin: 0.75rem 0 0;
+    padding: 0.5rem;
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+  }
+  .panel legend {
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .menu-acorde {
+    width: min(22rem, calc(100vw - 2rem));
+    padding: 1rem;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.3);
+  }
+  .menu-acorde::backdrop {
+    background: rgb(0 0 0 / 0.3);
+  }
+  .menu-titulo {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .menu-acorde .boton {
+    width: 100%;
+  }
+  .menu-acorde a {
+    display: block;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .letra {
+    font-size: 1.05rem;
+  }
+  .letra p {
+    margin: 0 0 1rem;
+    white-space: pre-line;
+  }
+  .enlaces {
+    padding-left: 1.25rem;
+  }
+  .enlaces li {
+    margin-bottom: 0.5rem;
+  }
+  .notas {
+    white-space: pre-line;
+  }
+</style>

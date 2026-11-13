@@ -6,7 +6,6 @@ tonalidad:
 tempo:
 compas:
 estructura:
-secciones: []
 enlaces: {}
 notas:
 ---

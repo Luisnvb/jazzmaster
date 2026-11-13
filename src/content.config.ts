@@ -90,7 +90,7 @@ const repertorio = defineCollection({
     tempo: z.number().int().positive().nullish(),
     compas: z.string().nullish(),
     estructura: z.string().nullish(),
-    secciones: z.array(z.object({ nombre: z.string(), acordes: z.string() })).default([]),
+    estilo: z.string().nullish(),
     enlaces: z
       .object({ grabacion: z.url().optional(), partitura: z.url().optional() })
       .default({}),
@@ -98,4 +98,18 @@ const repertorio = defineCollection({
   }),
 });
 
-export const collections = { grupos, intervalos, escalas, acordes, repertorio };
+// Cifrados en el formato del Chord Melody Builder: <id>.cmb.json junto a <id>.md.
+// Solo se comprueba la forma general; la validación completa está en lib/cmb.ts.
+const cifrados = defineCollection({
+  loader: glob({
+    pattern: '**/[^_]*.cmb.json',
+    base: 'src/content/repertorio',
+    generateId: ({ entry }) => entry.replace(/\.cmb\.json$/, ''),
+  }),
+  schema: z.looseObject({
+    version: z.number(),
+    bars: z.array(z.looseObject({ cells: z.array(z.looseObject({ root: z.string(), type: z.string() })) })),
+  }),
+});
+
+export const collections = { grupos, intervalos, escalas, acordes, repertorio, cifrados };

@@ -4,16 +4,26 @@ import Base from '../layouts/Base.astro';
 import SelectorTonica from '../components/SelectorTonica.astro';
 import Tempo from '../components/Tempo.astro';
 import { porOrden } from '../lib/orden.ts';
-import { diagramaSVG } from '../lib/diagrama.ts';
-import { notaDeGrado, formatNota } from '../lib/teoria.ts';
-import { cuerdaDelBajo, transportar } from '../lib/voicings.ts';
+import { TONICAS } from '../lib/teoria.ts';
 
-const grupos = porOrden(await getCollection('grupos'));
-const acordes = porOrden(await getCollection('acordes'));
-const tonica = 'C';
-
-const tocados = (grados: string[]) => grados.filter(Boolean);
-const notas = (t: string, grados: string[]) => tocados(grados).map((g) => formatNota(notaDeGrado(t, g)));
+const grupos = porOrden(await getCollection('grupos')).map(({ id, data }) => ({
+  id,
+  nombre: data.nombre,
+  simbolo: data.simbolo,
+  arpegio: data.arpegio,
+}));
+const voicings = porOrden(await getCollection('acordes')).map(({ id, data }) => ({
+  id,
+  grupo: data.grupo.id,
+  nombre: data.nombre,
+  tonica: data.tonica,
+  trastes: data.trastes,
+  grados: data.grados,
+  ...(data.dedos ? { dedos: data.dedos } : {}),
+  ...(data.notas ? { notas: data.notas } : {}),
+}));
+// JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
+const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 ---
 
 <Base titulo="Acordes">
@@ -21,134 +31,357 @@ const notas = (t: string, grados: string[]) => tocados(grados).map((g) => format
   <SelectorTonica clave="acordes" />
   <Tempo clave="acordes" />
 
-  {
-    grupos.map((g) => {
-      const voicings = acordes.filter((a) => a.data.grupo.id === g.id);
-      return (
-        voicings.length > 0 && (
-          <section id={`grupo-${g.id}`}>
-            <h2>{g.data.nombre}</h2>
-            <ul class="lista-tarjetas voicings">
-              {voicings.map(({ data }) => {
-                const conAlAire = data.trastes.includes(0);
-                // Un voicing con cuerdas al aire solo se muestra en su tónica.
-                const t = conAlAire ? data.tonica : tonica;
-                const trastes = transportar(data.trastes, data.tonica, t);
-                return (
-                  <li
-                    class="tarjeta voicing"
-                    data-voicing={JSON.stringify({ trastes: data.trastes, grados: data.grados, tonica: data.tonica })}
-                  >
-                    <div class="diagrama-caja" data-diagrama set:html={diagramaSVG({ trastes, grados: data.grados })} />
-                    <div class="info">
-                      <h3>
-                        <span data-tonica-texto>{t}</span>{g.data.simbolo}
-                      </h3>
-                      <p class="subtitulo suave">
-                        {data.nombre} · bajo en {cuerdaDelBajo(data.trastes)}ª
-                      </p>
-                      <dl class="detalle">
-                        <dt>Grados</dt>
-                        <dd>{tocados(data.grados).join(' ')}</dd>
-                        <dt>Notas</dt>
-                        <dd data-notas>{notas(t, data.grados).join(' ')}</dd>
-                      </dl>
-                      {conAlAire && <p class="aviso suave">Con cuerdas al aire: no se transporta.</p>}
-                      {data.notas && <p class="comentario">{data.notas}</p>}
-                    </div>
-                    <div class="botones-audio">
-                      <button type="button" data-audio="rasgueo" aria-pressed="false">Rasgueo</button>
-                      <button type="button" data-audio="arpegiado" aria-pressed="false">Arpegiado</button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )
-      );
-    })
-  }
+  <div class="barra-edicion">
+    <button type="button" class="boton" data-modo-edicion aria-pressed="false">Editar</button>
+    <span class="suave aviso-local" data-aviso-local hidden>Con cambios guardados en este navegador.</span>
+  </div>
+  <div class="herramientas" data-herramientas hidden>
+    <button type="button" class="boton principal" data-nuevo>+ Nuevo voicing</button>
+    <button type="button" class="boton" data-exportar>Exportar YAML</button>
+    <button type="button" class="boton" data-importar>Importar</button>
+    <button type="button" class="boton peligro" data-restaurar>Descartar cambios</button>
+    <p class="suave ayuda">
+      Los cambios se guardan en este navegador. Para llevarlos al repositorio, exporta y sustituye
+      <code>src/data/acordes.yaml</code> por el archivo descargado.
+    </p>
+  </div>
+
+  <div data-lista></div>
+
+  <dialog class="dialogo" data-dialogo>
+    <form method="dialog" data-formulario>
+      <h2 data-dialogo-titulo>Voicing</h2>
+      <div class="campos">
+        <label>Tipo
+          <select name="grupo">{grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}</select>
+        </label>
+        <label>Nombre <input name="nombre" required placeholder="Shell, Drop 2…" /></label>
+        <label>Tónica de los trastes
+          <select name="tonica">{TONICAS.map((t) => <option value={t}>{t}</option>)}</select>
+        </label>
+      </div>
+      <div data-editor-trastes></div>
+      <p class="suave ayuda">
+        Los grados se rellenan solos al elegir un traste; puedes cambiar la ortografía (p. ej. #9 en vez de b3).
+      </p>
+      <label class="bloque">Notas <textarea name="notas" rows="2"></textarea></label>
+      <ul class="errores" data-errores></ul>
+      <div class="acciones">
+        <button type="button" class="boton" data-cancelar>Cancelar</button>
+        <button type="submit" class="boton principal" value="guardar">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="application/json" id="datos-acordes" set:html={datos} />
 </Base>
 
 <script>
+  import { aplicarCambios, aVoicing, erroresVoicing, gradosSugeridos, nuevoIdVoicing, voicingsAYaml, type Cambios, type Voicing } from '../lib/acordes-datos.ts';
+  import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
   import { conectarAudio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { diagramaSVG } from '../lib/diagrama.ts';
+  import { editorTrastes, type EditorTrastes } from '../lib/editor-trastes.ts';
   import { secuenciaVoicing, type ModoVoicing } from '../lib/secuencias.ts';
   import { notaDeGrado, formatNota } from '../lib/teoria.ts';
-  import { transportar, type Traste } from '../lib/voicings.ts';
+  import { cuerdaDelBajo, transportar, type Traste } from '../lib/voicings.ts';
 
-  interface Voicing {
-    trastes: Traste[];
-    grados: string[];
-    tonica: string;
+  interface Grupo {
+    id: string;
+    nombre: string;
+    simbolo: string;
+    arpegio: string[];
   }
 
+  const CLAVE = 'acordes:cambios';
+  const { grupos, voicings: base }: { grupos: Grupo[]; voicings: Voicing[] } = JSON.parse(
+    document.getElementById('datos-acordes')!.textContent!,
+  );
+  const grupoPorId = Object.fromEntries(grupos.map((g) => [g.id, g]));
+
+  let cambios: Cambios = leerJSON<Cambios>(CLAVE) ?? {};
+  let lista = aplicarCambios(base, cambios);
   let tonicaActual = 'C';
+  let editando = false;
   const tempo = conectarTempo();
 
+  const contenedor = document.querySelector<HTMLElement>('[data-lista]')!;
+  const avisoLocal = document.querySelector<HTMLElement>('[data-aviso-local]')!;
+  const herramientas = document.querySelector<HTMLElement>('[data-herramientas]')!;
+  const botonEdicion = document.querySelector<HTMLButtonElement>('[data-modo-edicion]')!;
+
+  const conAlAire = (v: Voicing) => v.trastes.includes(0);
   /** Trastes del voicing en la tónica elegida (los que tienen cuerdas al aire no se mueven). */
-  const trastesActuales = (v: Voicing) => (v.trastes.includes(0) ? v.trastes : transportar(v.trastes, v.tonica, tonicaActual));
+  const trastesEn = (v: Voicing): Traste[] => (conAlAire(v) ? v.trastes : transportar(v.trastes, v.tonica, tonicaActual));
+  const tonicaDe = (v: Voicing) => (conAlAire(v) ? v.tonica : tonicaActual);
+
+  function tarjeta(v: Voicing): string {
+    const t = tonicaDe(v);
+    const tocados = v.grados.filter(Boolean);
+    const notas = tocados.map((g) => formatNota(notaDeGrado(t, g))).join(' ');
+    return `
+      <li class="tarjeta voicing" data-id="${esc(v.id)}">
+        <div class="diagrama-caja">${diagramaSVG({ trastes: trastesEn(v), grados: v.grados })}</div>
+        <div class="info">
+          <h3>${esc(t)}${esc(grupoPorId[v.grupo]?.simbolo ?? '')}</h3>
+          <p class="subtitulo suave">${esc(v.nombre)} · bajo en ${cuerdaDelBajo(v.trastes)}ª</p>
+          <dl class="detalle">
+            <dt>Grados</dt><dd>${esc(tocados.join(' '))}</dd>
+            <dt>Notas</dt><dd>${esc(notas)}</dd>
+          </dl>
+          ${conAlAire(v) ? '<p class="aviso suave">Con cuerdas al aire: no se transporta.</p>' : ''}
+          ${v.notas ? `<p class="comentario">${esc(v.notas)}</p>` : ''}
+        </div>
+        <div class="botones-audio">
+          <button type="button" data-audio="rasgueo" aria-pressed="false">Rasgueo</button>
+          <button type="button" data-audio="arpegiado" aria-pressed="false">Arpegiado</button>
+        </div>
+        ${
+          editando
+            ? `<div class="botones-edicion">
+                <button type="button" class="boton" data-editar>Editar</button>
+                <button type="button" class="boton" data-duplicar>Duplicar</button>
+                <button type="button" class="boton peligro" data-borrar>Borrar</button>
+              </div>`
+            : ''
+        }
+      </li>`;
+  }
+
+  function pintar() {
+    contenedor.innerHTML = grupos
+      .map((g) => {
+        const vs = lista.filter((v) => v.grupo === g.id);
+        if (vs.length === 0 && !editando) return '';
+        return `
+          <section id="grupo-${g.id}">
+            <h2>${esc(g.nombre)}</h2>
+            ${vs.length ? `<ul class="lista-tarjetas voicings">${vs.map(tarjeta).join('')}</ul>` : '<p class="suave">Sin voicings.</p>'}
+            ${editando ? `<button type="button" class="boton" data-nuevo="${g.id}">+ Voicing ${esc(g.nombre)}</button>` : ''}
+          </section>`;
+      })
+      .join('');
+    avisoLocal.hidden = Object.keys(cambios).length === 0;
+  }
+
+  function guardar(nuevos: Cambios) {
+    cambios = nuevos;
+    if (Object.keys(cambios).length) guardarJSON(CLAVE, cambios);
+    else borrar(CLAVE);
+    lista = aplicarCambios(base, cambios);
+    pintar();
+  }
+
+  const porId = (id: string) => lista.find((v) => v.id === id)!;
+
+  // --- Diálogo de edición ---------------------------------------------------
+
+  const dialogo = document.querySelector<HTMLDialogElement>('[data-dialogo]')!;
+  const formulario = document.querySelector<HTMLFormElement>('[data-formulario]')!;
+  const errores = document.querySelector<HTMLElement>('[data-errores]')!;
+  const campo = (nombre: string) => formulario.elements.namedItem(nombre) as HTMLInputElement | HTMLSelectElement;
+  let editor: EditorTrastes;
+  let editandoId: string | null = null;
+
+  function abrir(v: Voicing, id: string | null) {
+    editandoId = id;
+    document.querySelector('[data-dialogo-titulo]')!.textContent = id ? 'Editar voicing' : 'Nuevo voicing';
+    campo('grupo').value = v.grupo;
+    campo('nombre').value = v.nombre;
+    campo('tonica').value = v.tonica;
+    campo('notas').value = v.notas ?? '';
+    errores.innerHTML = '';
+    editor = editorTrastes(document.querySelector('[data-editor-trastes]')!, {
+      trastes: v.trastes,
+      grados: v.grados,
+      gradosEditables: true,
+      calcularGrados: (t) => gradosSugeridos(campo('tonica').value, t, grupoPorId[campo('grupo').value]?.arpegio ?? []),
+    });
+    dialogo.showModal();
+  }
+
+  campo('tonica').addEventListener('change', () => editor.recalcular());
+  campo('grupo').addEventListener('change', () => editor.recalcular());
+  document.querySelector('[data-cancelar]')!.addEventListener('click', () => dialogo.close());
+
+  formulario.addEventListener('submit', (e) => {
+    const { trastes, grados } = editor.valor();
+    const v: Voicing = {
+      id: editandoId ?? '',
+      grupo: campo('grupo').value,
+      nombre: campo('nombre').value.trim(),
+      tonica: campo('tonica').value,
+      trastes,
+      grados: grados.map((g, c) => (trastes[c] === 'x' ? '' : g)),
+      ...(campo('notas').value.trim() ? { notas: campo('notas').value.trim() } : {}),
+    };
+    const anterior = editandoId ? porId(editandoId) : null;
+    if (anterior?.dedos) v.dedos = anterior.dedos;
+    const lista_errores = erroresVoicing(v, grupos.map((g) => g.id));
+    if (lista_errores.length) {
+      e.preventDefault();
+      errores.innerHTML = lista_errores.map((x) => `<li>${esc(x)}</li>`).join('');
+      return;
+    }
+    if (!editandoId) v.id = nuevoIdVoicing(v, lista.map((x) => x.id).concat(base.map((x) => x.id)));
+    guardar({ ...cambios, [v.id]: v });
+  });
+
+  // --- Botones ----------------------------------------------------------------
+
+  botonEdicion.addEventListener('click', () => {
+    editando = !editando;
+    botonEdicion.setAttribute('aria-pressed', String(editando));
+    botonEdicion.textContent = editando ? 'Terminar' : 'Editar';
+    herramientas.hidden = !editando;
+    pintar();
+  });
+
+  const vacio = (grupo: string): Voicing => ({
+    id: '',
+    grupo,
+    nombre: '',
+    tonica: 'C',
+    trastes: ['x', 3, 'x', 'x', 'x', 'x'],
+    grados: ['', '1', '', '', '', ''],
+  });
+
+  document.addEventListener('click', async (e) => {
+    const el = (e.target as Element).closest<HTMLElement>('button');
+    if (!el) return;
+    const id = el.closest<HTMLElement>('[data-id]')?.dataset.id;
+    if (el.dataset.nuevo !== undefined) abrir(vacio(el.dataset.nuevo || grupos[0].id), null);
+    else if (el.hasAttribute('data-editar') && id) abrir(porId(id), id);
+    else if (el.hasAttribute('data-duplicar') && id) abrir({ ...porId(id), nombre: `${porId(id).nombre} (copia)` }, null);
+    else if (el.hasAttribute('data-borrar') && id) {
+      if (!confirm(`¿Borrar el voicing "${porId(id).nombre}"?`)) return;
+      const nuevos = { ...cambios };
+      if (base.some((v) => v.id === id)) nuevos[id] = null;
+      else delete nuevos[id];
+      guardar(nuevos);
+    } else if (el.hasAttribute('data-exportar')) {
+      descargar('acordes.yaml', voicingsAYaml(lista), 'text/yaml');
+    } else if (el.hasAttribute('data-importar')) {
+      const archivo = await elegirArchivo('.yaml,.yml,.json');
+      if (!archivo) return;
+      try {
+        const { parse } = await import('yaml');
+        const datos = parse(archivo.texto);
+        if (!Array.isArray(datos)) throw new Error('El archivo debe ser una lista de voicings.');
+        const importados = datos.map(aVoicing);
+        const malos = importados.flatMap((v) => erroresVoicing(v, grupos.map((g) => g.id)).map((x) => `${v.id}: ${x}`));
+        if (malos.length) throw new Error(malos.slice(0, 5).join('\n'));
+        if (!confirm(`Se sustituirán los voicings por los ${importados.length} del archivo. ¿Seguir?`)) return;
+        // Los del repositorio que no están en el archivo se marcan como borrados.
+        const nuevos: Cambios = Object.fromEntries(base.map((v) => [v.id, null]));
+        for (const v of importados) nuevos[v.id] = v;
+        for (const v of base) {
+          const igual = importados.find((x) => x.id === v.id);
+          if (igual && JSON.stringify(igual) === JSON.stringify(v)) delete nuevos[v.id];
+        }
+        guardar(nuevos);
+      } catch (error) {
+        alert(`No se pudo importar: ${(error as Error).message}`);
+      }
+    } else if (el.hasAttribute('data-restaurar')) {
+      if (confirm('¿Descartar todos los cambios hechos en este navegador y volver a los voicings del repositorio?')) guardar({});
+    }
+  });
 
   conectarAudio((boton) => {
-    const v: Voicing = JSON.parse(boton.closest<HTMLElement>('[data-voicing]')!.dataset.voicing!);
-    return secuenciaVoicing(trastesActuales(v), boton.dataset.audio as ModoVoicing, tempo());
+    const v = porId(boton.closest<HTMLElement>('[data-id]')!.dataset.id!);
+    return secuenciaVoicing(trastesEn(v), boton.dataset.audio as ModoVoicing, tempo());
   });
 
   conectarTonica((tonica) => {
     tonicaActual = tonica;
-    for (const tarjeta of document.querySelectorAll<HTMLElement>('[data-voicing]')) {
-      const v: Voicing = JSON.parse(tarjeta.dataset.voicing!);
-      if (v.trastes.includes(0)) continue;
-      const trastes = trastesActuales(v);
-      tarjeta.querySelector('[data-tonica-texto]')!.textContent = tonica;
-      tarjeta.querySelector('[data-diagrama]')!.innerHTML = diagramaSVG({ trastes, grados: v.grados });
-      tarjeta.querySelector('[data-notas]')!.textContent = v.grados
-        .filter(Boolean)
-        .map((g) => formatNota(notaDeGrado(tonica, g)))
-        .join(' ');
-    }
+    pintar();
   });
+  pintar();
+  // Los enlaces del repertorio llevan #grupo-…: la lista se pinta aquí, así que se busca a mano.
+  if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 </script>
 
 <style>
-  .voicings {
+  .barra-edicion {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem 0 0;
+  }
+  .herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.75rem 0 0;
+  }
+  .ayuda {
+    flex-basis: 100%;
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+  }
+  .aviso-local {
+    font-size: 0.85rem;
+  }
+  :global(.voicings) {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
   }
-  .voicing {
+  :global(.voicing) {
     display: grid;
     grid-template-columns: minmax(0, 11rem) 1fr;
     gap: 0.75rem;
     align-items: start;
     padding: 0.75rem;
   }
-  .voicing .botones-audio {
+  :global(.voicing .botones-audio),
+  :global(.voicing .botones-edicion) {
     grid-column: 1 / -1;
     margin-top: 0;
   }
-  h3 {
+  :global(.botones-edicion) {
+    display: flex;
+    gap: 0.4rem;
+  }
+  :global(.botones-edicion .boton) {
+    flex: 1;
+  }
+  :global(.voicing h3) {
     margin: 0;
     font-size: 1.4rem;
   }
-  .subtitulo {
+  :global(.voicing .subtitulo) {
     margin: 0 0 0.5rem;
     font-size: 0.85rem;
   }
-  .detalle {
+  :global(.voicing .detalle) {
     margin: 0.5rem 0 0;
   }
-  .detalle dt {
+  :global(.voicing .detalle dt) {
     color: var(--texto-suave);
     font-size: 0.75rem;
   }
-  .detalle dd {
+  :global(.voicing .detalle dd) {
     margin: 0 0 0.35rem;
     font-weight: 700;
     word-spacing: 0.15rem;
   }
-  .aviso,
-  .comentario {
+  :global(.voicing .aviso),
+  :global(.voicing .comentario) {
     margin: 0.5rem 0 0;
     font-size: 0.85rem;
+  }
+  :global(section > .boton[data-nuevo]) {
+    margin-top: 0.75rem;
+  }
+  .campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .errores {
+    color: var(--mal);
+    font-weight: 600;
+    padding-left: 1.25rem;
   }
 </style>

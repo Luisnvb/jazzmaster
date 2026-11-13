@@ -8,12 +8,10 @@ tonalidad: F               # notación anglosajona: C, Bb, F#m…
 tempo: 120                 # BPM
 compas: 4/4
 estructura: AABA, 32 compases
-secciones:
-  # Cada sección: nombre y cifrado, con los compases separados por |
-  - nombre: A
-    acordes: "Fmaj7 | Gm7 C7 | Am7 D7 | Gm7 C7"
-  - nombre: B
-    acordes: "Cm7 | F7 | Bbmaj7 | Bbm6"
+estilo: Swing
+# El cifrado va aparte, en mi-cancion.cmb.json (formato del Chord Melody Builder,
+# https://www.noeljohnston.com/chord-melody-builder.html). Se puede crear y editar
+# desde la propia ficha (botón Editar) y exportarlo con ese nombre.
 enlaces:
   grabacion: https://…
   partitura: https://…
