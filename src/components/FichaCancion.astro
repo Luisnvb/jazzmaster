@@ -33,6 +33,12 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
 
 <div class="barra-ficha" data-barra></div>
 <div class="controles-audio" data-controles-audio hidden>
+  <label class="control">Tempo
+    <input type="range" min="40" max="320" step="1" data-tempo-ficha />
+    <span class="valor-tempo"><strong data-tempo-ficha-valor></strong> BPM</span>
+  </label>
+  <button type="button" class="boton" data-tempo-original hidden title="Volver al tempo de la ficha">↺ Original</button>
+  <label class="casilla"><input type="checkbox" data-metronomo /> Metrónomo</label>
   <label class="control">Sonido
     <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
   </label>
@@ -154,6 +160,18 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     display: flex;
     align-items: center;
     gap: 0.6rem;
+  }
+  .controles-audio input[type='range'] {
+    width: 14rem;
+    accent-color: var(--acento);
+  }
+  .valor-tempo {
+    min-width: 6.5ch;
+    text-align: right;
+  }
+  .valor-tempo strong {
+    color: var(--texto);
+    font-size: 1rem;
   }
   .controles-audio select {
     width: auto;

@@ -237,7 +237,7 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Estilo claro:** fondo blanco, títulos más pequeños y secciones algo más compactas.
 - [x] **Cifrado centrado** cuando el tema no tiene letra (una columna de hasta 80rem; enlaces y notas debajo).
 - [x] **Sonido del cifrado:** selector de instrumento, con algún pad que suene de forma continua cuando el acorde se repite. Guitarra jazz (samples), piano eléctrico, órgano y pad sintetizados con Web Audio (`lib/audio.ts`); con órgano y pad los acordes se mantienen y las notas repetidas se ligan (`ligarRepetidos`). La elección se recuerda en el navegador.
-- [ ] **Repertorio:** metrónomo opcional y selector de tempo.
+- [x] **Repertorio:** metrónomo opcional y selector de tempo. Tempo de 40 a 320 BPM (por defecto el de la ficha, con «↺ Original» para volver; no modifica la canción). El metrónomo marca cada pulso, con la primera parte del compás acentuada, y se recuerda en el navegador.
 
 ## 11. Fuera de alcance
 - Visualizador de escalas en el mástil.

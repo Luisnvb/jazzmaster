@@ -77,14 +77,39 @@ export function iniciarFicha() {
   const panel = $('[data-panel]');
   const resto = $('[data-resto]');
 
-  // --- Controles de audio del cifrado (sonido; se recuerdan en este navegador) ---
+  // --- Controles de audio del cifrado -------------------------------------------
+  // Sonido y metrónomo se recuerdan en este navegador; el tempo elegido vale para
+  // esta visita (por defecto, el de la ficha) y no cambia la canción.
   const controlesAudio = $('[data-controles-audio]');
   const selInstrumento = $<HTMLSelectElement>('[data-instrumento]');
-  const sonido = leerJSON<{ instrumento?: Instrumento }>('repertorio:sonido') ?? {};
+  const casillaMetronomo = $<HTMLInputElement>('[data-metronomo]');
+  const controlTempo = $<HTMLInputElement>('[data-tempo-ficha]');
+  const valorTempo = $('[data-tempo-ficha-valor]');
+  const botonTempoOriginal = $<HTMLButtonElement>('[data-tempo-original]');
+  const sonido = leerJSON<{ instrumento?: Instrumento; metronomo?: boolean }>('repertorio:sonido') ?? {};
   if (INSTRUMENTOS.some((i) => i.id === sonido.instrumento)) selInstrumento.value = sonido.instrumento!;
+  casillaMetronomo.checked = sonido.metronomo === true;
   const instrumento = () => selInstrumento.value as Instrumento;
-  const guardarSonido = () => guardarJSON('repertorio:sonido', { instrumento: instrumento() });
+  const guardarSonido = () => guardarJSON('repertorio:sonido', { instrumento: instrumento(), metronomo: casillaMetronomo.checked });
   selInstrumento.addEventListener('change', guardarSonido);
+  casillaMetronomo.addEventListener('change', guardarSonido);
+
+  let tempoElegido: number | null = null;
+  const tempoFicha = () => cancion.tempo ?? cmb()?.tempoBpm ?? 100;
+  const tempoActual = () => tempoElegido ?? tempoFicha();
+  function mostrarTempo() {
+    controlTempo.value = String(tempoActual());
+    valorTempo.textContent = String(tempoActual());
+    botonTempoOriginal.hidden = tempoElegido === null || tempoElegido === tempoFicha();
+  }
+  controlTempo.addEventListener('input', () => {
+    tempoElegido = Number(controlTempo.value);
+    mostrarTempo();
+  });
+  botonTempoOriginal.addEventListener('click', () => {
+    tempoElegido = null;
+    mostrarTempo();
+  });
 
   // --- Guardado e historial ---------------------------------------------------
 
@@ -169,6 +194,7 @@ export function iniciarFicha() {
 
   function pintarBarra() {
     controlesAudio.hidden = editando || !cmb()?.bars.length;
+    mostrarTempo();
     const local = !base;
     const modificada = base && JSON.stringify(cancion) !== JSON.stringify(base);
     barra.innerHTML = editando
@@ -731,7 +757,7 @@ export function iniciarFicha() {
       pos ? analizarCelda(c.bars[pos.compas].cells[pos.celda], c, personales).forma : null;
     if (boton.dataset.audio === 'acorde') return { eventos: secuenciaAcorde(forma(acordeMenu)), instrumento: instrumento() };
     if (boton.dataset.audio === 'celda') return { eventos: secuenciaAcorde(forma(seleccion)), instrumento: instrumento() };
-    const bpm = cancion.tempo ?? c.tempoBpm ?? 100;
+    const bpm = tempoActual();
     // Marca el acorde que suena (sin desplazar la página).
     const tramos = tiemposCifrado(c, bpm);
     let marcado = -1;
@@ -743,7 +769,7 @@ export function iniciarFicha() {
       if (tramo) zonaCifrado.querySelector(`.celda[data-compas="${tramo.compas}"][data-celda="${tramo.celda}"]`)?.classList.add('sonando-ahora');
     };
     return {
-      eventos: secuenciaCifrado(c, bpm, personales, 0, { sostenido: SOSTENIDOS.includes(instrumento()) }),
+      eventos: secuenciaCifrado(c, bpm, personales, 0, { sostenido: SOSTENIDOS.includes(instrumento()), metronomo: casillaMetronomo.checked }),
       instrumento: instrumento(),
       alProgresar: (t) => marcar(tramos.findIndex((x) => t >= x.inicio && t < x.fin)),
       alTerminar: () => marcar(-1),
