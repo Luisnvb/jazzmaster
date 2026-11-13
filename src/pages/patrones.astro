@@ -25,10 +25,7 @@ const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u00
 
 <Base titulo="Patrones">
   <h1>Patrones</h1>
-  <SelectorTonica clave="patrones" />
-  <Tempo clave="patrones" inicial={90} />
-
-  <div class="eleccion">
+  <SelectorTonica clave="patrones">
     <label
       >Escala
       <select data-escala>
@@ -49,6 +46,10 @@ const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u00
       >Arpegio
       <select data-arpegio>{grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}</select>
     </label>
+  </SelectorTonica>
+  <Tempo clave="patrones" inicial={90} />
+
+  <div class="eleccion">
     <label
       >Sonido
       <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>

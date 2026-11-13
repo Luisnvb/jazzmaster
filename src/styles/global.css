@@ -248,3 +248,6 @@ label.casilla input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: va
 
 /* Los botones Detener solo se activan mientras suena algo (lib/cliente.ts marca <html>). */
 html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
+
+/* Grupos ocultos por el selector de arpegio (lib/cliente.ts, conectarFiltroArpegio). */
+.fuera-de-filtro { display: none !important; }

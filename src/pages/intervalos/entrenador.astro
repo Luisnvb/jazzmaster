@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import { porOrden } from '../../lib/orden.ts';
 import { ruta } from '../../lib/rutas.ts';
 import { TONICAS } from '../../lib/teoria.ts';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
 
 const intervalos = porOrden(await getCollection('intervalos')).map(({ id, data }) => ({
   id,
@@ -66,6 +67,10 @@ const modos = [
       }
     </fieldset>
     <fieldset>
+      <legend>Sonido</legend>
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </fieldset>
+    <fieldset>
       <legend>Nota de partida</legend>
       <select name="tonica">
         <option value="azar">Al azar</option>
@@ -95,6 +100,9 @@ const modos = [
 
 <script>
   import { tocar } from '../../lib/audio.ts';
+  import { conectarInstrumento } from '../../lib/cliente.ts';
+  // El mismo sonido que en la página de Intervalos.
+  const instrumento = conectarInstrumento('intervalos:sonido');
   import { nuevaPregunta, pista, responder, type Marcador, type Pregunta } from '../../lib/entrenador.ts';
   import { secuenciaIntervalo, type ModoIntervalo } from '../../lib/secuencias.ts';
   import { notaBajoGrado, notaDeGrado, formatNota, TONICAS } from '../../lib/teoria.ts';
@@ -188,7 +196,7 @@ const modos = [
   function sonar() {
     if (!pregunta) return;
     const i = porId.get(pregunta.intervalo)!;
-    tocar(secuenciaIntervalo(pregunta.tonica, i.grado, pregunta.modo)).catch(console.error);
+    tocar(secuenciaIntervalo(pregunta.tonica, i.grado, pregunta.modo), undefined, instrumento()).catch(console.error);
   }
 
   function pintarResultado(clase: string, titulo: string, detalle?: string) {

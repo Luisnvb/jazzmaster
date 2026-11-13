@@ -171,3 +171,35 @@ export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[] 
     if (activo === boton) marcar(null);
   });
 }
+
+/**
+ * Conecta un selector de sonido ([data-instrumento]) y lo recuerda con `clave`.
+ * Devuelve una función con el instrumento elegido.
+ */
+export function conectarInstrumento(clave: string, raiz: ParentNode = document): () => Instrumento {
+  const sel = raiz.querySelector<HTMLSelectElement>('[data-instrumento]');
+  if (!sel) return () => 'guitarra';
+  const guardado = leer(clave);
+  if (guardado && [...sel.options].some((o) => o.value === guardado)) sel.value = guardado;
+  sel.addEventListener('change', () => guardar(clave, sel.value));
+  return () => sel.value as Instrumento;
+}
+
+/**
+ * Conecta un selector de arpegio (tipo de acorde, [data-filtro-arpegio]) que
+ * filtra la página. Lo recuerda con `clave`; si la dirección lleva #grupo-…,
+ * empieza en ese grupo. Llama a `alCambiar` con el id del grupo ('' = todos).
+ */
+export function conectarFiltroArpegio(clave: string, alCambiar: (grupo: string) => void) {
+  const sel = document.querySelector<HTMLSelectElement>('[data-filtro-arpegio]');
+  if (!sel) return;
+  const valido = (v: string | null) => v !== null && [...sel.options].some((o) => o.value === v);
+  const delEnlace = /^#grupo-(.+)$/.exec(location.hash)?.[1] ?? null;
+  const inicial = valido(delEnlace) ? delEnlace! : valido(leer(clave)) ? leer(clave)! : '';
+  sel.value = inicial;
+  sel.addEventListener('change', () => {
+    guardar(clave, sel.value);
+    alCambiar(sel.value);
+  });
+  alCambiar(inicial);
+}

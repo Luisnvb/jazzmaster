@@ -28,7 +28,14 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 
 <Base titulo="Acordes">
   <h1>Acordes</h1>
-  <SelectorTonica clave="acordes" />
+  <SelectorTonica clave="acordes">
+    <label>Arpegio
+      <select data-filtro-arpegio>
+        <option value="">Todos</option>
+        {grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}
+      </select>
+    </label>
+  </SelectorTonica>
   <Tempo clave="acordes" />
 
   <div class="barra-edicion">
@@ -76,7 +83,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 <script>
   import { aplicarCambios, aVoicing, moverEnGrupo, ordenarPorIds, erroresVoicing, gradosSugeridos, nuevoIdVoicing, voicingsAYaml, type Cambios, type Voicing } from '../lib/acordes-datos.ts';
   import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
-  import { conectarAudio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import { conectarAudio, conectarFiltroArpegio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { diagramaSVG } from '../lib/diagrama.ts';
   import { editorTrastes, type EditorTrastes } from '../lib/editor-trastes.ts';
   import { secuenciaVoicing, type ModoVoicing } from '../lib/secuencias.ts';
@@ -103,6 +110,8 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   let lista = ordenarPorIds(aplicarCambios(base, cambios), orden);
   let tonicaActual = 'C';
   let editando = false;
+  /** Grupo elegido en el selector de arpegio ('' = todos). */
+  let filtro = '';
   const tempo = conectarTempo();
 
   const contenedor = document.querySelector<HTMLElement>('[data-lista]')!;
@@ -155,6 +164,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 
   function pintar() {
     contenedor.innerHTML = grupos
+      .filter((g) => !filtro || g.id === filtro)
       .map((g) => {
         const vs = lista.filter((v) => v.grupo === g.id);
         if (vs.length === 0 && !editando) return '';
@@ -305,6 +315,11 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   conectarAudio((boton) => {
     const v = porId(boton.closest<HTMLElement>('[data-id]')!.dataset.id!);
     return secuenciaVoicing(trastesEn(v), boton.dataset.audio as ModoVoicing, tempo());
+  });
+
+  conectarFiltroArpegio('arpegio:acordes', (grupo) => {
+    filtro = grupo;
+    pintar();
   });
 
   conectarTonica((tonica) => {

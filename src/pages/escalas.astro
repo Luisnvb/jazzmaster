@@ -14,7 +14,14 @@ const tonica = 'C';
 
 <Base titulo="Escalas">
   <h1>Escalas</h1>
-  <SelectorTonica clave="escalas" />
+  <SelectorTonica clave="escalas">
+    <label>Arpegio
+      <select data-filtro-arpegio>
+        <option value="">Todos</option>
+        {grupos.map((g) => <option value={g.id}>{g.data.nombre}</option>)}
+      </select>
+    </label>
+  </SelectorTonica>
   <Tempo clave="escalas" />
   <Buscador placeholder="Buscar escala…" />
   <button type="button" class="boton" data-restaurar-eliminados hidden>Restaurar eliminados</button>
@@ -81,7 +88,7 @@ const tonica = 'C';
 </Base>
 
 <script>
-  import { conectarAudio, conectarBuscador, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import { conectarAudio, conectarBuscador, conectarFiltroArpegio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { conectarEliminados } from '../lib/eliminados.ts';
   import { secuenciaArpegio, secuenciaArpegiosPorGrado, secuenciaEscala } from '../lib/secuencias.ts';
   import { notasDeFormula } from '../lib/teoria.ts';
@@ -104,6 +111,12 @@ const tonica = 'C';
   });
 
   conectarBuscador();
+  // Selector de arpegio: muestra solo el grupo elegido.
+  conectarFiltroArpegio('arpegio:escalas', (grupo) => {
+    for (const s of document.querySelectorAll<HTMLElement>('section[data-grupo-busqueda]')) {
+      s.classList.toggle('fuera-de-filtro', grupo !== '' && s.id !== `grupo-${grupo}`);
+    }
+  });
   conectarEliminados('escalas');
   conectarTonica((tonica) => {
     tonicaActual = tonica;

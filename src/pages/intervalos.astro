@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import SelectorTonica from '../components/SelectorTonica.astro';
 import { porOrden } from '../lib/orden.ts';
+import { INSTRUMENTOS } from '../lib/audio.ts';
 import { ruta } from '../lib/rutas.ts';
 import { formatNota, notaBajoGrado, notasDeFormula } from '../lib/teoria.ts';
 
@@ -13,7 +14,11 @@ const tonica = 'C';
 <Base titulo="Intervalos">
   <h1>Intervalos</h1>
   <a class="entrenador tarjeta" href={ruta('intervalos/entrenador')}><span>Entrenador de oído</span><span aria-hidden="true">→</span></a>
-  <SelectorTonica clave="intervalos" etiqueta="Nota de partida" />
+  <SelectorTonica clave="intervalos" etiqueta="Nota de partida">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+  </SelectorTonica>
   <button type="button" class="boton restaurar" data-restaurar-eliminados hidden>Restaurar eliminados</button>
 
   <ul class="lista-tarjetas">
@@ -52,7 +57,7 @@ const tonica = 'C';
 </Base>
 
 <script>
-  import { conectarAudio, conectarTonica } from '../lib/cliente.ts';
+  import { conectarAudio, conectarInstrumento, conectarTonica } from '../lib/cliente.ts';
   import { conectarEliminados } from '../lib/eliminados.ts';
   import { secuenciaIntervalo, type ModoIntervalo } from '../lib/secuencias.ts';
   import { formatNota, notaBajoGrado, notasDeFormula } from '../lib/teoria.ts';
@@ -72,9 +77,11 @@ const tonica = 'C';
 
   conectarEliminados('intervalos');
 
-  conectarAudio((boton) =>
-    secuenciaIntervalo(tonicaActual, boton.dataset.grado!, boton.dataset.audio as ModoIntervalo),
-  );
+  const instrumento = conectarInstrumento('intervalos:sonido');
+  conectarAudio((boton) => ({
+    eventos: secuenciaIntervalo(tonicaActual, boton.dataset.grado!, boton.dataset.audio as ModoIntervalo),
+    instrumento: instrumento(),
+  }));
 </script>
 
 <style>
