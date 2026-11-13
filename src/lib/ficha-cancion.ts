@@ -206,6 +206,8 @@ export function iniciarFicha() {
     }
     if (cancion.notas) partes.push(`<h2>Notas de práctica</h2><p class="notas">${esc(cancion.notas)}</p>`);
     resto.innerHTML = partes.join('');
+    // Sin letra, el cifrado se centra y lo demás (enlaces, notas) va debajo.
+    resto.parentElement!.classList.toggle('sin-letra', cancion.instrumental || parrafos.length === 0);
   }
 
   function pintarPanel() {

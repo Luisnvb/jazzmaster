@@ -235,7 +235,7 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 ## 10 ter. Tareas pendientes (segunda iteración)
 
 - [x] **Estilo claro:** fondo blanco, títulos más pequeños y secciones algo más compactas.
-- [ ] **Cifrado centrado** cuando el tema no tiene letra.
+- [x] **Cifrado centrado** cuando el tema no tiene letra (una columna de hasta 80rem; enlaces y notas debajo).
 - [ ] **Sonido del cifrado:** selector de instrumento, con algún pad que suene de forma continua cuando el acorde se repite.
 - [ ] **Repertorio:** metrónomo opcional y selector de tempo.
 

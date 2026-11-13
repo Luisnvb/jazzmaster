@@ -77,6 +77,15 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   .ficha-lateral:empty {
     display: none;
   }
+  /* Sin letra: una sola columna centrada. */
+  .ficha-cuerpo.sin-letra {
+    grid-template-columns: minmax(0, 80rem);
+    justify-content: center;
+  }
+  .ficha-cuerpo.sin-letra .ficha-lateral {
+    position: static;
+    max-height: none;
+  }
   .ficha-lateral h2:first-child {
     margin-top: 3rem;
   }
