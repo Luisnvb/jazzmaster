@@ -5,6 +5,7 @@ import SelectorTonica from '../components/SelectorTonica.astro';
 import Tempo from '../components/Tempo.astro';
 import { porOrden } from '../lib/orden.ts';
 import { SUFIJOS } from '../lib/progresiones.ts';
+import { INSTRUMENTOS } from '../lib/audio.ts';
 
 const progresiones = porOrden(await getCollection('progresiones')).map(({ id, data }) => ({
   id,
@@ -21,6 +22,13 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
   <h1>Progresiones</h1>
   <SelectorTonica clave="progresiones" />
   <Tempo clave="progresiones" inicial={120} />
+  <div class="controles-sonido">
+    <label class="control">Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <label class="casilla"><input type="checkbox" data-metronomo /> Metrónomo</label>
+    <button type="button" class="boton" data-bucle aria-pressed="false" title="Al acabar, vuelve a empezar">⟲ Bucle</button>
+  </div>
 
   <div class="barra-edicion">
     <button type="button" class="boton" data-modo-edicion aria-pressed="false">Editar</button>
@@ -67,6 +75,7 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
 
 <script>
   import { borrar, descargar, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
+  import { INSTRUMENTOS, SOSTENIDOS, type Instrumento } from '../lib/audio.ts';
   import { conectarAudio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import {
     analizarProgresion,
@@ -242,10 +251,28 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     }
   });
 
+  // Sonido y metrónomo, recordados en este navegador; el bucle, solo en esta visita.
+  const selInstrumento = document.querySelector<HTMLSelectElement>('[data-instrumento]')!;
+  const casillaMetronomo = document.querySelector<HTMLInputElement>('[data-metronomo]')!;
+  const botonBucle = document.querySelector<HTMLButtonElement>('[data-bucle]')!;
+  const sonido = leerJSON<{ instrumento?: Instrumento; metronomo?: boolean }>('progresiones:sonido') ?? {};
+  if (INSTRUMENTOS.some((i) => i.id === sonido.instrumento)) selInstrumento.value = sonido.instrumento!;
+  casillaMetronomo.checked = sonido.metronomo === true;
+  const guardarSonido = () =>
+    guardarJSON('progresiones:sonido', { instrumento: selInstrumento.value, metronomo: casillaMetronomo.checked });
+  selInstrumento.addEventListener('change', guardarSonido);
+  casillaMetronomo.addEventListener('change', guardarSonido);
+  const enBucle = () => botonBucle.getAttribute('aria-pressed') === 'true';
+  botonBucle.addEventListener('click', () => botonBucle.setAttribute('aria-pressed', String(!enBucle())));
+
   conectarAudio((boton) => {
     const tarjetaEl = boton.closest<HTMLElement>('[data-id]')!;
     const p = porId(tarjetaEl.dataset.id!);
-    const { eventos, tramos } = secuenciaProgresion(tonicaActual, analizarProgresion(p.compases), tempo(), p.pulsos ?? 4);
+    const instrumento = selInstrumento.value as Instrumento;
+    const { eventos, tramos, duracion } = secuenciaProgresion(tonicaActual, analizarProgresion(p.compases), tempo(), p.pulsos ?? 4, {
+      metronomo: casillaMetronomo.checked,
+      sostenido: SOSTENIDOS.includes(instrumento),
+    });
     let marcado = -1;
     const marcar = (k: number) => {
       if (k === marcado) return;
@@ -256,6 +283,9 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     };
     return {
       eventos,
+      instrumento,
+      bucle: enBucle,
+      duracion,
       alProgresar: (s) => marcar(tramos.findIndex((t) => s >= t.inicio && s < t.fin)),
       alTerminar: () => marcar(-1),
     };
@@ -269,6 +299,22 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
 </script>
 
 <style>
+  .controles-sonido {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    margin: 0 0 1rem;
+  }
+  .controles-sonido .control {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .controles-sonido select {
+    width: auto;
+    min-height: 2.2rem;
+  }
   .barra-edicion {
     display: flex;
     flex-wrap: wrap;

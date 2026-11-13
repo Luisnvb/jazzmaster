@@ -1,6 +1,6 @@
 // Progresiones en grados romanos (IIm7 V7 | Imaj7), su transporte a una tónica
 // y su secuencia de audio. Funciones puras, sin DOM.
-import type { Evento } from './secuencias.ts';
+import { ligarRepetidos, type Evento } from './secuencias.ts';
 import { formatNota, notaDeGrado, pitchClass, semitonosGrado } from './teoria.ts';
 
 export interface Progresion {
@@ -114,36 +114,52 @@ export interface Tramo {
   fin: number;
 }
 
+export interface OpcionesProgresion {
+  /** Un clic por pulso, más fuerte en el primero de cada compás. */
+  metronomo?: boolean;
+  /** Acordes mantenidos de principio a fin y ligados si se repiten (pad, órgano). */
+  sostenido?: boolean;
+}
+
 /**
  * Audio de la progresión: en cada acorde, el bajo y el acorde en posición cerrada
  * por encima (raíz entre G2 y F#3 para que no salte de registro). Devuelve también
- * cuándo suena cada acorde, para marcarlo.
+ * cuándo suena cada acorde, para marcarlo, y la duración total (para el bucle).
  */
 export function secuenciaProgresion(
   tonica: string,
   compases: AcordeGrado[][],
   bpm: number,
   pulsos = 4,
-): { eventos: Evento[]; tramos: Tramo[] } {
+  op: OpcionesProgresion = {},
+): { eventos: Evento[]; tramos: Tramo[]; duracion: number } {
   const pulso = 60 / bpm;
   const eventos: Evento[] = [];
   const tramos: Tramo[] = [];
   let t = 0;
   compases.forEach((acordes, i) => {
+    if (op.metronomo) {
+      for (let p = 0; p < pulsos; p++) eventos.push({ midi: 0, inicio: t + p * pulso, duracion: 0.05, clic: p === 0 ? 'fuerte' : 'debil' });
+    }
     const dur = (pulsos * pulso) / acordes.length;
+    const notas = op.sostenido ? 1 : 0.95;
     acordes.forEach((a, j) => {
       const pc = pitchClass(notaDeGrado(tonica, a.grado));
       const bajo = 43 + ((pc - 7 + 12) % 12); // G2 (43) … F#3 (54)
-      eventos.push({ midi: bajo, inicio: t, duracion: dur * 0.95 });
+      eventos.push({ midi: bajo, inicio: t, duracion: dur * notas });
       for (const g of a.formula.slice(1)) {
         // Tensiones (9, 11, 13) dentro de la octava sobre el bajo.
-        eventos.push({ midi: bajo + 12 + (semitonosGrado(g) % 12), inicio: t + 0.02, duracion: dur * 0.9 });
+        eventos.push(
+          op.sostenido
+            ? { midi: bajo + 12 + (semitonosGrado(g) % 12), inicio: t, duracion: dur }
+            : { midi: bajo + 12 + (semitonosGrado(g) % 12), inicio: t + 0.02, duracion: dur * 0.9 },
+        );
       }
       tramos.push({ compas: i, acorde: j, inicio: t, fin: t + dur });
       t += dur;
     });
   });
-  return { eventos, tramos };
+  return { eventos: op.sostenido ? ligarRepetidos(eventos) : eventos, tramos, duracion: t };
 }
 
 /**

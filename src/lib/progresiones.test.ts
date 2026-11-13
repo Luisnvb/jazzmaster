@@ -52,6 +52,23 @@ test('secuencia: un tramo por acorde y el compás repartido', () => {
   assert.ok(eventos.every((e) => e.midi >= 40 && e.midi <= 88));
 });
 
+test('metrónomo, acordes sostenidos ligados y duración', () => {
+  const compases = analizarProgresion(['IIm7', 'IIm7', 'V7']);
+  const normal = secuenciaProgresion('C', compases, 120);
+  assert.equal(normal.duracion, 6);
+  assert.equal(normal.eventos.filter((e) => e.clic).length, 0);
+  const clics = secuenciaProgresion('C', compases, 120, 4, { metronomo: true }).eventos.filter((e) => e.clic);
+  assert.equal(clics.length, 12);
+  assert.deepEqual(
+    [clics[0].clic, clics[1].clic, clics[4].clic],
+    ['fuerte', 'debil', 'fuerte'],
+  );
+  // Sostenido: los dos compases de Dm7 se ligan en notas de 4 s.
+  const sost = secuenciaProgresion('C', compases, 120, 4, { sostenido: true }).eventos;
+  assert.ok(sost.length < normal.eventos.length);
+  assert.ok(sost.some((e) => e.midi === 50 && e.duracion === 4));
+});
+
 test('las progresiones del repositorio se entienden y la exportación se relee igual', () => {
   const datos = parse(readFileSync(new URL('../data/progresiones.yaml', import.meta.url), 'utf8')) as Progresion[];
   assert.ok(datos.length >= 10);
