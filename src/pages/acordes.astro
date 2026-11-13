@@ -74,7 +74,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 </Base>
 
 <script>
-  import { aplicarCambios, aVoicing, erroresVoicing, gradosSugeridos, nuevoIdVoicing, voicingsAYaml, type Cambios, type Voicing } from '../lib/acordes-datos.ts';
+  import { aplicarCambios, aVoicing, moverEnGrupo, ordenarPorIds, erroresVoicing, gradosSugeridos, nuevoIdVoicing, voicingsAYaml, type Cambios, type Voicing } from '../lib/acordes-datos.ts';
   import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
   import { conectarAudio, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { diagramaSVG } from '../lib/diagrama.ts';
@@ -91,13 +91,16 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   }
 
   const CLAVE = 'acordes:cambios';
+  // Orden elegido en la web (ids de todos los voicings); vacío = el del repositorio.
+  const CLAVE_ORDEN = 'acordes:orden';
   const { grupos, voicings: base }: { grupos: Grupo[]; voicings: Voicing[] } = JSON.parse(
     document.getElementById('datos-acordes')!.textContent!,
   );
   const grupoPorId = Object.fromEntries(grupos.map((g) => [g.id, g]));
 
   let cambios: Cambios = leerJSON<Cambios>(CLAVE) ?? {};
-  let lista = aplicarCambios(base, cambios);
+  let orden: string[] = leerJSON<string[]>(CLAVE_ORDEN) ?? [];
+  let lista = ordenarPorIds(aplicarCambios(base, cambios), orden);
   let tonicaActual = 'C';
   let editando = false;
   const tempo = conectarTempo();
@@ -115,6 +118,8 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   function tarjeta(v: Voicing): string {
     const t = tonicaDe(v);
     const tocados = v.grados.filter(Boolean);
+    const hermanos = lista.filter((x) => x.grupo === v.grupo);
+    const posicion = hermanos.indexOf(v);
     const notas = tocados.map((g) => formatNota(notaDeGrado(t, g))).join(' ');
     return `
       <li class="tarjeta voicing" data-id="${esc(v.id)}">
@@ -138,6 +143,8 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
           editando
             ? `<div class="botones-edicion">
                 <button type="button" class="boton" data-editar>Editar</button>
+                <button type="button" class="boton" data-mover="-1" title="Mover antes" aria-label="Mover antes" ${posicion === 0 ? 'disabled' : ''}>◀</button>
+                <button type="button" class="boton" data-mover="1" title="Mover después" aria-label="Mover después" ${posicion === hermanos.length - 1 ? 'disabled' : ''}>▶</button>
                 <button type="button" class="boton" data-duplicar>Duplicar</button>
                 <button type="button" class="boton peligro" data-borrar>Borrar</button>
               </div>`
@@ -159,14 +166,14 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
           </section>`;
       })
       .join('');
-    avisoLocal.hidden = Object.keys(cambios).length === 0;
+    avisoLocal.hidden = Object.keys(cambios).length === 0 && orden.length === 0;
   }
 
   function guardar(nuevos: Cambios) {
     cambios = nuevos;
     if (Object.keys(cambios).length) guardarJSON(CLAVE, cambios);
     else borrar(CLAVE);
-    lista = aplicarCambios(base, cambios);
+    lista = ordenarPorIds(aplicarCambios(base, cambios), orden);
     pintar();
   }
 
@@ -250,7 +257,12 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     const id = el.closest<HTMLElement>('[data-id]')?.dataset.id;
     if (el.dataset.nuevo !== undefined) abrir(vacio(el.dataset.nuevo || grupos[0].id), null);
     else if (el.hasAttribute('data-editar') && id) abrir(porId(id), id);
-    else if (el.hasAttribute('data-duplicar') && id) abrir({ ...porId(id), nombre: `${porId(id).nombre} (copia)` }, null);
+    else if (el.dataset.mover && id) {
+      lista = moverEnGrupo(lista, id, Number(el.dataset.mover) as -1 | 1);
+      orden = lista.map((v) => v.id);
+      guardarJSON(CLAVE_ORDEN, orden);
+      pintar();
+    } else if (el.hasAttribute('data-duplicar') && id) abrir({ ...porId(id), nombre: `${porId(id).nombre} (copia)` }, null);
     else if (el.hasAttribute('data-borrar') && id) {
       if (!confirm(`¿Borrar el voicing "${porId(id).nombre}"?`)) return;
       const nuevos = { ...cambios };
@@ -282,7 +294,11 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         alert(`No se pudo importar: ${(error as Error).message}`);
       }
     } else if (el.hasAttribute('data-restaurar')) {
-      if (confirm('¿Descartar todos los cambios hechos en este navegador y volver a los voicings del repositorio?')) guardar({});
+      if (confirm('¿Descartar todos los cambios hechos en este navegador y volver a los voicings del repositorio?')) {
+        orden = [];
+        borrar(CLAVE_ORDEN);
+        guardar({});
+      }
     }
   });
 
@@ -335,10 +351,16 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   }
   :global(.botones-edicion) {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.4rem;
   }
+  :global(.botones-edicion .boton[data-mover]) {
+    flex: 0 0 2.6rem;
+    padding: 0;
+  }
   :global(.botones-edicion .boton) {
-    flex: 1;
+    flex: 1 1 auto;
+    padding: 0 0.7rem;
   }
   :global(.voicing h3) {
     margin: 0;

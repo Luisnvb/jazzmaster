@@ -21,7 +21,7 @@ Todo el contenido está en archivos de datos; no hace falta tocar el código.
 |---|---|
 | Intervalos | `src/data/intervalos.yaml` |
 | Escalas | `src/data/escalas.yaml` |
-| Voicings | `src/data/acordes.yaml` (formato explicado al principio del archivo) |
+| Voicings | `src/data/acordes.yaml` (formato explicado al principio del archivo). `npm run voicings-repertorio` añade los que salen en los cifrados y aún no están |
 | Tipos de acorde | `src/data/grupos.yaml` |
 | Progresiones | `src/data/progresiones.yaml` (grados romanos; formato al principio del archivo) |
 | Patrones de práctica | `src/data/patrones.yaml` (formato al principio del archivo) |

@@ -239,6 +239,8 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Sonido del cifrado:** selector de instrumento, con algún pad que suene de forma continua cuando el acorde se repite. Guitarra jazz (samples), piano eléctrico, órgano y pad sintetizados con Web Audio (`lib/audio.ts`); con órgano y pad los acordes se mantienen y las notas repetidas se ligan (`ligarRepetidos`). La elección se recuerda en el navegador.
 - [x] **Color de acento por sesión:** paleta de seis colores (violeta, magenta, azul, verde, naranja, turquesa) en `lib/acento.ts`; cada sesión elige uno al azar, distinto del anterior, y lo mantiene al navegar.
 - [x] **Indicador del acorde que suena atenuado** (fondo translúcido del acento y borde) para que el acorde y su diagrama se lean bien; igual en Progresiones y Patrones.
+- [x] **Acordes del repertorio:** los voicings de los cifrados se añaden a `acordes.yaml` (24, sin repetir dibujos; en las notas, las canciones donde salen). Para canciones nuevas: `npm run voicings-repertorio` (solo añade los que faltan).
+- [x] **Acordes:** cambiar de posición los voicings dentro de su grupo (◀ ▶ en modo edición). El orden se guarda en el navegador y sale en «Exportar YAML».
 - [x] **Repertorio:** metrónomo opcional y selector de tempo. Tempo de 40 a 320 BPM (por defecto el de la ficha, con «↺ Original» para volver; no modifica la canción). El metrónomo marca cada pulso, con la primera parte del compás acentuada, y se recuerda en el navegador.
 
 ## 11. Fuera de alcance

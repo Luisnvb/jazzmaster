@@ -112,10 +112,10 @@ const CABECERA = `# Voicings personales. Cada uno se escribe sobre una tónica d
 const cadena = (s: string) => `'${s.replace(/'/g, "''")}'`;
 const lista = (xs: readonly (string | number)[]) => `[${xs.map((x) => (typeof x === 'number' || x === 'x' ? String(x) : cadena(x))).join(', ')}]`;
 
-/** Lista de voicings en el formato de src/data/acordes.yaml. */
-export function voicingsAYaml(voicings: readonly Voicing[]): string {
-  const bloques = voicings.map((v) => {
-    const lineas = [
+/** Un voicing en el formato de src/data/acordes.yaml. */
+export function voicingAYaml(v: Voicing): string {
+  {
+    const lineas: string[] = [
       `- id: ${v.id}`,
       `  grupo: ${v.grupo}`,
       `  nombre: ${cadena(v.nombre)}`,
@@ -128,8 +128,12 @@ export function voicingsAYaml(voicings: readonly Voicing[]): string {
       lineas.push(v.notas.includes('\n') ? `  notas: |\n${v.notas.replace(/^/gm, '    ')}` : `  notas: ${cadena(v.notas)}`);
     }
     return lineas.join('\n');
-  });
-  return `${CABECERA}\n${bloques.join('\n\n')}\n`;
+  }
+}
+
+/** Lista de voicings en el formato de src/data/acordes.yaml. */
+export function voicingsAYaml(voicings: readonly Voicing[]): string {
+  return `${CABECERA}\n${voicings.map(voicingAYaml).join('\n\n')}\n`;
 }
 
 /** Comprueba la forma de un voicing leído de un archivo. */
@@ -152,3 +156,24 @@ export function aVoicing(x: unknown): Voicing {
 
 /** Clase de altura de la tónica (para comparar Bb con A#). */
 export const pcTonica = (t: string) => pitchClass(parseNota(t));
+
+/** Ordena según una lista de ids guardada; lo que no está en ella conserva su sitio relativo, al final. */
+export function ordenarPorIds<T extends { id: string }>(lista: readonly T[], orden: readonly string[]): T[] {
+  const pos = new Map(orden.map((id, i) => [id, i]));
+  return lista
+    .map((v, i) => ({ v, i, p: pos.get(v.id) ?? Number.MAX_SAFE_INTEGER }))
+    .sort((a, b) => a.p - b.p || a.i - b.i)
+    .map((x) => x.v);
+}
+
+/** Cambia un voicing de sitio con su vecino del mismo grupo (-1 = antes, 1 = después). */
+export function moverEnGrupo<T extends { id: string; grupo: string }>(lista: readonly T[], id: string, direccion: -1 | 1): T[] {
+  const res = [...lista];
+  const i = res.findIndex((v) => v.id === id);
+  if (i === -1) return res;
+  let j = i + direccion;
+  while (j >= 0 && j < res.length && res[j].grupo !== res[i].grupo) j += direccion;
+  if (j < 0 || j >= res.length) return res;
+  [res[i], res[j]] = [res[j], res[i]];
+  return res;
+}
