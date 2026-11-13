@@ -90,7 +90,8 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   import { conectarAudio, conectarFiltroArpegio, conectarInstrumento, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { diagramaSVG } from '../lib/diagrama.ts';
   import { editorTrastes, type EditorTrastes } from '../lib/editor-trastes.ts';
-  import { secuenciaVoicing, type ModoVoicing } from '../lib/secuencias.ts';
+  import { secuenciaVoicing, secuenciaVoicingContinua, type ModoVoicing } from '../lib/secuencias.ts';
+  import { SOSTENIDOS } from '../lib/audio.ts';
   import { notaDeGrado, formatNota } from '../lib/teoria.ts';
   import { cuerdaDelBajo, transportar, type Traste } from '../lib/voicings.ts';
 
@@ -150,6 +151,8 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         <div class="botones-audio">
           <button type="button" data-audio="rasgueo" aria-pressed="false">Rasgueo</button>
           <button type="button" data-audio="arpegiado" aria-pressed="false">Arpegiado</button>
+          <button type="button" data-audio="continuo" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Continuo</button>
+          <button type="button" data-detener>■ Detener</button>
           ${editando ? '' : '<button type="button" class="eliminar" data-borrar>Eliminar</button>'}
         </div>
         ${
@@ -319,6 +322,12 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   const instrumento = conectarInstrumento('acordes:sonido');
   conectarAudio((boton) => {
     const v = porId(boton.closest<HTMLElement>('[data-id]')!.dataset.id!);
+    if (boton.dataset.audio === 'continuo') {
+      const { eventos, vuelta } = secuenciaVoicingContinua(trastesEn(v), tempo(), SOSTENIDOS.includes(instrumento()));
+      return vuelta === null
+        ? { eventos, instrumento: instrumento() }
+        : { eventos, instrumento: instrumento(), bucle: () => true, duracion: vuelta };
+    }
     return { eventos: secuenciaVoicing(trastesEn(v), boton.dataset.audio as ModoVoicing, tempo()), instrumento: instrumento() };
   });
 

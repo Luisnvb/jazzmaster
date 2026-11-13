@@ -46,14 +46,14 @@ const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u00
       >Arpegio
       <select data-arpegio>{grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}</select>
     </label>
-  </SelectorTonica>
-  <Tempo clave="patrones" inicial={90} />
-
-  <div class="eleccion">
     <label
       >Sonido
       <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
     </label>
+  </SelectorTonica>
+  <Tempo clave="patrones" inicial={90} />
+
+  <div class="eleccion">
     <label class="casilla"><input type="checkbox" data-metronomo /> Metrónomo</label>
     <button type="button" class="boton" data-bucle aria-pressed="false" title="Al acabar, vuelve a empezar">⟲ Bucle</button>
     <button type="button" class="boton" data-restaurar-eliminados hidden>Restaurar eliminados</button>

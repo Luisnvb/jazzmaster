@@ -80,3 +80,15 @@ test('ligar notas repetidas seguidas (pad continuo)', async () => {
     ],
   );
 });
+
+test('voicing continuo: sostenido sin bucle o rasgueo por compás', async () => {
+  const { secuenciaVoicingContinua } = await import('./secuencias.ts');
+  const trastes = ['x', 3, 2, 0, 1, 0] as const;
+  const sost = secuenciaVoicingContinua(trastes, 120, true);
+  assert.equal(sost.vuelta, null);
+  assert.equal(sost.eventos.length, 5);
+  assert.ok(sost.eventos.every((e) => e.inicio === 0 && e.duracion >= 600));
+  const rasg = secuenciaVoicingContinua(trastes, 120, false);
+  assert.equal(rasg.vuelta, 2);
+  assert.ok(rasg.eventos.every((e) => e.inicio + e.duracion > 2));
+});

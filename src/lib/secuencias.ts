@@ -118,6 +118,27 @@ export function secuenciaArpegiosPorGrado(tonica: string, formula: readonly stri
 }
 
 /** Voicing tocado en la guitarra: rasgueado (casi a la vez) o arpegiado y dejando sonar. */
+/**
+ * Un voicing sonando de forma continua. Con instrumentos sostenidos (órgano, pad)
+ * es una sola nota larguísima por cuerda (hasta que se pare); con los que se
+ * apagan solos (guitarra, piano) es un rasgueo por compás, para repetir en bucle.
+ * Devuelve también la duración de cada vuelta (null si no hace falta bucle).
+ */
+export function secuenciaVoicingContinua(
+  trastes: readonly Traste[],
+  bpm: number,
+  sostenido: boolean,
+  pulsosPorCompas = 4,
+): { eventos: Evento[]; vuelta: number | null } {
+  const alturas = trastes.flatMap((t, c) => (t === 'x' ? [] : [AFINACION[c] + t]));
+  if (sostenido) return { eventos: alturas.map((m) => ({ midi: m, inicio: 0, duracion: 3600 })), vuelta: null };
+  const vuelta = pulso(bpm) * pulsosPorCompas;
+  return {
+    eventos: alturas.map((m, i) => ({ midi: m, inicio: i * 0.035, duracion: vuelta + 0.3 - i * 0.035 })),
+    vuelta,
+  };
+}
+
 export function secuenciaVoicing(trastes: readonly Traste[], modo: ModoVoicing, bpm: number): Evento[] {
   const alturas = trastes.flatMap((t, c) => (t === 'x' ? [] : [AFINACION[c] + t]));
   const separacion = modo === 'rasgueo' ? 0.035 : pulso(bpm) / 2;
