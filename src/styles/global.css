@@ -1,9 +1,7 @@
 /* Diseño de escritorio (monitor de 27") inspirado en The Verge, en versión clara:
-   fondo blanco, titulares condensados, etiquetas en monoespaciada y un color de acento
+   fondo blanco, titulares en Space Grotesk, etiquetas en monoespaciada y un color de acento
    que cambia en cada sesión (lib/acento.ts).
    Fuentes alojadas en el propio sitio (fontsource) para que funcione sin conexión. */
-@import '@fontsource/anton/latin-400.css';
-@import '@fontsource/anton/latin-ext-400.css';
 @import '@fontsource-variable/space-grotesk/wght.css';
 @import '@fontsource/jetbrains-mono/latin-500.css';
 @import '@fontsource/jetbrains-mono/latin-700.css';
@@ -23,7 +21,6 @@
   --mal: #d6002f;
 
   --fuente: 'Space Grotesk Variable', system-ui, 'Segoe UI', sans-serif;
-  --fuente-titulo: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
   --fuente-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
   --cabecera-alto: 3.5rem;
@@ -69,14 +66,12 @@ a:hover { text-decoration-thickness: 2px; }
 section[id] { scroll-margin-top: calc(var(--cabecera-alto) + 6rem); }
 
 h1, h2 {
-  font-family: var(--fuente-titulo);
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 h1 {
   font-size: clamp(1.6rem, 2vw, 2.2rem);
-  text-transform: uppercase;
   margin: 0.25rem 0 1.25rem;
   padding-bottom: 0.6rem;
   border-bottom: 0.3rem solid var(--acento);
