@@ -80,6 +80,10 @@ const tonica = 'C';
                       Arpegios por grado
                     </button>
                   )}
+                  <button type="button" data-audio="continuo" data-formula-audio={JSON.stringify(data.formula)} aria-pressed="false" title="Sube y baja sin parar hasta pulsar Detener">
+                    ∞ Continuo
+                  </button>
+                  <button type="button" data-detener>■ Detener</button>
                   <button type="button" class="eliminar" data-eliminar aria-label={`Eliminar ${data.nombre}`}>Eliminar</button>
                 </div>
               </li>
@@ -94,7 +98,7 @@ const tonica = 'C';
 <script>
   import { conectarAudio, conectarBuscador, conectarFiltroArpegio, conectarInstrumento, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { conectarEliminados } from '../lib/eliminados.ts';
-  import { secuenciaArpegio, secuenciaArpegiosPorGrado, secuenciaEscala } from '../lib/secuencias.ts';
+  import { secuenciaArpegio, secuenciaArpegiosPorGrado, secuenciaEscala, secuenciaEscalaContinua } from '../lib/secuencias.ts';
   import { notasDeFormula } from '../lib/teoria.ts';
 
   let tonicaActual = 'C';
@@ -114,7 +118,13 @@ const tonica = 'C';
         return secuenciaArpegio(tonicaActual, formula, tempo());
     }
   };
-  conectarAudio((boton) => ({ eventos: secuencia(boton), instrumento: instrumento() }));
+  conectarAudio((boton) => {
+    if (boton.dataset.audio === 'continuo') {
+      const { eventos, vuelta } = secuenciaEscalaContinua(tonicaActual, JSON.parse(boton.dataset.formulaAudio!), tempo());
+      return { eventos, instrumento: instrumento(), bucle: () => true, duracion: vuelta };
+    }
+    return { eventos: secuencia(boton), instrumento: instrumento() };
+  });
 
   conectarBuscador();
   // Selector de arpegio: muestra solo el grupo elegido.

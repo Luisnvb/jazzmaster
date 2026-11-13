@@ -83,6 +83,22 @@ export function secuenciaIntervalo(tonica: string, grado: string, modo: ModoInte
 }
 
 /** Escala de una octava, terminando (o empezando) en la tónica una octava arriba. */
+/**
+ * Escala subiendo y bajando para repetir en bucle: sube hasta la octava y baja
+ * sin repetir la nota de arriba ni la tónica final (la siguiente vuelta empieza
+ * en ella), una nota por pulso. Devuelve también lo que dura cada vuelta.
+ */
+export function secuenciaEscalaContinua(tonica: string, formula: readonly string[], bpm: number): { eventos: Evento[]; vuelta: number } {
+  const base = midi(tonica, OCTAVA_BASE);
+  const subida = ajustarARango([...semitonosAscendentes(formula), 12].map((s) => base + s));
+  const alturas = [...subida, ...subida.slice(1, -1).reverse()];
+  const p = pulso(bpm);
+  return {
+    eventos: alturas.map((m, i) => ({ midi: m, inicio: i * p, duracion: p * 1.1 })),
+    vuelta: alturas.length * p,
+  };
+}
+
 export function secuenciaEscala(tonica: string, formula: readonly string[], direccion: 'ascendente' | 'descendente', bpm: number): Evento[] {
   const base = midi(tonica, OCTAVA_BASE);
   const alturas = [...semitonosAscendentes(formula), 12].map((s) => base + s);

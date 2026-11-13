@@ -92,3 +92,11 @@ test('voicing continuo: sostenido sin bucle o rasgueo por compás', async () => 
   assert.equal(rasg.vuelta, 2);
   assert.ok(rasg.eventos.every((e) => e.inicio + e.duracion > 2));
 });
+
+test('escala continua: sube y baja sin repetir extremos', async () => {
+  const { secuenciaEscalaContinua } = await import('./secuencias.ts');
+  const { eventos, vuelta } = secuenciaEscalaContinua('C', ['1', '2', '3', '4', '5', '6', '7'], 120);
+  // C D E F G A B C B A G F E D → 14 notas; a 120 BPM, 7 s por vuelta.
+  assert.deepEqual(eventos.map((e) => e.midi), [48, 50, 52, 53, 55, 57, 59, 60, 59, 57, 55, 53, 52, 50]);
+  assert.equal(vuelta, 7);
+});
