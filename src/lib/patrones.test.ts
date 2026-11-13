@@ -59,3 +59,16 @@ test('los patrones del repositorio son válidos', () => {
   assert.ok(datos.length >= 8);
   for (const p of datos) assert.doesNotThrow(() => gruposDelPatron(p, 7), p.id);
 });
+
+test('metrónomo y duración de una vuelta en pulsos enteros', () => {
+  const grupos = gruposDelPatron({ id: 'g3', nombre: 'g3', sobre: 'escala', celula: [0, 1, 2], idaYVuelta: false }, 7);
+  // 8 grupos × 3 notas = 24 corcheas = 12 pulsos; a 120 BPM, 6 s.
+  const { eventos, duracion } = secuenciaPatron('C', JONICO, grupos, 120, true);
+  const clics = eventos.filter((e) => e.clic);
+  assert.equal(clics.length, 12);
+  assert.equal(clics[0].clic, 'fuerte');
+  assert.equal(clics[4].clic, 'fuerte');
+  assert.equal(clics[1].clic, 'debil');
+  assert.equal(duracion, 6);
+  assert.equal(secuenciaPatron('C', JONICO, grupos, 120).eventos.filter((e) => e.clic).length, 0);
+});

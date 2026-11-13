@@ -76,8 +76,18 @@ export interface TramoPatron {
   fin: number;
 }
 
-/** Audio en corcheas: cada paso, media parte. Todo dentro del rango de la guitarra. */
-export function secuenciaPatron(tonica: string, formula: readonly string[], grupos: Paso[][], bpm: number): { eventos: Evento[]; tramos: TramoPatron[] } {
+/**
+ * Audio en corcheas: cada paso, media parte. Todo dentro del rango de la guitarra.
+ * Con `metronomo`, un clic por pulso (acentuado cada cuatro). `duracion` es lo que
+ * dura una vuelta, redondeado a pulsos enteros para que el bucle cuadre.
+ */
+export function secuenciaPatron(
+  tonica: string,
+  formula: readonly string[],
+  grupos: Paso[][],
+  bpm: number,
+  metronomo = false,
+): { eventos: Evento[]; tramos: TramoPatron[]; duracion: number } {
   const corchea = 60 / bpm / 2;
   const raiz = midi(tonica, 3);
   const alturas = grupos.flat().map((p) => {
@@ -85,12 +95,16 @@ export function secuenciaPatron(tonica: string, formula: readonly string[], grup
     return raiz + (semitonosGrado(grado) % 12) + 12 * octava + p.cromatico;
   });
   const ajustadas = ajustarARango(alturas);
-  const eventos = ajustadas.map((m, i) => ({ midi: m, inicio: i * corchea, duracion: i === ajustadas.length - 1 ? 1.2 : corchea * 1.05 }));
+  const eventos: Evento[] = ajustadas.map((m, i) => ({ midi: m, inicio: i * corchea, duracion: i === ajustadas.length - 1 ? 1.2 : corchea * 1.05 }));
+  const pulsos = Math.ceil(ajustadas.length / 2);
+  if (metronomo) {
+    for (let p = 0; p < pulsos; p++) eventos.push({ midi: 0, inicio: p * corchea * 2, duracion: 0.05, clic: p % 4 === 0 ? 'fuerte' : 'debil' });
+  }
   const tramos: TramoPatron[] = [];
   let k = 0;
   grupos.forEach((g, i) => {
     tramos.push({ grupo: i, inicio: k * corchea, fin: (k + g.length) * corchea });
     k += g.length;
   });
-  return { eventos, tramos };
+  return { eventos, tramos, duracion: pulsos * corchea * 2 };
 }

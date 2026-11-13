@@ -113,6 +113,10 @@ export interface Reproduccion {
   alProgresar?: (segundos: number) => void;
   alTerminar?: () => void;
   instrumento?: Instrumento;
+  /** Si devuelve true al acabar una vuelta, se vuelve a empezar sin pausa. */
+  bucle?: () => boolean;
+  /** Duración musical de una vuelta (necesaria para encadenar el bucle a tiempo). */
+  duracion?: number;
 }
 
 /**
@@ -151,7 +155,15 @@ export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[] 
     try {
       const construida = construir(boton);
       reproduccion = Array.isArray(construida) ? { eventos: construida } : construida;
-      await tocar(reproduccion.eventos, reproduccion.alProgresar, reproduccion.instrumento);
+      const r = reproduccion;
+      const enBucle = () => r.duracion != null && r.bucle?.() === true;
+      let vuelta = 0;
+      do {
+        await tocar(r.eventos, r.alProgresar, r.instrumento, {
+          duracion: enBucle() ? r.duracion : undefined,
+          encadenar: vuelta++ > 0,
+        });
+      } while (activo === boton && enBucle());
     } catch (error) {
       console.error(error);
     }

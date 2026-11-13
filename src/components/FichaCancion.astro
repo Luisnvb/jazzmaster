@@ -39,6 +39,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   </label>
   <button type="button" class="boton" data-tempo-original hidden title="Volver al tempo de la ficha">↺ Original</button>
   <label class="casilla"><input type="checkbox" data-metronomo /> Metrónomo</label>
+  <button type="button" class="boton" data-bucle aria-pressed="false" title="Al acabar, vuelve a empezar">⟲ Bucle</button>
   <label class="control">Sonido
     <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
   </label>

@@ -29,9 +29,13 @@ const buffers = new Map<number, Promise<AudioBuffer>>();
 interface Voz {
   fuentes: AudioScheduledSourceNode[];
   ganancia: GainNode;
+  /** Cuándo deja de sonar (tiempo del contexto). */
+  fin: number;
 }
 let sonando: Voz[] = [];
 let turno = 0;
+/** Dónde empieza la siguiente vuelta de un bucle (tiempo del contexto). */
+let siguienteVuelta = 0;
 
 function obtenerContexto(): AudioContext {
   if (!contexto) {
@@ -94,7 +98,7 @@ function oscilador(ctx: AudioContext, tipo: OscillatorType, f: number, peso: num
 }
 
 /** Programa una nota sintetizada; devuelve la voz y cuándo deja de sonar. */
-function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrumento: Instrumento): Voz & { fin: number } {
+function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrumento: Instrumento): Voz {
   const ganancia = ctx.createGain();
   ganancia.connect(salida!);
   const g = ganancia.gain;
@@ -145,6 +149,20 @@ function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrument
   return { fuentes, ganancia, fin };
 }
 
+export interface OpcionesTocar {
+  /**
+   * Duración musical de la secuencia (sin las colas de las notas). Si se da, la
+   * promesa se resuelve un poco antes de ese momento para poder encadenar la
+   * siguiente vuelta de un bucle a tiempo.
+   */
+  duracion?: number;
+  /** Seguir a continuación de la vuelta anterior, sin cortar lo que aún suena. */
+  encadenar?: boolean;
+}
+
+/** Margen con el que se programa la siguiente vuelta de un bucle. */
+const ANTELACION = 0.25;
+
 /**
  * Reproduce una secuencia (sustituye a la anterior). La promesa se resuelve
  * cuando termina de sonar, o antes si otra reproducción la interrumpe.
@@ -152,17 +170,24 @@ function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrument
  * transcurridos desde el inicio de la secuencia.
  * Debe llamarse desde un gesto del usuario (clic) la primera vez.
  */
-export async function tocar(eventos: Evento[], alProgresar?: (segundos: number) => void, instrumento: Instrumento = 'guitarra'): Promise<void> {
-  detener();
+export async function tocar(
+  eventos: Evento[],
+  alProgresar?: (segundos: number) => void,
+  instrumento: Instrumento = 'guitarra',
+  op: OpcionesTocar = {},
+): Promise<void> {
+  if (op.encadenar) turno++;
+  else detener();
   const miTurno = turno;
   const ctx = obtenerContexto();
   if (ctx.state === 'suspended') await ctx.resume();
+  sonando = sonando.filter((v) => v.fin > ctx.currentTime);
 
   const conSample = (e: Evento) => instrumento === 'guitarra' && !e.clic;
   const notas = await Promise.all(eventos.map((e) => (conSample(e) ? cargar(e.midi) : null)));
   if (miTurno !== turno) return; // otra reproducción empezó mientras cargaba
 
-  const t0 = ctx.currentTime + 0.05;
+  const t0 = op.encadenar && siguienteVuelta > ctx.currentTime + 0.01 ? siguienteVuelta : ctx.currentTime + 0.05;
   let fin = 0;
   eventos.forEach((e, i) => {
     const inicio = t0 + e.inicio;
@@ -184,22 +209,26 @@ export async function tocar(eventos: Evento[], alProgresar?: (segundos: number) 
     fuente.connect(ganancia).connect(salida!);
     fuente.start(inicio);
     fuente.stop(final + 0.01);
-    sonando.push({ fuentes: [fuente], ganancia });
+    sonando.push({ fuentes: [fuente], ganancia, fin: final + 0.01 });
     fin = Math.max(fin, final);
   });
+
+  // Con duración musical, se espera hasta poco antes de ese momento (para encadenar).
+  const esperarHasta = op.duracion != null ? t0 + op.duracion - ANTELACION : fin;
+  if (op.duracion != null) siguienteVuelta = t0 + op.duracion;
 
   if (alProgresar) {
     const fotograma = () => {
       if (miTurno !== turno || ctx.currentTime >= fin) return;
-      alProgresar(ctx.currentTime - t0);
+      const s = ctx.currentTime - t0;
+      if (s >= 0) alProgresar(s);
       requestAnimationFrame(fotograma);
     };
     requestAnimationFrame(fotograma);
   }
 
   await new Promise<void>((resolver) => {
-    const comprobar = () => (miTurno !== turno || ctx.currentTime >= fin ? resolver() : setTimeout(comprobar, 100));
+    const comprobar = () => (miTurno !== turno || ctx.currentTime >= esperarHasta ? resolver() : setTimeout(comprobar, 50));
     comprobar();
   });
-  if (miTurno === turno) sonando = [];
 }

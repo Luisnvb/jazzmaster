@@ -86,6 +86,9 @@ export function iniciarFicha() {
   const controlTempo = $<HTMLInputElement>('[data-tempo-ficha]');
   const valorTempo = $('[data-tempo-ficha-valor]');
   const botonTempoOriginal = $<HTMLButtonElement>('[data-tempo-original]');
+  const botonBucle = $<HTMLButtonElement>('[data-bucle]');
+  const enBucle = () => botonBucle.getAttribute('aria-pressed') === 'true';
+  botonBucle.addEventListener('click', () => botonBucle.setAttribute('aria-pressed', String(!enBucle())));
   const sonido = leerJSON<{ instrumento?: Instrumento; metronomo?: boolean }>('repertorio:sonido') ?? {};
   if (INSTRUMENTOS.some((i) => i.id === sonido.instrumento)) selInstrumento.value = sonido.instrumento!;
   casillaMetronomo.checked = sonido.metronomo === true;
@@ -771,6 +774,8 @@ export function iniciarFicha() {
     return {
       eventos: secuenciaCifrado(c, bpm, personales, 0, { sostenido: SOSTENIDOS.includes(instrumento()), metronomo: casillaMetronomo.checked }),
       instrumento: instrumento(),
+      bucle: enBucle,
+      duracion: tramos.at(-1)?.fin ?? 0,
       alProgresar: (t) => marcar(tramos.findIndex((x) => t >= x.inicio && t < x.fin)),
       alTerminar: () => marcar(-1),
     };
