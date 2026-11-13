@@ -230,3 +230,17 @@ label.casilla input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: va
   .et { grid-template-columns: 1fr; }
   .et-diagrama .diagrama { max-width: 9rem; }
 }
+
+/* Botón Eliminar de cada registro (lib/eliminados.ts): discreto, a la derecha. */
+.botones-audio button.eliminar {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--texto-suave);
+  border-color: transparent;
+}
+.botones-audio button.eliminar:hover {
+  color: var(--mal);
+  border-color: var(--mal);
+}
+[data-restaurar-eliminados] { margin: 0 0 1rem; }
+.herramientas [data-restaurar-eliminados] { margin: 0; }

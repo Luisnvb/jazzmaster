@@ -72,7 +72,8 @@ export function conectarBuscador() {
     const consulta = normalizar(entrada.value.trim());
     let visibles = 0;
     for (const el of elementos) {
-      const coincide = normalizar(el.dataset.buscar!).includes(consulta);
+      // Los eliminados (lib/eliminados.ts) siguen ocultos aunque coincidan.
+      const coincide = normalizar(el.dataset.buscar!).includes(consulta) && !el.hasAttribute('data-eliminado');
       el.hidden = !coincide;
       if (coincide) visibles++;
     }

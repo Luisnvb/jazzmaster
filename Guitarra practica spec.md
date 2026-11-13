@@ -224,7 +224,7 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Acordes:** quitar la ayuda "Los grados se rellenan solos al elegir un traste; puedes cambiar la ortografía (p. ej. #9 en vez de b3)."
 - [x] **Escalas/Acordes:** completar la frase "Dominante alterado (más tensiones b9, …". Se cortaba porque en YAML " #" abre un comentario; ahora va entre comillas.
 - [x] **Repertorio:** botón para detener la reproducción.
-- [ ] **Todas las secciones:** botón para eliminar un registro.
+- [x] **Todas las secciones:** botón para eliminar un registro. La web es estática: en Escalas, Intervalos y canciones del repositorio, «Eliminar» oculta el registro en este navegador (`lib/eliminados.ts`, se deshace con «Restaurar eliminados»); en Acordes y canciones creadas en el navegador se borra de verdad. Para quitarlo del repositorio, bórralo del archivo de datos.
 - [x] **Repertorio:** marcar el acorde que suena durante la reproducción, sin desplazamiento automático.
 - [ ] **Acordes:** añadir grupos Sus y Aug.
 - [ ] **Progresiones (sección nueva):** progresiones básicas del jazz y un editor.

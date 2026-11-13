@@ -2,6 +2,7 @@
 // .cmb.json) y de la ficha, guardado local, exportación e importación.
 import { aplicarCambios, type Cambios, type Voicing } from './acordes-datos.ts';
 import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from './almacen.ts';
+import { eliminar } from './eliminados.ts';
 import { cancionACmb, claveCancion as clave, cmbACancion, nombreArchivo, type Cancion } from './cancion.ts';
 import { analizarCelda, htmlCifrado, secuenciaAcorde, secuenciaCifrado, tiemposCifrado } from './cifrado-vista.ts';
 import { conectarAudio } from './cliente.ts';
@@ -169,7 +170,8 @@ export function iniciarFicha() {
       : `<button type="button" class="boton" data-accion="editar">Editar</button>
          ${cmb()?.bars.length ? `<button type="button" class="boton" data-audio="cifrado" aria-pressed="false">▶ Tocar</button>
             <button type="button" class="boton detener" data-detener>■ Detener</button>` : ''}
-         ${cmb()?.bars.length ? `<button type="button" class="boton" data-accion="diagramas" aria-pressed="${diagramas}">Diagramas</button>` : ''}`;
+         ${cmb()?.bars.length ? `<button type="button" class="boton" data-accion="diagramas" aria-pressed="${diagramas}">Diagramas</button>` : ''}
+         <button type="button" class="boton peligro" data-accion="${local ? 'eliminar' : 'eliminar-repositorio'}">Eliminar</button>`;
     aviso.hidden = !(local || modificada);
     aviso.textContent = local
       ? 'Canción guardada solo en este navegador. Expórtala para llevarla al repositorio u otro dispositivo.'
@@ -656,6 +658,11 @@ export function iniciarFicha() {
         if (!base || !confirm('¿Descartar los cambios hechos en este navegador y volver a la versión del repositorio?')) return;
         seleccion = null;
         return cambiar(() => (cancion = clonar(base)), true);
+      case 'eliminar-repositorio':
+        if (!confirm(`¿Eliminar «${cancion.titulo}»? Se oculta del repertorio en este navegador; se puede restaurar desde la lista.`)) return;
+        eliminar('repertorio', id);
+        location.href = ruta('repertorio');
+        return;
       case 'eliminar':
         if (!confirm(`¿Borrar "${cancion.titulo}" de este navegador? No se puede deshacer.`)) return;
         borrar(clave(id));

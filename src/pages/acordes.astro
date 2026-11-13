@@ -132,6 +132,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         <div class="botones-audio">
           <button type="button" data-audio="rasgueo" aria-pressed="false">Rasgueo</button>
           <button type="button" data-audio="arpegiado" aria-pressed="false">Arpegiado</button>
+          ${editando ? '' : '<button type="button" class="eliminar" data-borrar>Eliminar</button>'}
         </div>
         ${
           editando

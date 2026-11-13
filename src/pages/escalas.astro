@@ -17,6 +17,7 @@ const tonica = 'C';
   <SelectorTonica clave="escalas" />
   <Tempo clave="escalas" />
   <Buscador placeholder="Buscar escala…" />
+  <button type="button" class="boton" data-restaurar-eliminados hidden>Restaurar eliminados</button>
 
   {
     grupos.map((g) => {
@@ -45,8 +46,8 @@ const tonica = 'C';
           </p>
           </div>
           <ul class="lista-tarjetas">
-            {delGrupo.map(({ data }) => (
-              <li class="tarjeta" data-buscar={`${data.nombre} ${g.data.nombre}`}>
+            {delGrupo.map(({ id, data }) => (
+              <li class="tarjeta" data-buscar={`${data.nombre} ${g.data.nombre}`} data-eliminable={id} data-nombre={data.nombre}>
                 <h3>{data.nombre}</h3>
                 <ol class="notas" data-formula-tabla={JSON.stringify(data.formula)}>
                   {notasDeFormula(tonica, data.formula).map((nota, i) => (
@@ -68,6 +69,7 @@ const tonica = 'C';
                       Arpegios por grado
                     </button>
                   )}
+                  <button type="button" class="eliminar" data-eliminar aria-label={`Eliminar ${data.nombre}`}>Eliminar</button>
                 </div>
               </li>
             ))}
@@ -80,6 +82,7 @@ const tonica = 'C';
 
 <script>
   import { conectarAudio, conectarBuscador, conectarTempo, conectarTonica } from '../lib/cliente.ts';
+  import { conectarEliminados } from '../lib/eliminados.ts';
   import { secuenciaArpegio, secuenciaArpegiosPorGrado, secuenciaEscala } from '../lib/secuencias.ts';
   import { notasDeFormula } from '../lib/teoria.ts';
 
@@ -101,6 +104,7 @@ const tonica = 'C';
   });
 
   conectarBuscador();
+  conectarEliminados('escalas');
   conectarTonica((tonica) => {
     tonicaActual = tonica;
     for (const el of document.querySelectorAll('[data-tonica-texto]')) el.textContent = tonica;
