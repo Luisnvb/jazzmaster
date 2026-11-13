@@ -106,7 +106,7 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     margin: 0 0 1.5rem;
   }
   [data-lista].lista-tarjetas {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   }
   [data-lista] > li {
     position: relative;
@@ -140,7 +140,7 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     display: grid;
     align-content: space-between;
     gap: 1rem;
-    min-height: 6.5rem;
+    min-height: 5rem;
     height: 100%;
     text-decoration: none;
     color: var(--texto);
@@ -153,7 +153,7 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
   .titulo {
     padding-right: 2rem;
     font-family: var(--fuente-titulo);
-    font-size: 1.45rem;
+    font-size: 1.25rem;
     line-height: 1.1;
   }
   .cancion:hover .titulo {

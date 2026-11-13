@@ -75,13 +75,13 @@ h1, h2 {
   line-height: 1;
 }
 h1 {
-  font-size: clamp(2.2rem, 3vw, 3.5rem);
+  font-size: clamp(1.8rem, 2.4vw, 2.6rem);
   text-transform: uppercase;
   margin: 0.25rem 0 1.25rem;
   padding-bottom: 0.6rem;
   border-bottom: 0.3rem solid var(--acento);
 }
-h2 { font-size: 1.6rem; margin: 2.25rem 0 0.75rem; }
+h2 { font-size: 1.35rem; margin: 2rem 0 0.6rem; }
 h3 { font-weight: 700; letter-spacing: -0.01em; }
 
 .suave { color: var(--texto-suave); }
@@ -102,7 +102,7 @@ code { font-family: var(--fuente-mono); font-size: 0.9em; }
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
-  padding: 1rem;
+  padding: 0.85rem;
   transition: border-color 0.15s;
 }
 .tarjeta:hover { border-color: var(--texto-suave); }
@@ -112,8 +112,8 @@ code { font-family: var(--fuente-mono); font-size: 0.9em; }
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: 0.6rem;
 }
 
 /* Diagramas de acorde (SVG generado en lib/diagrama.ts) */

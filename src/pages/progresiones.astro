@@ -291,13 +291,13 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
   }
   .lista-progresiones {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 36rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 30rem), 1fr));
     gap: 1rem;
     margin-top: 1.5rem;
   }
   :global(.progresion header h2) {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
   :global(.progresion header p) {
     margin: 0.4rem 0 1rem;
@@ -309,7 +309,7 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
   }
   :global(.compases .compas) {
     display: flex;
-    min-height: 4.5rem;
+    min-height: 3.75rem;
     border-right: 2px solid var(--texto-suave);
     border-bottom: 1px solid var(--borde);
   }
@@ -325,7 +325,7 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     border-radius: var(--radio);
   }
   :global(.compases .simbolo) {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 700;
     white-space: nowrap;
   }
