@@ -46,3 +46,4 @@ La mano casi no se mueve: las notas guía hacen el recorrido de siempre (la 7 ba
 - **Shell + nota de la melodía.** Toca el shell en las cuerdas graves y la melodía de la canción encima, en las agudas: el principio del *chord melody*.
 - **Línea de bajo caminando.** Toca la raíz en el tiempo 1 y notas de paso (cromáticas o de la escala) en los tiempos 2, 3 y 4 hacia la raíz del siguiente acorde; el shell, solo en el tiempo 1.
 - **Shells en las cuerdas agudas.** La 3 y la 7 en las cuerdas 3-2 o 2-1, sin raíz: para acompañar a otro guitarrista sin pisarle el registro.
+- **El siguiente paso.** Cuando los shells salgan solos, pasa a los voicings de cuatro notas en [Drop 2](../drop2/).
