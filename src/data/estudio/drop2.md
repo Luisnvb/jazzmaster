@@ -9,7 +9,7 @@ Un acorde de cuatro notas en **posición cerrada** (todas dentro de una octava: 
 
 El acorde abarca ahora algo más de una octava y cada nota cae en una cuerda distinta de **cuatro cuerdas seguidas**. Suena más abierto que la posición cerrada, sin huecos, y es la disposición de cuatro notas más usada en la guitarra de jazz.
 
-- **Drop 3** es lo mismo con la tercera voz desde arriba: el bajo queda separado y se toca en grupos de cuerdas con una saltada (6-4-3-2, 5-3-2-1). Algunos voicings de la sección **Acordes** son drop 3.
+- **Drop 3** es lo mismo con la tercera voz desde arriba: el bajo queda separado y se toca en grupos de cuerdas con una saltada (6-4-3-2, 5-3-2-1). Lo tienes en [Drop 3](../drop3/).
 - Los [ciclos de Goodrick](../ciclos/) tienen un botón *Drop 2* para oír la misma conducción de voces en esta disposición.
 
 ## Inversiones y grupos de cuerdas

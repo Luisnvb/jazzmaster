@@ -1,21 +1,26 @@
-// Voicings drop 2: el acorde en posición cerrada con la segunda voz empezando por
-// arriba bajada una octava. En guitarra caben en cuatro cuerdas seguidas. Aquí se
-// calculan sus inversiones en un grupo de cuerdas y su encadenamiento a lo largo de
-// una progresión. Funciones puras, sin DOM.
+// Voicings drop 2 y drop 3: el acorde en posición cerrada con la segunda (drop 2)
+// o la tercera (drop 3) voz empezando por arriba bajada una octava. Los drop 2 caben
+// en cuatro cuerdas seguidas; los drop 3, con una cuerda saltada entre el bajo y el
+// resto. Aquí se calculan sus inversiones en un grupo de cuerdas y su encadenamiento
+// a lo largo de una progresión. Funciones puras, sin DOM.
 import { simboloEn, type AcordeGrado } from './progresiones.ts';
 import { AFINACION, ligarRepetidos, type Evento } from './secuencias.ts';
 import { notaDeGrado, pitchClass, semitonosGrado } from './teoria.ts';
 import type { Traste } from './voicings.ts';
 
-/** Grupos de cuatro cuerdas seguidas (índice 0 = 6ª), de agudo a grave. */
+/** Grupos de cuerdas (índice 0 = 6ª) y el tipo de drop que se toca en cada uno. */
 export const GRUPOS_CUERDAS = [
-  { id: '4321', nombre: 'Cuerdas 4-3-2-1', cuerdas: [2, 3, 4, 5] },
-  { id: '5432', nombre: 'Cuerdas 5-4-3-2', cuerdas: [1, 2, 3, 4] },
-  { id: '6543', nombre: 'Cuerdas 6-5-4-3', cuerdas: [0, 1, 2, 3] },
+  { id: '4321', nombre: 'Cuerdas 4-3-2-1', cuerdas: [2, 3, 4, 5], tipo: 'drop2' },
+  { id: '5432', nombre: 'Cuerdas 5-4-3-2', cuerdas: [1, 2, 3, 4], tipo: 'drop2' },
+  { id: '6543', nombre: 'Cuerdas 6-5-4-3', cuerdas: [0, 1, 2, 3], tipo: 'drop2' },
+  { id: '6432', nombre: 'Cuerdas 6-4-3-2', cuerdas: [0, 2, 3, 4], tipo: 'drop3' },
+  { id: '5321', nombre: 'Cuerdas 5-3-2-1', cuerdas: [1, 3, 4, 5], tipo: 'drop3' },
 ] as const;
 export type IdGrupo = (typeof GRUPOS_CUERDAS)[number]['id'];
+export type TipoDrop = (typeof GRUPOS_CUERDAS)[number]['tipo'];
+export const gruposDe = (tipo: TipoDrop) => GRUPOS_CUERDAS.filter((g) => g.tipo === tipo);
 
-export interface Drop2 {
+export interface Drop {
   simbolo: string;
   romano: string;
   /** Inversión según la nota del bajo: Fundamental, 1ª, 2ª o 3ª. */
@@ -42,17 +47,17 @@ export function cuatroNotas(formula: readonly string[]): string[] {
 
 const NOMBRE_INVERSION: Record<string, string> = { '1': 'Fundamental', '3': '1ª inversión', '4': '1ª inversión', '5': '2ª inversión', '7': '3ª inversión', '6': '3ª inversión' };
 
-/** Las cuatro inversiones drop 2 de un acorde en un grupo de cuerdas, en todas las posiciones del mástil. */
-export function inversionesDrop2(tonica: string, a: AcordeGrado, grupo: IdGrupo, trasteMax = 15): Drop2[] {
-  const cuerdas = GRUPOS_CUERDAS.find((g) => g.id === grupo)!.cuerdas;
+/** Las cuatro inversiones de un acorde en un grupo de cuerdas (drop 2 o drop 3 según el grupo), en todo el mástil. */
+export function inversionesDrop(tonica: string, a: AcordeGrado, grupo: IdGrupo, trasteMax = 15): Drop[] {
+  const { cuerdas, tipo } = GRUPOS_CUERDAS.find((g) => g.id === grupo)!;
   const raiz = pitchClass(notaDeGrado(tonica, a.grado));
   // Grados en orden de la posición cerrada fundamental (de grave a agudo).
   const grados = cuatroNotas(a.formula).sort((x, y) => mod(semitonosGrado(x)) - mod(semitonosGrado(y)));
-  const res: Drop2[] = [];
+  const res: Drop[] = [];
   for (let inv = 0; inv < 4; inv++) {
     const cerrada = [...grados.slice(inv), ...grados.slice(0, inv)];
-    // Drop 2: la segunda voz desde arriba (índice 2) pasa al bajo.
-    const orden = [cerrada[2], cerrada[0], cerrada[1], cerrada[3]];
+    // Drop 2: la segunda voz desde arriba (índice 2) pasa al bajo; drop 3: la tercera (índice 1).
+    const orden = tipo === 'drop2' ? [cerrada[2], cerrada[0], cerrada[1], cerrada[3]] : [cerrada[1], cerrada[0], cerrada[2], cerrada[3]];
     for (let base = 1; base <= trasteMax; base++) {
       if (mod(AFINACION[cuerdas[0]] + base) !== mod(raiz + semitonosGrado(orden[0]))) continue;
       let altura = AFINACION[cuerdas[0]] + base;
@@ -83,31 +88,43 @@ export function inversionesDrop2(tonica: string, a: AcordeGrado, grupo: IdGrupo,
   return res;
 }
 
-const pisados = (d: Drop2) => d.trastes.filter((t): t is number => t !== 'x');
-const centro = (d: Drop2) => pisados(d).reduce((x, y) => x + y, 0) / 4;
-const alturas = (d: Drop2) => d.trastes.flatMap((t, c) => (t === 'x' ? [] : [AFINACION[c] + t]));
+const pisados = (d: Drop) => d.trastes.filter((t): t is number => t !== 'x');
+const centro = (d: Drop) => pisados(d).reduce((x, y) => x + y, 0) / 4;
+const alturas = (d: Drop) => d.trastes.flatMap((t, c) => (t === 'x' ? [] : [AFINACION[c] + t]));
 
 /** Las cuatro inversiones en orden ascendente por el mástil, empezando por la más grave. */
-export function escaleraInversiones(tonica: string, a: AcordeGrado, grupo: IdGrupo): Drop2[] {
-  const todas = inversionesDrop2(tonica, a, grupo).sort((x, y) => centro(x) - centro(y));
+export function escaleraInversiones(tonica: string, a: AcordeGrado, grupo: IdGrupo): Drop[] {
+  const todas = inversionesDrop(tonica, a, grupo).sort((x, y) => centro(x) - centro(y));
   return todas.slice(0, 4);
 }
 
 /**
- * Drop 2 de una progresión en un grupo de cuerdas: la secuencia de inversiones
- * que menos mueve la mano y las voces (programación dinámica). El primer acorde
- * empieza cerca del traste `alrededor`.
+ * Una progresión en drop 2 o drop 3: la secuencia de inversiones que menos mueve
+ * la mano y las voces (programación dinámica), en uno o varios grupos de cuerdas
+ * (con varios, puede cambiar de grupo entre acordes). El primer acorde empieza
+ * cerca del traste `alrededor`. Con `soloFundamental`, todos llevan la raíz en el
+ * bajo (si un acorde no tiene esa forma, se aceptan sus inversiones).
  */
-export function drop2Progresion(tonica: string, compases: readonly AcordeGrado[][], grupo: IdGrupo, alrededor = 5): Drop2[] {
+export function dropProgresion(
+  tonica: string,
+  compases: readonly AcordeGrado[][],
+  grupos: IdGrupo | readonly IdGrupo[],
+  alrededor = 5,
+  soloFundamental = false,
+): Drop[] {
   const acordes = compases.flat();
+  const lista: readonly IdGrupo[] = typeof grupos === 'string' ? [grupos] : grupos;
   const opciones = acordes.map((a, i) => {
-    const todas = inversionesDrop2(tonica, a, grupo);
+    const posibles = lista.flatMap((g) => inversionesDrop(tonica, a, g));
+    const fundamentales = soloFundamental ? posibles.filter((d) => d.inversion === 'Fundamental') : [];
+    const todas = fundamentales.length ? fundamentales : posibles;
     const enZona = i === 0 ? todas.filter((d) => pisados(d).every((t) => t >= alrededor - 3 && t <= alrededor + 3)) : [];
     return enZona.length ? enZona : todas;
   });
-  if (opciones.some((o) => o.length === 0)) throw new Error('Algún acorde no cabe en drop 2 en estas cuerdas.');
-  const coste = (p: Drop2, s: Drop2) => {
-    const [ap, as] = [alturas(p), alturas(s)];
+  if (opciones.some((o) => o.length === 0)) throw new Error('Algún acorde no cabe en estas cuerdas.');
+  const coste = (p: Drop, s: Drop) => {
+    // Mano y voces de arriba (el bajo puede saltar: en drop 3 hace de línea de bajo).
+    const [ap, as] = [alturas(p).slice(1), alturas(s).slice(1)];
     return Math.abs(centro(p) - centro(s)) * 1.2 + ap.reduce((t, m, i) => t + Math.abs(m - as[i]), 0) * 0.3;
   };
   let costes = opciones[0].map((d) => Math.abs(centro(d) - alrededor) * 0.3);
@@ -129,7 +146,7 @@ export function drop2Progresion(tonica: string, compases: readonly AcordeGrado[]
     previo.push(desde);
   }
   let k = costes.indexOf(Math.min(...costes));
-  const res: Drop2[] = [];
+  const res: Drop[] = [];
   for (let i = opciones.length - 1; i >= 0; i--) {
     res.unshift(opciones[i][k]);
     k = previo[i][k];
@@ -138,7 +155,7 @@ export function drop2Progresion(tonica: string, compases: readonly AcordeGrado[]
 }
 
 /** Audio: cada voicing dura lo indicado en pulsos (rasgueo muy corto). */
-export function eventosDrop2(voicings: readonly Drop2[], pulsos: readonly number[], bpm: number, sostenido = false) {
+export function eventosDrop(voicings: readonly Drop[], pulsos: readonly number[], bpm: number, sostenido = false) {
   const pulso = 60 / bpm;
   const eventos: Evento[] = [];
   const tramos: { inicio: number; fin: number }[] = [];
