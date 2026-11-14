@@ -88,6 +88,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
   import { conectarAudio, conectarFiltroArpegio, conectarInstrumento, conectarTempo, conectarTonica } from '../lib/cliente.ts';
   import { diagramaSVG } from '../lib/diagrama.ts';
+  import { botonFavorito, favoritos, favoritosPrimero } from '../lib/favoritos.ts';
   import { editorTrastes, type EditorTrastes } from '../lib/editor-trastes.ts';
   import { secuenciaVoicing, secuenciaVoicingContinua, type ModoVoicing } from '../lib/secuencias.ts';
   import { SOSTENIDOS } from '../lib/audio.ts';
@@ -117,6 +118,10 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   /** Grupo elegido en el selector de arpegio ('' = todos). */
   let filtro = '';
   const tempo = conectarTempo();
+  const favs = favoritos('acordes');
+  // Cuerda de la tónica elegida en cada grupo (grupo → '6'…'1', 'sin'; sin entrada = todas).
+  const CLAVE_CUERDA = 'acordes:cuerda-tonica';
+  const cuerdaElegida: Record<string, string> = leerJSON<Record<string, string>>(CLAVE_CUERDA) ?? {};
 
   const contenedor = document.querySelector<HTMLElement>('[data-lista]')!;
   const avisoLocal = document.querySelector<HTMLElement>('[data-aviso-local]')!;
@@ -124,6 +129,12 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   const botonEdicion = document.querySelector<HTMLButtonElement>('[data-modo-edicion]')!;
 
   const conAlAire = (v: Voicing) => v.trastes.includes(0);
+  /** Cuerda de la tónica más grave ('6'…'1'), o 'sin' si el voicing no la lleva. */
+  const cuerdaTonica = (v: Voicing) => {
+    const c = v.grados.findIndex((g, i) => g === '1' && v.trastes[i] !== 'x');
+    return c === -1 ? 'sin' : String(6 - c);
+  };
+  const nombreCuerda = (c: string) => (c === 'sin' ? 'Sin tónica' : `Tónica en ${c}ª`);
   /** Trastes del voicing en la tónica elegida (los que tienen cuerdas al aire no se mueven). */
   const trastesEn = (v: Voicing): Traste[] => (conAlAire(v) ? v.trastes : transportar(v.trastes, v.tonica, tonicaActual));
   const tonicaDe = (v: Voicing) => (conAlAire(v) ? v.tonica : tonicaActual);
@@ -137,6 +148,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     return `
       <li class="tarjeta voicing" data-id="${esc(v.id)}">
         <div class="diagrama-caja">${diagramaSVG({ trastes: trastesEn(v), grados: v.grados })}</div>
+        ${editando ? '' : botonFavorito(favs.tiene(v.id), v.nombre)}
         <div class="info">
           <h3>${esc(t)}${esc(grupoPorId[v.grupo]?.simbolo ?? '')}</h3>
           <p class="subtitulo suave">${esc(v.nombre)} · bajo en ${cuerdaDelBajo(v.trastes)}ª</p>
@@ -172,11 +184,25 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     contenedor.innerHTML = grupos
       .filter((g) => !filtro || g.id === filtro)
       .map((g) => {
-        const vs = lista.filter((v) => v.grupo === g.id);
-        if (vs.length === 0 && !editando) return '';
+        const todos = lista.filter((v) => v.grupo === g.id);
+        if (todos.length === 0 && !editando) return '';
+        // Selector de la cuerda de la tónica, con las que hay en el grupo (de grave a aguda).
+        const cuerdas = [...new Set(todos.map(cuerdaTonica))].sort((a, b) => (a === 'sin' ? 1 : b === 'sin' ? -1 : Number(b) - Number(a)));
+        const elegida = cuerdas.includes(cuerdaElegida[g.id]) ? cuerdaElegida[g.id] : '';
+        // En edición se ven todos en su orden (para poder moverlos); si no, favoritos primero.
+        const filtrados = todos.filter((v) => editando || !elegida || cuerdaTonica(v) === elegida);
+        const vs = editando ? filtrados : favoritosPrimero(filtrados, (v) => favs.tiene(v.id));
+        const selector =
+          cuerdas.length > 1 && !editando
+            ? `<label class="cuerda-tonica"><span class="visualmente-oculto">Cuerda de la tónica</span>
+                <select data-cuerda-tonica="${g.id}">
+                  <option value="">Todas las cuerdas</option>
+                  ${cuerdas.map((c) => `<option value="${c}" ${c === elegida ? 'selected' : ''}>${nombreCuerda(c)}</option>`).join('')}
+                </select></label>`
+            : '';
         return `
           <section id="grupo-${g.id}">
-            <h2>${esc(g.nombre)}</h2>
+            <div class="titulo-grupo"><h2>${esc(g.nombre)}</h2>${selector}</div>
             ${vs.length ? `<ul class="lista-tarjetas voicings">${vs.map(tarjeta).join('')}</ul>` : '<p class="suave">Sin voicings.</p>'}
             ${editando ? `<button type="button" class="boton" data-nuevo="${g.id}">+ Voicing ${esc(g.nombre)}</button>` : ''}
           </section>`;
@@ -271,6 +297,11 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     const el = (e.target as Element).closest<HTMLElement>('button');
     if (!el) return;
     const id = el.closest<HTMLElement>('[data-id]')?.dataset.id;
+    if (el.hasAttribute('data-favorito') && id) {
+      favs.alternar(id);
+      pintar();
+      return;
+    }
     if (el.dataset.nuevo !== undefined) abrir(vacio(el.dataset.nuevo || grupos[0].id), null);
     else if (el.hasAttribute('data-editar') && id) abrir(porId(id), id);
     else if (el.dataset.mover && id) {
@@ -330,6 +361,15 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     return { eventos: secuenciaVoicing(trastesEn(v), boton.dataset.audio as ModoVoicing, tempo()), instrumento: instrumento() };
   });
 
+  contenedor.addEventListener('change', (e) => {
+    const sel = (e.target as Element).closest<HTMLSelectElement>('select[data-cuerda-tonica]');
+    if (!sel) return;
+    if (sel.value) cuerdaElegida[sel.dataset.cuerdaTonica!] = sel.value;
+    else delete cuerdaElegida[sel.dataset.cuerdaTonica!];
+    guardarJSON(CLAVE_CUERDA, cuerdaElegida);
+    pintar();
+  });
+
   conectarFiltroArpegio('arpegio:acordes', (grupo) => {
     filtro = grupo;
     pintar();
@@ -365,7 +405,24 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   .aviso-local {
     font-size: 0.85rem;
   }
+  :global(.titulo-grupo) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin: 2rem 0 0.6rem;
+  }
+  :global(.titulo-grupo h2) {
+    margin: 0;
+  }
+  :global(.cuerda-tonica select) {
+    width: auto;
+    min-height: 2.2rem;
+    margin: 0;
+  }
   :global(.voicing) {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 9.5rem) 1fr;
     gap: 0.75rem;

@@ -6,6 +6,7 @@ import { eliminar } from './eliminados.ts';
 import { cancionACmb, claveCancion as clave, cmbACancion, nombreArchivo, type Cancion } from './cancion.ts';
 import { analizarCelda, htmlCifrado, secuenciaAcorde, secuenciaCifrado, tiemposCifrado } from './cifrado-vista.ts';
 import { conectarAudio } from './cliente.ts';
+import { favoritos } from './favoritos.ts';
 import { INSTRUMENTOS, SOSTENIDOS, type Instrumento } from './audio.ts';
 import {
   clonar,
@@ -99,6 +100,7 @@ export function iniciarFicha() {
   casillaMetronomo.addEventListener('change', guardarSonido);
 
   let tempoElegido: number | null = null;
+  const favs = favoritos('repertorio');
   const tempoFicha = () => cancion.tempo ?? cmb()?.tempoBpm ?? 100;
   const tempoActual = () => tempoElegido ?? tempoFicha();
   function mostrarTempo() {
@@ -211,7 +213,8 @@ export function iniciarFicha() {
          <button type="button" class="boton" data-accion="importar">Importar</button>
          ${modificada ? '<button type="button" class="boton peligro" data-accion="restaurar">Descartar cambios</button>' : ''}
          ${local ? '<button type="button" class="boton peligro" data-accion="eliminar">Borrar canción</button>' : ''}`
-      : `<button type="button" class="boton" data-accion="editar">Editar</button>
+      : `<button type="button" class="boton" data-accion="favorito" aria-pressed="${favs.tiene(id)}" title="Las favoritas salen primero en el Repertorio">${favs.tiene(id) ? '★' : '☆'} Favorita</button>
+         <button type="button" class="boton" data-accion="editar">Editar</button>
          ${cmb()?.bars.length ? `<button type="button" class="boton" data-audio="cifrado" aria-pressed="false">▶ Tocar</button>
             <button type="button" class="boton detener" data-detener>■ Detener</button>` : ''}
          ${cmb()?.bars.length ? `<button type="button" class="boton" data-accion="diagramas" aria-pressed="${diagramas}">Diagramas</button>` : ''}
@@ -666,6 +669,9 @@ export function iniciarFicha() {
         manual = false;
         pintarMeta();
         return pintar();
+      case 'favorito':
+        favs.alternar(id);
+        return pintarBarra();
       case 'diagramas':
         diagramas = !diagramas;
         guardarJSON('repertorio:diagramas', diagramas);

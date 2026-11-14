@@ -5,17 +5,103 @@ import type { Evento } from './secuencias.ts';
 import { archivo } from './rutas.ts';
 import { RANGO_GUITARRA } from './teoria.ts';
 
-export type Instrumento = 'guitarra' | 'piano' | 'organo' | 'pad';
+export type Instrumento =
+  | 'guitarra'
+  | 'piano'
+  | 'organo'
+  | 'organo-jazz'
+  | 'armonio'
+  | 'cuerdas'
+  | 'coro'
+  | 'flauta'
+  | 'pad'
+  | 'pad-calido';
 
 export const INSTRUMENTOS: { id: Instrumento; nombre: string }[] = [
   { id: 'guitarra', nombre: 'Guitarra jazz' },
   { id: 'piano', nombre: 'Piano eléctrico' },
-  { id: 'organo', nombre: 'Órgano' },
-  { id: 'pad', nombre: 'Pad (continuo)' },
+  { id: 'organo', nombre: 'Órgano suave' },
+  { id: 'organo-jazz', nombre: 'Órgano jazz' },
+  { id: 'armonio', nombre: 'Armonio' },
+  { id: 'cuerdas', nombre: 'Cuerdas' },
+  { id: 'coro', nombre: 'Coro' },
+  { id: 'flauta', nombre: 'Flauta' },
+  { id: 'pad', nombre: 'Pad' },
+  { id: 'pad-calido', nombre: 'Pad cálido' },
 ];
 
 /** Instrumentos que mantienen la nota: los acordes repetidos se ligan en un solo sonido. */
-export const SOSTENIDOS: readonly Instrumento[] = ['organo', 'pad'];
+export const SOSTENIDOS: readonly Instrumento[] = ['organo', 'organo-jazz', 'armonio', 'cuerdas', 'coro', 'flauta', 'pad', 'pad-calido'];
+
+/**
+ * Timbres sostenidos que se construyen con la misma receta: osciladores
+ * (múltiplo de la frecuencia, peso, desafinación en cents), un filtro, una
+ * envolvente (ataque y caída en s, nivel) y un vibrato opcional (Hz, cents).
+ * Pocos osciladores por nota para que el móvil aguante acordes largos.
+ */
+interface Receta {
+  osc: [OscillatorType, number, number, number?][];
+  filtro?: { tipo: BiquadFilterType; f: number; q?: number }[];
+  ataque: number;
+  caida: number;
+  nivel: number;
+  vibrato?: [number, number];
+}
+const RECETAS: Partial<Record<Instrumento, Receta>> = {
+  // Registros 16' + 8' + 5 1/3' ("888000000") con vibrato tipo Leslie lento.
+  'organo-jazz': {
+    osc: [['sine', 0.5, 0.8], ['sine', 1, 1], ['sine', 1.5, 0.7]],
+    ataque: 0.01,
+    caida: 0.06,
+    nivel: 0.085,
+    vibrato: [6.2, 7],
+  },
+  // Lengüetas: dos ondas cuadradas un poco desafinadas, filtradas.
+  armonio: {
+    osc: [['square', 1, 0.5, -6], ['square', 1, 0.5, 6]],
+    filtro: [{ tipo: 'lowpass', f: 1600, q: 0.7 }],
+    ataque: 0.06,
+    caida: 0.1,
+    nivel: 0.115,
+  },
+  // Sección de cuerdas: tres sierras desafinadas, ataque lento y vibrato suave.
+  cuerdas: {
+    osc: [['sawtooth', 1, 0.4, -11], ['sawtooth', 1, 0.4, 0], ['sawtooth', 1, 0.4, 11]],
+    filtro: [{ tipo: 'lowpass', f: 2400, q: 0.5 }],
+    ataque: 0.28,
+    caida: 0.35,
+    nivel: 0.19,
+    vibrato: [5, 6],
+  },
+  // Voces "aah": sierras por dos formantes (≈ 700 y 1150 Hz).
+  coro: {
+    osc: [['sawtooth', 1, 0.5, -7], ['sawtooth', 1, 0.5, 7]],
+    filtro: [
+      { tipo: 'bandpass', f: 700, q: 4 },
+      { tipo: 'bandpass', f: 1150, q: 5 },
+    ],
+    ataque: 0.35,
+    caida: 0.4,
+    nivel: 0.55,
+    vibrato: [4.8, 9],
+  },
+  // Flauta: casi una senoidal, con un poco de segundo armónico y vibrato.
+  flauta: {
+    osc: [['sine', 1, 1], ['sine', 2, 0.18], ['triangle', 1, 0.15]],
+    ataque: 0.08,
+    caida: 0.12,
+    nivel: 0.095,
+    vibrato: [5.2, 10],
+  },
+  // Pad cálido: triángulo y una senoidal una octava por debajo, muy filtrado.
+  'pad-calido': {
+    osc: [['triangle', 1, 0.7, -5], ['triangle', 1, 0.7, 5], ['sine', 0.5, 0.6]],
+    filtro: [{ tipo: 'lowpass', f: 750, q: 0.4 }],
+    ataque: 0.6,
+    caida: 0.8,
+    nivel: 0.095,
+  },
+};
 
 const RUTA = archivo('samples/guitarra-jazz/');
 const VOLUMEN = 0.7;
@@ -113,7 +199,42 @@ function oscilador(ctx: AudioContext, tipo: OscillatorType, f: number, peso: num
 function finSintetizada(e: Evento, inicio: number, instrumento: Instrumento): number {
   if (e.clic) return inicio + 0.06;
   const final = inicio + e.duracion;
+  const receta = RECETAS[instrumento];
+  if (receta) return final + receta.caida * 5;
   return final + (instrumento === 'piano' ? 0.5 : instrumento === 'organo' ? 0.35 : 2);
+}
+
+/** Nota con una de las RECETAS; devuelve sus fuentes (osciladores y vibrato). */
+function vozReceta(ctx: AudioContext, r: Receta, f: number, inicio: number, final: number, ganancia: GainNode): OscillatorNode[] {
+  // Los filtros van en paralelo (formantes) y se suman en la ganancia de la nota.
+  let entrada: AudioNode = ganancia;
+  if (r.filtro) {
+    const suma = ctx.createGain();
+    for (const { tipo, f: fc, q } of r.filtro) {
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = tipo;
+      filtro.frequency.value = fc;
+      filtro.Q.value = q ?? 0.7;
+      suma.connect(filtro).connect(ganancia);
+    }
+    entrada = suma;
+  }
+  const fuentes = r.osc.map(([tipo, mult, peso, cents]) => oscilador(ctx, tipo, f * mult, peso, entrada, cents ?? 0));
+  if (r.vibrato) {
+    const [hz, cents] = r.vibrato;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = hz;
+    const prof = ctx.createGain();
+    prof.gain.value = cents;
+    lfo.connect(prof);
+    for (const o of fuentes) prof.connect(o.detune);
+    fuentes.push(lfo);
+  }
+  const g = ganancia.gain;
+  g.setValueAtTime(0, inicio);
+  g.linearRampToValueAtTime(r.nivel, inicio + r.ataque);
+  g.setTargetAtTime(0, final, r.caida);
+  return fuentes;
 }
 
 /** Programa una nota sintetizada; devuelve la voz y cuándo deja de sonar. */
@@ -133,7 +254,10 @@ function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrument
     g.exponentialRampToValueAtTime(0.0001, inicio + 0.05);
   } else {
     const f = frecuencia(e.midi);
-    if (instrumento === 'piano') {
+    const receta = RECETAS[instrumento];
+    if (receta) {
+      fuentes = vozReceta(ctx, receta, f, inicio, final, ganancia);
+    } else if (instrumento === 'piano') {
       fuentes = [oscilador(ctx, 'sine', f, 1, ganancia), oscilador(ctx, 'sine', f * 2, 0.3, ganancia), oscilador(ctx, 'triangle', f * 4, 0.04, ganancia)];
       g.setValueAtTime(0, inicio);
       g.linearRampToValueAtTime(0.16, inicio + 0.006);

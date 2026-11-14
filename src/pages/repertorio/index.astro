@@ -38,6 +38,7 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
   import { cancionesGuardadas, claveCancion, cmbACancion, crearCancionLocal } from '../../lib/cancion.ts';
   import { conectarEliminados } from '../../lib/eliminados.ts';
   import { conectarBuscador } from '../../lib/cliente.ts';
+  import { botonFavorito, favoritos, favoritosPrimero } from '../../lib/favoritos.ts';
   import { ruta } from '../../lib/rutas.ts';
   import type { Cancion } from '../../lib/cancion.ts';
 
@@ -67,10 +68,27 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
       <button type="button" class="eliminar" data-eliminar aria-label="Eliminar ${esc(c.titulo)}" title="Eliminar">✕</button>`;
     lista.append(nuevo);
   }
-  // Orden alfabético con las nuevas incluidas.
-  [...lista.children]
-    .sort((a, b) => (a as HTMLElement).dataset.titulo!.localeCompare((b as HTMLElement).dataset.titulo!, 'es'))
-    .forEach((li) => lista.append(li));
+  // Estrella de favorito en cada canción; las favoritas van primero.
+  const favs = favoritos('repertorio');
+  for (const li of lista.querySelectorAll<HTMLElement>(':scope > li')) {
+    const id = li.dataset.id ?? li.dataset.eliminable!;
+    li.dataset.id = id;
+    li.insertAdjacentHTML('beforeend', botonFavorito(favs.tiene(id), li.dataset.titulo!));
+  }
+  /** Orden alfabético (con las nuevas incluidas), con las favoritas delante. */
+  const ordenar = () =>
+    favoritosPrimero(
+      [...lista.children as HTMLCollectionOf<HTMLElement>].sort((a, b) => a.dataset.titulo!.localeCompare(b.dataset.titulo!, 'es')),
+      (li) => favs.tiene(li.dataset.id!),
+    ).forEach((li) => lista.append(li));
+  ordenar();
+  lista.addEventListener('click', (e) => {
+    const boton = (e.target as Element).closest<HTMLButtonElement>('[data-favorito]');
+    if (!boton) return;
+    const li = boton.closest<HTMLElement>('li')!;
+    boton.outerHTML = botonFavorito(favs.alternar(li.dataset.id!), li.dataset.titulo!);
+    ordenar();
+  });
 
   conectarBuscador();
   // Las canciones del repositorio se ocultan (se pueden restaurar); las creadas en el navegador se borran.
@@ -112,8 +130,8 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
   }
   [data-lista] .eliminar {
     position: absolute;
-    top: 0.9rem;
-    right: 0.75rem;
+    top: 0.6rem;
+    right: 2.9rem;
     width: 2rem;
     height: 2rem;
     padding: 0;
@@ -150,7 +168,7 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     border-top-color: var(--acento);
   }
   .titulo {
-    padding-right: 2rem;
+    padding-right: 5rem;
     font-weight: 700;
     font-size: 1.25rem;
     line-height: 1.1;

@@ -15,15 +15,8 @@ export const SECCIONES: Seccion[] = [
   { nombre: 'Acordes', href: ruta('acordes'), lema: 'Voicings con sus grados' },
   { nombre: 'Escalas', href: ruta('escalas'), lema: 'Diccionario por tipo de acorde' },
   { nombre: 'Patrones', href: ruta('patrones'), lema: 'Ejercicios de escalas y arpegios' },
-  {
-    nombre: 'Teoría',
-    href: ruta('teoria'),
-    lema: 'Intervalos, entrenador de oído y progresiones',
-    partes: [
-      { nombre: 'Intervalos', href: ruta('intervalos'), lema: 'Fichas, audio y entrenador de oído' },
-      { nombre: 'Progresiones', href: ruta('progresiones'), lema: 'Las básicas del jazz, en cualquier tono' },
-    ],
-  },
+  { nombre: 'Intervalos', href: ruta('intervalos'), lema: 'Fichas, audio y entrenador de oído' },
+  { nombre: 'Progresiones', href: ruta('progresiones'), lema: 'Las básicas del jazz, en cualquier tono' },
 ];
 
 /** Si la página actual (con barra final) pertenece a una sección o a alguna de sus partes. */

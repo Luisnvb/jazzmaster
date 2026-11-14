@@ -231,6 +231,8 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Progresiones (sección nueva):** progresiones básicas del jazz y un editor. Datos en `src/data/progresiones.yaml` (grados romanos, p. ej. `IIm7 V7 | Imaj7`), lógica en `lib/progresiones.ts`. La página transporta a la tónica elegida, toca con marca del acorde que suena y permite crear, editar, duplicar, eliminar y exportar a YAML (cambios guardados en el navegador, como en Acordes).
 - [x] **Patrones (sección nueva):** patrones básicos para practicar escalas y arpegios. Datos en `src/data/patrones.yaml` (una «célula» de posiciones que se repite desde cada nota, con aproximaciones cromáticas `0-`/`0+`), lógica en `lib/patrones.ts`. Se elige escala y arpegio; suena en corcheas, sube y baja, con marca del grupo que suena.
 - [x] **Orden de secciones:** invertir el orden (Repertorio, Acordes, Escalas, …) y agrupar Intervalos y Progresiones en una sección múltiple ampliable. Orden: Repertorio, Acordes, Escalas, Patrones y Teoría (desplegable en la cabecera, página propia en `/teoria/` y barra con sus partes). Las direcciones de Intervalos y Progresiones no cambian.
+- [x] **Secciones al mismo nivel (2026-11-14):** Intervalos y Progresiones salen de Teoría (que desaparece) y quedan como secciones propias: Repertorio, Acordes, Escalas, Patrones, Intervalos y Progresiones. En pantallas estrechas la navegación es un desplegable.
+- [x] **Favoritos:** estrella en voicings y canciones (guardada en el navegador); los favoritos salen primero. **Cuerda de la tónica:** en Acordes, cada tipo tiene un selector para ver solo los voicings con la tónica más grave en una cuerda. **Timbres sostenidos:** órgano jazz, armonio, cuerdas, coro, flauta y pad cálido.
 
 ## 10 ter. Tareas pendientes (segunda iteración)
 

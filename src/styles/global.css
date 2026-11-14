@@ -243,3 +243,33 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 
 /* Grupos ocultos por el selector de arpegio (lib/cliente.ts, conectarFiltroArpegio). */
 .fuera-de-filtro { display: none !important; }
+
+/* Solo para lectores de pantalla. */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Estrella de favorito (lib/favoritos.ts), en la esquina de la tarjeta. */
+.favorito {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--texto-suave);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.favorito:hover { color: var(--acento); border-color: var(--borde); }
+.favorito[aria-pressed='true'] { color: var(--acento); }
