@@ -233,14 +233,6 @@
   grados: ['', '1', '3', '7', '9', '#11']
   notas: 'De: Major-7th-Stock-Voicings.pdf.'
 
-- id: chords-maj7-9
-  grupo: maj7
-  nombre: 'maj7'
-  tonica: C
-  trastes: [x, 5, 4, 2, 2, x]
-  grados: ['', '9', '#11', '13', 'b9', '']
-  notas: 'De: Major/maj7 (1).png.'
-
 - id: chords-maj7-10
   grupo: maj7
   nombre: 'maj7'
