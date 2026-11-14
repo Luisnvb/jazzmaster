@@ -107,6 +107,40 @@ export function conectarTempo(): () => number {
   return () => Number(control.value);
 }
 
+// --- Pantalla encendida mientras suena ------------------------------------------
+// Como un vídeo: mientras hay reproducción se pide al sistema que no apague la
+// pantalla (Screen Wake Lock). Con la pantalla apagada el móvil frena la página y
+// el audio se corta. El sistema suelta el bloqueo al cambiar de pestaña o de app,
+// así que se vuelve a pedir al volver si sigue sonando.
+let bloqueo: WakeLockSentinel | null = null;
+let quiereBloqueo = false;
+
+async function pedirBloqueo() {
+  if (!quiereBloqueo || bloqueo || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+  try {
+    bloqueo = await navigator.wakeLock.request('screen');
+    bloqueo.addEventListener('release', () => (bloqueo = null));
+    // Si se paró mientras se concedía, se suelta enseguida.
+    if (!quiereBloqueo) soltarBloqueo();
+  } catch {
+    // Sin permiso (batería baja, http sin cifrar…): la pantalla se apagará como siempre.
+  }
+}
+
+function soltarBloqueo() {
+  bloqueo?.release().catch(() => {});
+  bloqueo = null;
+}
+
+/** Mantiene la pantalla encendida (true) o deja que se apague (false). */
+export function pantallaEncendida(si: boolean) {
+  quiereBloqueo = si;
+  if (si) void pedirBloqueo();
+  else soltarBloqueo();
+}
+
+document.addEventListener('visibilitychange', () => void pedirBloqueo());
+
 /** Secuencia con avisos de progreso (p. ej. para marcar el acorde que suena). */
 export interface Reproduccion {
   eventos: Evento[];
@@ -135,6 +169,7 @@ export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[] 
     activo?.classList.add('sonando');
     activo?.setAttribute('aria-pressed', 'true');
     document.documentElement.classList.toggle('reproduciendo', activo !== null);
+    pantallaEncendida(activo !== null);
   };
 
   document.addEventListener('click', async (evento) => {
