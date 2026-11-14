@@ -193,8 +193,13 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     gap: 0.5rem;
     font-weight: 700;
   }
+  .progresion {
+    min-width: 0;
+    max-width: 100%;
+  }
   .progresion select {
     width: auto;
+    min-width: 0;
     max-width: 100%;
     margin: 0;
   }
