@@ -24,6 +24,7 @@ export const SECCIONES: Seccion[] = [
     partes: [
       { nombre: 'Rutina de práctica', href: ruta('estudio/rutina'), lema: 'Una nota y una cualidad; repertorio en una posición' },
       { nombre: 'Ritmo', href: ruta('estudio/ritmo'), lema: 'Pulso, subdivisiones, swing y patrones de acompañamiento' },
+      { nombre: 'Armonía funcional', href: ruta('estudio/armonia'), lema: 'Tónica, subdominante y dominante; analizar progresiones' },
       { nombre: 'Ciclos de Goodrick', href: ruta('estudio/ciclos'), lema: 'Los acordes de la tonalidad por ciclos, con conducción de voces' },
       { nombre: 'Notas guía', href: ruta('estudio/notas-guia'), lema: 'La 3 y la 7: dos líneas que dibujan la armonía' },
       { nombre: 'Aproximaciones cromáticas', href: ruta('estudio/aproximaciones'), lema: 'Llegar a las notas del acorde por medio tono y con encierros' },

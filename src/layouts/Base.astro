@@ -230,9 +230,14 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     background: var(--superficie);
     border-bottom: 1px solid var(--borde);
   }
+  /* Con muchas partes, los enlaces pasan a una segunda fila en lugar de partirse. */
   .partes .cabecera-dentro {
-    height: 2.5rem;
-    gap: 2rem;
+    height: auto;
+    min-height: 2.5rem;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.6rem;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
   }
   .nav-movil {
     display: none;
@@ -264,6 +269,7 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     }
   }
   .partes a {
+    white-space: nowrap;
     font-family: var(--fuente);
     font-size: 0.88rem;
     font-weight: 700;
