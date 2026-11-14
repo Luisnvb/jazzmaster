@@ -41,7 +41,10 @@ export function voicingsDeCifrados(cifrados: readonly CifradoConTitulo[], existe
         const grupo = grupoDeCelda(celda, forma.grados);
         if (!grupo || !ordenGrupos.includes(grupo)) continue;
         const tonica = raizWeb(celda.root);
-        const v: Voicing = { id: '', grupo, nombre: simboloCelda(celda, forma.grados).slice(tonica.length) || 'Tríada', tonica, trastes: forma.trastes, grados: forma.grados };
+        // Sin calidad es una tríada mayor (C → "Tríada", C/G → "Tríada/G").
+        const calidad = simboloCelda(celda, forma.grados).slice(tonica.length);
+        const nombre = !calidad || calidad.startsWith('/') ? `Tríada${calidad}` : calidad;
+        const v: Voicing = { id: '', grupo, nombre, tonica, trastes: forma.trastes, grados: forma.grados };
         const clave = claveForma(v);
         if (vistos.has(clave)) continue;
         const previo = nuevos.get(clave);
