@@ -32,6 +32,7 @@ const CALIDADES: Record<string, { formula: string[]; grupo: string }> = {
   '7': { formula: ['1', '3', '5', 'b7'], grupo: 'dom7' },
   '9': { formula: ['1', '3', 'b7', '9'], grupo: 'dom7' },
   '13': { formula: ['1', '3', 'b7', '13'], grupo: 'dom7' },
+  sus4: { formula: ['1', '4', '5'], grupo: 'sus' },
   '7sus4': { formula: ['1', '4', '5', 'b7'], grupo: 'sus' },
   '7alt': { formula: ['1', '3', 'b7', '#9', 'b13'], grupo: 'alt7' },
   '7b9': { formula: ['1', '3', '5', 'b7', 'b9'], grupo: 'alt7' },
@@ -41,6 +42,8 @@ const CALIDADES: Record<string, { formula: string[]; grupo: string }> = {
   'maj7#5': { formula: ['1', '3', '#5', '7'], grupo: 'aug' },
   m7b5: { formula: ['1', 'b3', 'b5', 'b7'], grupo: 'm7b5' },
   'ø7': { formula: ['1', 'b3', 'b5', 'b7'], grupo: 'm7b5' },
+  // Tríada disminuida (vii° de la escala mayor, ii° de la menor).
+  '°': { formula: ['1', 'b3', 'b5'], grupo: 'm7b5' },
   '°7': { formula: ['1', 'b3', 'b5', 'bb7'], grupo: 'dim7' },
 };
 
@@ -48,6 +51,9 @@ const CALIDADES: Record<string, { formula: string[]; grupo: string }> = {
 const SINONIMOS: Record<string, string> = {
   ø: 'ø7',
   o7: '°7',
+  o: '°',
+  dim: '°',
+  sus: 'sus4',
   dim7: '°7',
   aug: '+',
   'm(maj7)': 'mMaj7',

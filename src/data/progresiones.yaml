@@ -3,6 +3,7 @@
 #   compases:  un texto por compás; si hay varios acordes, separados por espacios.
 #              Grado (I…VII, con b o # delante) + calidad: maj7, 6, m7, m6, mMaj7, 7,
 #              9, 13, 7sus4, 7alt, 7b9, 7#9, 7#5, +, maj7#5, m7b5 (o ø7), °7…
+#              Tríadas: sin sufijo (I = mayor), m (VIm = menor), ° (VII° = disminuida), sus4.
 #   pulsos:    opcional, pulsos por compás (4 por defecto).
 #
 # Ojo: los textos con # van entre comillas (en YAML, " #" empieza un comentario).
@@ -66,3 +67,71 @@
   nombre: 'Rhythm changes (puente)'
   descripcion: 'Dominantes por quintas, dos compases cada uno.'
   compases: ['III7', 'III7', 'VI7', 'VI7', 'II7', 'II7', 'V7', 'V7']
+
+# --- Música clásica (tríadas y cadencias) ---
+
+- id: cadencia-perfecta
+  nombre: 'Cadencia perfecta I–IV–V–I'
+  descripcion: 'Subdominante, dominante y tónica: el final de casi todo.'
+  compases: ['I', 'IV', 'V7', 'I']
+
+- id: cadencia-plagal
+  nombre: 'Cadencia plagal (Amén)'
+  descripcion: 'IV–I, el final de los himnos.'
+  compases: ['I', 'IV', 'IV', 'I']
+
+- id: cadencia-rota
+  nombre: 'Cadencia rota'
+  descripcion: 'La dominante no va a la tónica sino al vi.'
+  compases: ['I', 'IV', 'V7', 'VIm']
+
+- id: semicadencia
+  nombre: 'Semicadencia'
+  descripcion: 'La frase queda en suspenso sobre la dominante.'
+  compases: ['I', 'IIm', 'I', 'V']
+
+- id: cadencia-picarda
+  nombre: 'Cadencia picarda'
+  descripcion: 'En menor, pero acaba en la tónica mayor.'
+  compases: ['Im', 'IVm', 'V7', 'I']
+
+- id: circulo-quintas-diatonico
+  nombre: 'Círculo de quintas diatónico'
+  descripcion: 'Secuencia barroca: todos los grados de la escala, bajando por quintas.'
+  compases: ['I', 'IV', 'VII°', 'IIIm', 'VIm', 'IIm', 'V', 'I']
+
+- id: circulo-quintas-menor
+  nombre: 'Círculo de quintas en menor'
+  descripcion: 'La misma secuencia en modo menor (Autumn Leaves la usa).'
+  compases: ['Im', 'IVm', 'bVII', 'bIII', 'bVI', 'II°', 'V7', 'Im']
+
+- id: pachelbel
+  nombre: 'Canon de Pachelbel'
+  descripcion: 'El bajo de ocho notas del Canon en Re.'
+  compases: ['I V', 'VIm IIIm', 'IV I', 'IV V']
+
+- id: andaluza
+  nombre: 'Cadencia andaluza'
+  descripcion: 'Bajo descendente i–VII–VI–V del flamenco y el lamento barroco.'
+  compases: ['Im', 'bVII', 'bVI', 'V']
+
+- id: folia
+  nombre: 'La Folía'
+  descripcion: 'El bajo de la Folía de España (Corelli, Vivaldi…), en 3/4.'
+  pulsos: 3
+  compases: ['Im', 'V', 'Im', 'bVII', 'bIII', 'bVII', 'Im', 'V', 'Im', 'V', 'Im', 'bVII', 'bIII', 'bVII', 'Im V', 'Im']
+
+- id: romanesca
+  nombre: 'Romanesca'
+  descripcion: 'Bajo del Renacimiento (Greensleeves usa una variante).'
+  compases: ['bIII', 'bVII', 'Im', 'V', 'bIII', 'bVII', 'Im V', 'Im']
+
+- id: monte
+  nombre: 'Secuencia de Monte'
+  descripcion: 'Sube un tono: cada acorde con su dominante secundario.'
+  compases: ['I7 IV', 'II7 V']
+
+- id: fonte
+  nombre: 'Secuencia de Fonte'
+  descripcion: 'Baja un tono: ii con su dominante y después I con el suyo.'
+  compases: ['VI7 IIm', 'V7 I']
