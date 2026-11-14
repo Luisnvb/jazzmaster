@@ -26,6 +26,7 @@ export const SECCIONES: Seccion[] = [
       { nombre: 'Ciclos de Goodrick', href: ruta('estudio/ciclos'), lema: 'Los acordes de la tonalidad por ciclos, con conducción de voces' },
       { nombre: 'Notas guía', href: ruta('estudio/notas-guia'), lema: 'La 3 y la 7: dos líneas que dibujan la armonía' },
       { nombre: 'Aproximaciones cromáticas', href: ruta('estudio/aproximaciones'), lema: 'Llegar a las notas del acorde por medio tono y con encierros' },
+      { nombre: 'Arpegios', href: ruta('estudio/arpegios'), lema: 'Cada grado del acorde en todo el mástil' },
       { nombre: 'Tríadas', href: ruta('estudio/triadas'), lema: 'Cerradas y abiertas en todos los grupos de cuerdas' },
       { nombre: 'Shell voicings', href: ruta('estudio/shells'), lema: 'Raíz, 3 y 7: el acompañamiento básico del jazz' },
       { nombre: 'Drop 2', href: ruta('estudio/drop2'), lema: 'Cuatro notas en cuatro cuerdas: inversiones y encadenamientos' },

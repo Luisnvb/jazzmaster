@@ -43,6 +43,7 @@ Las tres notas del acorde dentro de una octava, en **grupos de tres cuerdas adya
 - **En una cuerda y en dos cuerdas adyacentes:** el mismo arpegio a lo largo del mástil.
 - **Combinaciones:** sube por el arpegio y baja por la escala; arpegio en terceras (1-3, 3-5, 5-7…).
 - Conecta con **Acordes**: compara el arpegio con los voicings de esa cualidad y localiza cada grado del diagrama.
+- El mapa del mástil de [Arpegios](../arpegios/) enseña todas las notas del acorde con su grado, por posición o por cuerda.
 
 ### A4. Tríadas abiertas
 
