@@ -75,7 +75,7 @@ const FIGURAS = [
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
   import { eventosArpegio, mastilSVG, recorrido, type NotaMastil, type Zona } from '../../lib/arpegios.ts';
-  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { PARES, letrasTriada, lineaPar, nombreTriada, notasPar, type Figura, type Triada } from '../../lib/pares-triadas.ts';
   import { parseNota, pitchClass } from '../../lib/teoria.ts';
 
@@ -140,6 +140,7 @@ const FIGURAS = [
     titulo.innerHTML = `<strong>${esc(tonica)}${esc(p.acorde)}</strong> · ${esc(p.escala)} ${triada('A', p.a)} ${triada('B', p.b)}`;
     nota.textContent = p.nota;
     caja.innerHTML = mastilSVG(notas(), zona());
+    mostrarZona(caja);
     guardarJSON(CLAVE, op);
   }
 

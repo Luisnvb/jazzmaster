@@ -81,7 +81,7 @@ const RECORRIDOS = [
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
   import { eventosArpegio, mastilSVG, notasFormula, ordenadas, recorrido, secuenciaZona, type NotaMastil, type Zona } from '../../lib/arpegios.ts';
-  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { SIMETRICAS, acordesComunes, moverPosicion } from '../../lib/simetricas.ts';
   import { parseNota, pitchClass } from '../../lib/teoria.ts';
 
@@ -150,6 +150,7 @@ const RECORRIDOS = [
     // El eco, hacia el puente si cabe (la posición ocupa 5 trastes y el mástil llega al 15); si no, hacia la cejuela.
     const eco = op.desde + s.periodo + 4 <= 15 ? op.desde + s.periodo : op.desde - s.periodo;
     caja.innerHTML = mastilSVG(notas(), zona(), op.zona === 'posicion' ? [eco] : []);
+    mostrarZona(caja);
     guardarJSON(CLAVE, op);
   }
 

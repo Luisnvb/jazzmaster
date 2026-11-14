@@ -79,7 +79,7 @@ const CUERDAS = [6, 5, 4, 3, 2, 1];
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
   import { eventosArpegio, mastilSVG, notasArpegio, recorrido, type Zona } from '../../lib/arpegios.ts';
-  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { parseAcordeGrado, simboloEn } from '../../lib/progresiones.ts';
 
   interface Opciones {
@@ -129,6 +129,7 @@ const CUERDAS = [6, 5, 4, 3, 2, 1];
     const a = acorde();
     titulo.innerHTML = `<strong>${esc(simboloEn(tonica, a))}</strong> · ${esc(a.formula.join(' '))}`;
     caja.innerHTML = mastilSVG(notasArpegio(tonica, a), zona());
+    mostrarZona(caja);
     guardarJSON(CLAVE, op);
   }
 

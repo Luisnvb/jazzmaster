@@ -238,3 +238,29 @@ export function conectarFiltroArpegio(clave: string, alCambiar: (grupo: string) 
   });
   alCambiar(inicial);
 }
+
+/**
+ * Mástil más ancho que su caja (en el móvil): desplaza la caja para que se vea la
+ * zona marcada (y los ecos), en vez de quedarse siempre en la cejuela. Sin zona
+ * acotada a unos trastes (todo, una cuerda…), vuelve al principio.
+ */
+export function mostrarZona(caja: HTMLElement) {
+  if (caja.scrollWidth <= caja.clientWidth) {
+    // Si los estilos aún no han llegado, el mástil todavía cabe: se reintenta al cargar.
+    if (document.readyState !== 'complete') window.addEventListener('load', () => mostrarZona(caja), { once: true });
+    return;
+  }
+  const marcas = [...caja.querySelectorAll<SVGGraphicsElement>('.zona, .eco')].map((r) => r.getBoundingClientRect());
+  const anchoMastil = caja.querySelector('svg')?.getBoundingClientRect().width ?? 0;
+  // Las zonas de cuerda ocupan todo el mástil: no hay nada que centrar.
+  const acotadas = marcas.filter((r) => r.width < anchoMastil * 0.8);
+  if (!acotadas.length) {
+    caja.scrollLeft = 0;
+    return;
+  }
+  const base = caja.getBoundingClientRect().left - caja.scrollLeft;
+  const izq = Math.min(...acotadas.map((r) => r.left)) - base;
+  const der = Math.max(...acotadas.map((r) => r.right)) - base;
+  // Centrada si cabe; si no (zona y eco juntos), desde su borde izquierdo.
+  caja.scrollLeft = der - izq <= caja.clientWidth ? (izq + der - caja.clientWidth) / 2 : izq - 8;
+}

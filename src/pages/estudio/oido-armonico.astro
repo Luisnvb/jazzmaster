@@ -530,7 +530,7 @@ const MODOS = [
   }
   .respuestas {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
     gap: 0.5rem;
     padding: 0;
     margin: 0 0 1.5rem;
@@ -564,6 +564,30 @@ const MODOS = [
     color: var(--sobre-acento);
     background: var(--mal);
     border-color: var(--mal);
+  }
+  /* En el móvil: tres botones de control en una fila, cuatro huecos por fila y respuestas en dos columnas. */
+  @media (max-width: 40rem) {
+    .controles .boton {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .huecos {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .huecos :global(li) {
+      min-width: 0;
+      padding: 0.5rem 0.3rem;
+      font-size: 1rem;
+    }
+    .respuestas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .respuestas :global(button) {
+      padding: 0.4rem 0.5rem;
+      font-size: 0.9rem;
+      line-height: 1.2;
+    }
   }
   .ajustes summary {
     font-weight: 700;

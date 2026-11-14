@@ -94,7 +94,7 @@ const RECORRIDOS = [
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
   import { eventosArpegio, mastilSVG, notasFormula, ordenadas, recorrido, secuenciaZona, type NotaMastil, type Zona } from '../../lib/arpegios.ts';
-  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { parseNota, pitchClass } from '../../lib/teoria.ts';
 
   interface Escala {
@@ -162,6 +162,7 @@ const RECORRIDOS = [
     const e = escala();
     titulo.innerHTML = `<strong>${esc(tonica)} ${esc(e.nombre.toLowerCase())}</strong> · ${esc(e.formula.join(' '))}`;
     caja.innerHTML = mastilSVG(notas(), zona());
+    mostrarZona(caja);
     guardarJSON(CLAVE, op);
   }
 
