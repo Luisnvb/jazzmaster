@@ -683,36 +683,12 @@
   grados: ['1', '', '7', '3', '#4', '']
   notas: 'De: Are You Going With Me?.'
 
-- id: rep-m7-7
-  grupo: m7
-  nombre: 'm'
-  tonica: F#
-  trastes: [2, 4, 4, 2, 2, 2]
-  grados: ['1', '5', '1', 'b3', '5', '1']
-  notas: 'De: Black Hole Sun, Pyramid Song, Temptation.'
-
 - id: rep-m7-8
   grupo: m7
   nombre: 'm9/G'
   tonica: E
   trastes: [3, x, 0, 0, 0, 2]
   grados: ['b3', '', 'b7', 'b3', '5', '2']
-  notas: 'De: Exit Music (For a Film).'
-
-- id: rep-m7-9
-  grupo: m7
-  nombre: 'm'
-  tonica: B
-  trastes: [x, 2, 4, 4, 3, 2]
-  grados: ['', '1', '5', '1', 'b3', '5']
-  notas: 'De: Exit Music (For a Film), Temptation.'
-
-- id: rep-m7-10
-  grupo: m7
-  nombre: 'm/D'
-  tonica: B
-  trastes: [x, 5, 4, 4, 3, x]
-  grados: ['', 'b3', '5', '1', 'b3', '']
   notas: 'De: Exit Music (For a Film).'
 
 - id: rep-m7-11
