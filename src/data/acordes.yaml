@@ -13,46 +13,6 @@
 #
 # Los voicings de abajo son EJEMPLOS para probar el modelo: sustitúyelos por los tuyos.
 
-- id: maj7-shell-5
-  grupo: maj7
-  nombre: Shell
-  tonica: C
-  trastes: [x, 3, 5, 4, 5, x]
-  grados: ['', '1', '5', '7', '3', '']
-  notas: Voicing de ejemplo.
-
-- id: m7-shell-5
-  grupo: m7
-  nombre: Shell
-  tonica: C
-  trastes: [x, 3, 5, 3, 4, x]
-  grados: ['', '1', '5', 'b7', 'b3', '']
-  notas: Voicing de ejemplo.
-
-- id: dom7-drop3-6
-  grupo: dom7
-  nombre: Drop 3
-  tonica: C
-  trastes: [8, x, 8, 9, 8, x]
-  grados: ['1', '', 'b7', '3', '5', '']
-  notas: Voicing de ejemplo.
-
-- id: m7b5-drop3-6
-  grupo: m7b5
-  nombre: Drop 3
-  tonica: C
-  trastes: [8, x, 8, 8, 7, x]
-  grados: ['1', '', 'b7', 'b3', 'b5', '']
-  notas: Voicing de ejemplo.
-
-- id: dim7-4
-  grupo: dim7
-  nombre: Cuerdas agudas
-  tonica: C
-  trastes: [x, x, 10, 11, 10, 11]
-  grados: ['', '', '1', 'b5', 'bb7', 'b3']
-  notas: Voicing de ejemplo.
-
 - id: sus-drop3-6
   grupo: sus
   nombre: Drop 3
@@ -262,3 +222,509 @@
   trastes: [x, 4, 5, 3, 5, x]
   grados: ['', '1', 'b5', 'bb7', 'b3', '']
   notas: 'De: How Insensitive.'
+
+# --- De la carpeta chords/ (PDF, PNG y II-V-I) ---
+
+- id: chords-maj7-1
+  grupo: maj7
+  nombre: 'maj9'
+  tonica: C
+  trastes: [8, x, 9, 7, 8, x]
+  grados: ['1', '', '7', '9', '5', '']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-2
+  grupo: maj7
+  nombre: 'maj13'
+  tonica: C
+  trastes: [8, x, 9, 9, 10, x]
+  grados: ['1', '', '7', '3', '13', '']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-3
+  grupo: maj7
+  nombre: 'maj7#11'
+  tonica: C
+  trastes: [8, x, 9, 9, 7, x]
+  grados: ['1', '', '7', '3', '#11', '']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-4
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, x, 10, 12, 12, 12]
+  grados: ['', '', '1', '5', '7', '3']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-5
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, 3, 5, 4, 5, x]
+  grados: ['', '1', '5', '7', '3', '']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-6
+  grupo: maj7
+  nombre: 'maj9'
+  tonica: C
+  trastes: [x, 3, 2, 4, 3, x]
+  grados: ['', '1', '3', '7', '9', '']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-7
+  grupo: maj7
+  nombre: '6/9'
+  tonica: C
+  trastes: [x, 3, 2, 2, 3, x]
+  grados: ['', '1', '3', '6', '9', '']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-8
+  grupo: maj7
+  nombre: 'maj9#11'
+  tonica: C
+  trastes: [x, 3, 2, 4, 3, 2]
+  grados: ['', '1', '3', '7', '9', '#11']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
+- id: chords-maj7-9
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, 5, 4, 2, 2, x]
+  grados: ['', '9', '#11', '13', 'b9', '']
+  notas: 'De: Major/maj7 (1).png.'
+
+- id: chords-maj7-10
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, 3, 2, 4, x, x]
+  grados: ['', '1', '3', '7', '', '']
+  notas: 'De: Major/maj7(4).png.'
+
+- id: chords-m7-1
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [8, x, 8, 8, 8, 8]
+  grados: ['1', '', 'b7', 'b3', '5', '1']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf.'
+
+- id: chords-m7-2
+  grupo: m7
+  nombre: 'm9'
+  tonica: C
+  trastes: [8, x, 8, 8, 8, 10]
+  grados: ['1', '', 'b7', 'b3', '5', '9']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf. La raíz del bajo es opcional (triángulo en el original).'
+
+- id: chords-m7-3
+  grupo: m7
+  nombre: 'm11'
+  tonica: C
+  trastes: [8, x, 8, 8, 6, x]
+  grados: ['1', '', 'b7', 'b3', '11', '']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf.'
+
+- id: chords-mmaj7-1
+  grupo: mmaj7
+  nombre: 'mMaj7'
+  tonica: C
+  trastes: [8, x, 9, 8, 8, x]
+  grados: ['1', '', '7', 'b3', '5', '']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf.'
+
+- id: chords-m7-4
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, x, 10, 12, 11, 11]
+  grados: ['', '', '1', '5', 'b7', 'b3']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf.'
+
+- id: chords-m7-5
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, 3, 5, 3, 4, 3]
+  grados: ['', '1', '5', 'b7', 'b3', '5']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf.'
+
+- id: chords-m7-6
+  grupo: m7
+  nombre: 'm9'
+  tonica: C
+  trastes: [x, 3, 1, 3, 3, x]
+  grados: ['', '1', 'b3', 'b7', '9', '']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf.'
+
+- id: chords-m7-7
+  grupo: m7
+  nombre: 'm11'
+  tonica: C
+  trastes: [x, 3, 1, 3, 3, 1]
+  grados: ['', '1', 'b3', 'b7', '9', '11']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf. La raíz del bajo es opcional (triángulo en el original).'
+
+- id: chords-m7-8
+  grupo: m7
+  nombre: 'm6/9'
+  tonica: C
+  trastes: [x, 3, 1, 2, 3, x]
+  grados: ['', '1', 'b3', '6', '9', '']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf. En el original pone Cmin6.'
+
+- id: chords-m7-9
+  grupo: m7
+  nombre: 'm6#5'
+  tonica: C
+  trastes: [8, x, 7, 8, 9, x]
+  grados: ['1', '', '6', 'b3', '#5', '']
+  notas: 'De: Minor/min6(5#).png.'
+
+- id: chords-m7-10
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, 3, 5, 3, 4, x]
+  grados: ['', '1', '5', 'b7', 'b3', '']
+  notas: 'De: Minor/min7.png.'
+
+- id: chords-mmaj7-2
+  grupo: mmaj7
+  nombre: 'mMaj7'
+  tonica: C
+  trastes: [x, 3, 5, 4, 4, 3]
+  grados: ['', '1', '5', '7', 'b3', '5']
+  notas: 'De: Minor/minor(Maj7).png.'
+
+- id: chords-m7-11
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, 3, x, 3, 4, x]
+  grados: ['', '1', '', 'b7', 'b3', '']
+  notas: 'De: Minor/minor7 (1).png.'
+
+- id: chords-dom7-1
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [8, x, 8, 9, 8, x]
+  grados: ['1', '', 'b7', '3', '5', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-dom7-2
+  grupo: dom7
+  nombre: '9'
+  tonica: C
+  trastes: [8, 7, 8, 7, x, x]
+  grados: ['1', '3', 'b7', '9', '', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-dom7-3
+  grupo: dom7
+  nombre: '13'
+  tonica: C
+  trastes: [8, x, 8, 9, 10, x]
+  grados: ['1', '', 'b7', '3', '13', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-alt7-1
+  grupo: alt7
+  nombre: '7#9'
+  tonica: C
+  trastes: [8, 7, 8, 8, x, x]
+  grados: ['1', '3', 'b7', '#9', '', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-alt7-2
+  grupo: alt7
+  nombre: '7b9'
+  tonica: C
+  trastes: [8, 7, 8, 6, x, x]
+  grados: ['1', '3', 'b7', 'b9', '', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-dom7-4
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, x, 10, 12, 11, 12]
+  grados: ['', '', '1', '5', 'b7', '3']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-dom7-5
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, 3, 5, 3, 5, x]
+  grados: ['', '1', '5', 'b7', '3', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-dom7-6
+  grupo: dom7
+  nombre: '9'
+  tonica: C
+  trastes: [x, 3, 2, 3, 3, x]
+  grados: ['', '1', '3', 'b7', '9', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf. También Dominant/M7 (3).png.'
+
+- id: chords-alt7-3
+  grupo: alt7
+  nombre: '7#9'
+  tonica: C
+  trastes: [x, 3, 2, 3, 4, x]
+  grados: ['', '1', '3', 'b7', '#9', '']
+  notas: 'De: Dominant-7th-Stock-Voicings.pdf.'
+
+- id: chords-dom7-7
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [8, x, 8, 9, x, x]
+  grados: ['1', '', 'b7', '3', '', '']
+  notas: 'De: Dominant/M7 (2).png.'
+
+- id: chords-dom7-8
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, x, 2, 3, 1, 3]
+  grados: ['', '', '3', 'b7', '1', '5']
+  notas: 'De: Dominant/M7.png.'
+
+- id: chords-m7b5-1
+  grupo: m7b5
+  nombre: 'ø7'
+  tonica: C
+  trastes: [8, x, 8, 8, 7, x]
+  grados: ['1', '', 'b7', 'b3', 'b5', '']
+  notas: 'De: Half-Diminished-and-Fully-Diminished-Stock-Voicings.pdf.'
+
+- id: chords-m7b5-2
+  grupo: m7b5
+  nombre: 'ø7'
+  tonica: C
+  trastes: [x, x, 10, 11, 11, 11]
+  grados: ['', '', '1', 'b5', 'b7', 'b3']
+  notas: 'De: Half-Diminished-and-Fully-Diminished-Stock-Voicings.pdf.'
+
+- id: chords-dim7-1
+  grupo: dim7
+  nombre: '°7'
+  tonica: C
+  trastes: [x, x, 10, 11, 10, 11]
+  grados: ['', '', '1', 'b5', 'bb7', 'b3']
+  notas: 'De: Half-Diminished-and-Fully-Diminished-Stock-Voicings.pdf.'
+
+- id: chords-maj7-11
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, x, 2, 4, 1, 3]
+  grados: ['', '', '3', '7', '1', '5']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 1 (Imaj7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-dom7-9
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, x, 8, 9, 8, 8]
+  grados: ['', '', 'b7', '3', '5', '1']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 1 (V7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-m7-12
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, x, 1, 3, 1, 3]
+  grados: ['', '', 'b3', 'b7', '1', '5']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 1 (II-7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-maj7-12
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, x, 5, 5, 5, 7]
+  grados: ['', '', '5', '1', '3', '7']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 2 (Imaj7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-m7-13
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, x, 5, 5, 4, 6]
+  grados: ['', '', '5', '1', 'b3', 'b7']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 2 (II-7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-maj7-13
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, x, 9, 9, 8, 8]
+  grados: ['', '', '7', '3', '5', '1']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 3 (Imaj7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-m7-14
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, x, 8, 8, 8, 8]
+  grados: ['', '', 'b7', 'b3', '5', '1']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 3 (II-7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-dom7-10
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, x, 5, 5, 5, 6]
+  grados: ['', '', '5', '1', '3', 'b7']
+  notas: 'II-V-I mayor, cuerdas 4321, fila 4 (V7, Drop 2). De: Voicings_4321.jpg.'
+
+- id: chords-maj7-14
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, 7, 9, 5, 8, x]
+  grados: ['', '3', '7', '1', '5', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 1 (Imaj7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-dom7-11
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, 13, 14, 12, 13, x]
+  grados: ['', 'b7', '3', '5', '1', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 1 (V7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-m7-15
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, 6, 8, 5, 8, x]
+  grados: ['', 'b3', 'b7', '1', '5', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 1 (II-7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-dom7-12
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, 10, 10, 9, 11, x]
+  grados: ['', '5', '1', '3', 'b7', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 2 (V7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-maj7-15
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, 14, 14, 12, 13, x]
+  grados: ['', '7', '3', '5', '1', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 3 (Imaj7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-dom7-13
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [x, 7, 8, 5, 8, x]
+  grados: ['', '3', 'b7', '1', '5', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 3 (V7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-m7-16
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, 13, 13, 12, 13, x]
+  grados: ['', 'b7', 'b3', '5', '1', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 3 (II-7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-maj7-16
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [x, 10, 10, 9, 12, x]
+  grados: ['', '5', '1', '3', '7', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 4 (Imaj7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-m7-17
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [x, 10, 10, 8, 11, x]
+  grados: ['', '5', '1', 'b3', 'b7', '']
+  notas: 'II-V-I mayor, cuerdas 5432, fila 4 (II-7, Drop 2). De: Voicing_5432.jpg.'
+
+- id: chords-dom7-14
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [3, x, 2, 3, 1, x]
+  grados: ['5', '', '3', 'b7', '1', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 1 (V7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-maj7-17
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [3, x, 2, 4, 1, x]
+  grados: ['5', '', '3', '7', '1', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 2 (Imaj7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-m7-18
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [3, x, 1, 3, 1, x]
+  grados: ['5', '', 'b3', 'b7', '1', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 2 (II-7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-maj7-18
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [7, x, 5, 5, 5, x]
+  grados: ['7', '', '5', '1', '3', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 3 (Imaj7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-dom7-15
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [12, x, 10, 12, 11, x]
+  grados: ['3', '', '1', '5', 'b7', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 3 (V7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-m7-19
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [6, x, 5, 5, 4, x]
+  grados: ['b7', '', '5', '1', 'b3', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 3 (II-7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-maj7-19
+  grupo: maj7
+  nombre: 'maj7'
+  tonica: C
+  trastes: [12, x, 10, 12, 12, x]
+  grados: ['3', '', '1', '5', '7', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 4 (Imaj7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-dom7-16
+  grupo: dom7
+  nombre: '7'
+  tonica: C
+  trastes: [6, x, 5, 5, 5, x]
+  grados: ['b7', '', '5', '1', '3', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 4 (V7, Drop 3). De: Voicings_6432.jpg.'
+
+- id: chords-m7-20
+  grupo: m7
+  nombre: 'm7'
+  tonica: C
+  trastes: [11, x, 10, 12, 11, x]
+  grados: ['b3', '', '1', '5', 'b7', '']
+  notas: 'II-V-I mayor, cuerdas 6432, fila 4 (II-7, Drop 3). De: Voicings_6432.jpg.'
