@@ -224,6 +224,11 @@ const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u00
     padding-top: 1rem;
     border-top: 1px solid var(--borde);
   }
+  /* La primera sección ya queda separada por la barra de controles: sin segunda raya. */
+  .eleccion + section h2 {
+    padding-top: 0;
+    border-top: 0;
+  }
   .sobre {
     color: var(--acento);
   }
