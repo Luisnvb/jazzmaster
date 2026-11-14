@@ -347,5 +347,7 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 .mastil .nota .grado.largo { font-size: 9px; }
 .mastil .nota.raiz circle { fill: var(--acento); } /* COLOR: tónica del arpegio */
 .mastil .nota.raiz .grado { fill: var(--sobre-acento); }
+.mastil .nota.de-escala circle { fill: var(--fondo); stroke: var(--texto); stroke-width: 1.5; } /* COLOR: nota de la escala que no es del acorde */
+.mastil .nota.de-escala .grado { fill: var(--texto); }
 .mastil .nota.fuera { opacity: 0.18; }
 .mastil .nota.sonando circle { stroke: var(--acento); stroke-width: 4; } /* COLOR: nota que suena */

@@ -1,6 +1,7 @@
-// Arpegios en el mástil: dónde está cada nota del acorde, con su grado, en todo
-// el mástil o en una zona (posición, una cuerda, dos cuerdas), su recorrido para
-// el audio y el dibujo del mástil en horizontal. Funciones puras, sin DOM.
+// Arpegios y escalas en el mástil: dónde está cada nota, con su grado, en todo
+// el mástil o en una zona (posición, una cuerda, dos cuerdas), sus recorridos para
+// el audio (por grados, en terceras, en grupos…) y el dibujo del mástil en
+// horizontal. Funciones puras, sin DOM.
 import { simboloEn, type AcordeGrado } from './progresiones.ts';
 import { AFINACION, type Evento } from './secuencias.ts';
 import { formatNota, notaDeGrado, pitchClass, semitonosGrado } from './teoria.ts';
@@ -15,21 +16,40 @@ export interface NotaMastil {
   midi: number;
   grado: string;
   nota: string;
+  /** En una escala: si la nota es también del acorde (se dibuja destacada). */
+  delAcorde?: boolean;
 }
 
-/** Todas las notas del acorde en el mástil (trastes 0–15). */
-export function notasArpegio(tonica: string, a: AcordeGrado): NotaMastil[] {
-  const raiz = notaDeGrado(tonica, a.grado);
-  const porPc = new Map(a.formula.map((g) => [mod(pitchClass(raiz) + semitonosGrado(g)), g]));
+/**
+ * Todas las notas de una fórmula sobre una raíz en el mástil (trastes 0–15).
+ * Con `acorde`, las que también están en él se marcan como del acorde.
+ */
+export function notasFormula(raiz: string, formula: readonly string[], acorde?: readonly string[]): NotaMastil[] {
+  const pcRaiz = pitchClass(notaDeGrado(raiz, '1'));
+  const porPc = new Map(formula.map((g) => [mod(pcRaiz + semitonosGrado(g)), g]));
+  const delAcorde = acorde ? new Set(acorde.map((g) => mod(pcRaiz + semitonosGrado(g)))) : null;
   const res: NotaMastil[] = [];
   for (let c = 0; c < 6; c++) {
     for (let t = 0; t <= TRASTES; t++) {
       const midi = AFINACION[c] + t;
       const g = porPc.get(mod(midi));
-      if (g) res.push({ cuerda: c, traste: t, midi, grado: g, nota: formatNota(notaDeGrado(raiz, g)) });
+      if (!g) continue;
+      res.push({
+        cuerda: c,
+        traste: t,
+        midi,
+        grado: g,
+        nota: formatNota(notaDeGrado(raiz, g)),
+        ...(delAcorde ? { delAcorde: delAcorde.has(mod(midi)) } : {}),
+      });
     }
   }
   return res;
+}
+
+/** Todas las notas del acorde en el mástil (trastes 0–15). */
+export function notasArpegio(tonica: string, a: AcordeGrado): NotaMastil[] {
+  return notasFormula(formatNota(notaDeGrado(tonica, a.grado)), a.formula);
 }
 
 /** Zona del mástil en la que se practica. */
@@ -68,11 +88,45 @@ export function recorrido(notas: readonly NotaMastil[], z: Zona, desde = '1'): N
   return [...orden.slice(k), ...orden.slice(0, -1).reverse(), ...orden.slice(1, k + 1)];
 }
 
-/** Audio del recorrido en corcheas (o en negras si `negras`), con la última nota más larga. */
-export function eventosArpegio(notas: readonly NotaMastil[], bpm: number, negras = false): { eventos: Evento[]; duracion: number } {
+/** Las notas de la zona sin alturas repetidas, de grave a agudo. */
+export function ordenadas(notas: readonly NotaMastil[], z: Zona): NotaMastil[] {
+  const unicas = new Map<number, NotaMastil>();
+  for (const n of notas.filter((x) => enZona(x, z))) if (!unicas.has(n.midi)) unicas.set(n.midi, n);
+  return [...unicas.values()].sort((a, b) => a.midi - b.midi);
+}
+
+/**
+ * Secuencia sobre las notas de la zona: la célula se repite desde cada nota
+ * subiendo y después, al revés, bajando. Célula [0, 2] = terceras (1-3, 2-4…),
+ * [0, 1, 2] = grupos de 3, [0, 1, 2, 3] = grupos de 4.
+ */
+export function secuenciaZona(notas: readonly NotaMastil[], z: Zona, celula: readonly number[]): NotaMastil[] {
+  const orden = ordenadas(notas, z);
+  const alcance = Math.max(...celula);
+  if (orden.length <= alcance) return orden;
+  const sube: NotaMastil[] = [];
+  for (let i = 0; i + alcance < orden.length; i++) for (const c of celula) sube.push(orden[i + c]);
+  const alReves = [...orden].reverse();
+  const baja: NotaMastil[] = [];
+  for (let i = 1; i + alcance < alReves.length; i++) for (const c of celula) baja.push(alReves[i + c]);
+  return [...sube, ...baja, orden[0]];
+}
+
+/**
+ * Audio del recorrido en corcheas (o en negras si `negras`), con la última nota
+ * más larga. Con `pedal`, la nota MIDI dada suena todo el rato por debajo.
+ */
+export function eventosArpegio(
+  notas: readonly NotaMastil[],
+  bpm: number,
+  negras = false,
+  pedal?: number,
+): { eventos: Evento[]; duracion: number } {
   const paso = (negras ? 60 : 30) / bpm;
-  const eventos = notas.map((n, i) => ({ midi: n.midi, inicio: i * paso, duracion: i === notas.length - 1 ? paso * 3 : paso * 0.95 }));
-  return { eventos, duracion: notas.length * paso + paso * 2 };
+  const eventos: Evento[] = notas.map((n, i) => ({ midi: n.midi, inicio: i * paso, duracion: i === notas.length - 1 ? paso * 3 : paso * 0.95 }));
+  const duracion = notas.length * paso + paso * 2;
+  if (pedal !== undefined) eventos.push({ midi: pedal, inicio: 0, duracion });
+  return { eventos, duracion };
 }
 
 // --- Dibujo del mástil (horizontal: 1ª cuerda arriba, como en una tablatura) --------------
@@ -121,10 +175,11 @@ export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'to
   for (const n of notas) {
     const fuera = enZona(n, zona) ? '' : ' fuera';
     const raiz = n.grado === '1' ? ' raiz' : '';
+    const deEscala = n.delAcorde === false ? ' de-escala' : '';
     const x = xNota(n.traste);
     const y = yCuerda(n.cuerda);
     partes.push(
-      `<g class="nota${raiz}${fuera}" data-midi="${n.midi}" data-cuerda="${n.cuerda}"><circle cx="${x}" cy="${y}" r="${RADIO}"/>` +
+      `<g class="nota${raiz}${deEscala}${fuera}" data-midi="${n.midi}" data-cuerda="${n.cuerda}"><circle cx="${x}" cy="${y}" r="${RADIO}"/>` +
         `<text class="grado${n.grado.length > 2 ? ' largo' : ''}" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${n.grado}</text></g>`,
     );
   }

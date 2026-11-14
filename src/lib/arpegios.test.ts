@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseAcordeGrado } from './progresiones.ts';
-import { enZona, eventosArpegio, mastilSVG, notasArpegio, recorrido } from './arpegios.ts';
+import { enZona, eventosArpegio, mastilSVG, notasArpegio, notasFormula, ordenadas, recorrido, secuenciaZona } from './arpegios.ts';
 
 test('notas de Cmaj7 en el mástil', () => {
   const n = notasArpegio('C', parseAcordeGrado('Imaj7'));
@@ -30,4 +30,19 @@ test('zonas y recorrido', () => {
   const { eventos } = eventosArpegio(r, 120);
   assert.equal(eventos.length, r.length);
   assert.match(mastilSVG(n, pos), /<svg class="mastil"/);
+});
+
+test('escalas: notas del acorde marcadas y secuencias en terceras y grupos', () => {
+  const n = notasFormula('C', ['1', '2', '3', '4', '5', '6', '7'], ['1', '3', '5', '7']);
+  assert.equal(n.find((x) => x.cuerda === 1 && x.traste === 3)!.delAcorde, true); // C
+  assert.equal(n.find((x) => x.cuerda === 1 && x.traste === 5)!.delAcorde, false); // D
+  const pos = { tipo: 'posicion' as const, desde: 7 };
+  const orden = ordenadas(n, pos);
+  const terceras = secuenciaZona(n, pos, [0, 2]);
+  // Sube: 1ª-3ª, 2ª-4ª… y baja; acaba en la nota más grave.
+  assert.deepEqual(terceras.slice(0, 4).map((x) => x.midi), [orden[0].midi, orden[2].midi, orden[1].midi, orden[3].midi]);
+  assert.equal(terceras.at(-1)!.midi, orden[0].midi);
+  assert.equal(secuenciaZona(n, pos, [0, 1, 2]).length % 3, 1);
+  const { eventos } = eventosArpegio(orden, 120, false, 36);
+  assert.equal(eventos.filter((e) => e.midi === 36).length, 1);
 });

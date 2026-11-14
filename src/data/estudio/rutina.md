@@ -74,6 +74,7 @@ La escala de la cualidad: jónica (maj7), dórica (m7), mixolidia (7), locria (m
 - **Goodrick, en orden:** primero en una cuerda (ves los tonos y semitonos), luego en dos cuerdas adyacentes, por último en posición, sin mover la mano.
 - Dentro de la forma, **toca solo las notas del acorde** y después solo las tensiones (9, 11, 13). Es el puente entre el arpegio y la escala.
 - Cambia de posición sin cambiar de tónica: la misma escala con otra digitación es otro mapa del mismo sonido.
+- El mapa del mástil de [Escalas](../escalas/) marca dentro de la escala las notas del acorde, por posición o por cuerda.
 
 ## B. Repertorio en una posición
 
