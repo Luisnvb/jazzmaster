@@ -1,6 +1,6 @@
 # Práctica de guitarra
 
-Web personal de práctica: repertorio, acordes, escalas, patrones y teoría (intervalos con entrenador de oído y progresiones).
+Web personal de práctica: repertorio, acordes, escalas, patrones, intervalos (con entrenador de oído), progresiones y estudio (rutinas y apuntes).
 Estática, pensada para un monitor de escritorio y con modo sin conexión. La especificación está en `Guitarra practica spec.md`.
 
 ## Uso en local
@@ -25,6 +25,7 @@ Todo el contenido está en archivos de datos; no hace falta tocar el código.
 | Tipos de acorde | `src/data/grupos.yaml` |
 | Progresiones | `src/data/progresiones.yaml` (grados romanos; formato al principio del archivo) |
 | Patrones de práctica | `src/data/patrones.yaml` (formato al principio del archivo) |
+| Estudio (rutinas, ideas, teoría) | `src/data/estudio/*.md` (Markdown). Para añadir una página nueva: su `.md`, una página en `src/pages/estudio/` como `rutina.astro` y una entrada en las `partes` de Estudio en `src/lib/secciones.ts` |
 | Canciones | `src/content/repertorio/*.md` (ficha y letra) — copia `_plantilla.md` |
 | Cifrados | `src/content/repertorio/<canción>.cmb.json` (formato del [Chord Melody Builder](https://www.noeljohnston.com/chord-melody-builder.html)) |
 

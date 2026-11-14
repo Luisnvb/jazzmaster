@@ -1,0 +1,13 @@
+---
+// Sección múltiple: reúne páginas de teoría, ideas y prácticas concretas
+// (sus partes están en lib/secciones.ts).
+import Base from '../../layouts/Base.astro';
+import Mosaico from '../../components/Mosaico.astro';
+import { SECCIONES } from '../../lib/secciones.ts';
+
+const estudio = SECCIONES.find((s) => s.nombre === 'Estudio')!;
+---
+
+<Base titulo="Estudio">
+  <Mosaico secciones={estudio.partes!} />
+</Base>
