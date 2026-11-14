@@ -1,0 +1,235 @@
+---
+// Modos (sección Estudio). El texto está en src/data/estudio/modos.md; aquí va el
+// ejemplo (lib/modos.ts): los siete modos de una escala madre, paralelos o relativos.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/modos.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { MADRES } from '../../lib/modos.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Modos">
+  <SelectorTonica clave="modos">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="modos" inicial={100} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label="Los siete modos">
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label="Escala madre">
+        {MADRES.map((m) => <button type="button" class="boton" data-madre={m.id} aria-pressed="false">{m.nombre}</button>)}
+      </div>
+      <div class="grupo-botones" role="group" aria-label="Vista">
+        <button type="button" class="boton" data-vista="paralela" aria-pressed="false" title="Todos los modos sobre la misma tónica">Paralelos</button>
+        <button type="button" class="boton" data-vista="relativa" aria-pressed="false" title="Todos los modos con las mismas notas">Relativos</button>
+      </div>
+    </div>
+    <p class="descripcion" data-descripcion></p>
+    <ol class="modos" data-modos></ol>
+    <div class="botones-audio">
+      <button type="button" data-audio="todos" aria-pressed="false">▶ Tocar los siete</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { MADRES, eventosModo, modosEn, type Madre } from '../../lib/modos.ts';
+  import type { Evento } from '../../lib/secuencias.ts';
+
+  interface Opciones {
+    madre: Madre['id'];
+    vista: 'paralela' | 'relativa';
+  }
+  const CLAVE = 'modos:opciones';
+  const op: Opciones = { madre: 'mayor', vista: 'paralela', ...leerJSON<Partial<Opciones>>(CLAVE) };
+  if (!MADRES.some((m) => m.id === op.madre)) op.madre = 'mayor';
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('modos:sonido');
+  const lista = document.querySelector<HTMLElement>('[data-modos]')!;
+  const descripcion = document.querySelector<HTMLElement>('[data-descripcion]')!;
+
+  const madre = () => MADRES.find((m) => m.id === op.madre)!;
+  const modos = () => modosEn(madre(), tonica, op.vista);
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-madre]')) b.setAttribute('aria-pressed', String(b.dataset.madre === op.madre));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-vista]')) b.setAttribute('aria-pressed', String(b.dataset.vista === op.vista));
+    descripcion.textContent =
+      op.vista === 'paralela'
+        ? `Los siete modos de la ${madre().nombre.toLowerCase()} sobre ${tonica}${op.madre === 'mayor' ? ', de más luminoso a más oscuro' : ''}. Resaltada, la nota característica de cada uno.`
+        : `Los siete modos de ${tonica} ${madre().nombre.toLowerCase().replace('escala ', '')}: las mismas notas empezando en cada grado.`;
+    lista.innerHTML = modos()
+      .map(
+        (m, i) => `<li class="modo" data-indice="${i}">
+          <div class="cabecera-modo">
+            <span class="nombre">${esc(m.tonica)} ${esc(m.nombre.toLowerCase())}</span>
+            <button type="button" class="boton tocar-modo" data-audio="modo-${i}" aria-pressed="false" aria-label="Tocar ${esc(m.tonica)} ${esc(m.nombre)}">▶</button>
+          </div>
+          <span class="acorde">Sobre ${esc(m.tonica)}${esc(m.acorde)}</span>
+          <ol class="grados">${m.formula
+            .map((g, k) => `<li class="${m.caracteristicas.includes(g) ? 'caracteristica' : ''}"><span class="g">${esc(g)}</span><span class="n">${esc(m.notas[k])}</span></li>`)
+            .join('')}</ol>
+          <p class="sonido">${esc(m.sonido)} <span class="suave">(frente al ${esc(m.frente)})</span></p>
+        </li>`,
+      )
+      .join('');
+    guardarJSON(CLAVE, op);
+  }
+
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button');
+    if (!b) return;
+    if (b.dataset.madre) op.madre = b.dataset.madre as Madre['id'];
+    else if (b.dataset.vista) op.vista = b.dataset.vista as Opciones['vista'];
+    else return;
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const ms = modos();
+    const indices = boton.dataset.audio === 'todos' ? ms.map((_, i) => i) : [Number(boton.dataset.audio!.replace('modo-', ''))];
+    const eventos: Evento[] = [];
+    const tramos: { inicio: number; fin: number; k: number }[] = [];
+    let t = 0;
+    for (const k of indices) {
+      const r = eventosModo(ms[k], tempo(), t);
+      eventos.push(...r.eventos);
+      tramos.push({ inicio: t, fin: t + r.duracion, k });
+      t += r.duracion;
+    }
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      lista.querySelector('.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) lista.querySelector(`[data-indice="${k}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      alProgresar: (s) => marcar(tramos.find((x) => s >= x.inicio && s < x.fin)?.k ?? -1),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .descripcion {
+    margin: 0 0 0.75rem;
+  }
+  .modos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: 0.5rem;
+  }
+  .modos :global(.modo) {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.7rem 0.8rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .modos :global(.modo.sonando-ahora) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+    box-shadow: 0 0 0 1px var(--acento);
+  }
+  .modos :global(.cabecera-modo) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .modos :global(.nombre) {
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .modos :global(.tocar-modo) {
+    min-width: 2.4rem;
+    padding: 0;
+  }
+  .modos :global(.acorde) {
+    font-size: 0.82rem;
+    color: var(--acento);
+    font-weight: 700;
+  }
+  .modos :global(.grados) {
+    list-style: none;
+    margin: 0.2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.2rem;
+  }
+  .modos :global(.grados li) {
+    display: grid;
+    justify-items: center;
+    padding: 0.2rem 0;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .modos :global(.grados .g) {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .modos :global(.grados .n) {
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+  }
+  /* Nota característica del modo. */
+  .modos :global(.grados li.caracteristica) {
+    background: var(--acento); /* COLOR: nota característica del modo */
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  .modos :global(.grados li.caracteristica .n) {
+    color: var(--sobre-acento);
+  }
+  .modos :global(.sonido) {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+</style>

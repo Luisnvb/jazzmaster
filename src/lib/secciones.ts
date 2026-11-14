@@ -27,6 +27,7 @@ export const SECCIONES: Seccion[] = [
       { nombre: 'Notas guía', href: ruta('estudio/notas-guia'), lema: 'La 3 y la 7: dos líneas que dibujan la armonía' },
       { nombre: 'Aproximaciones cromáticas', href: ruta('estudio/aproximaciones'), lema: 'Llegar a las notas del acorde por medio tono y con encierros' },
       { nombre: 'Escalas', href: ruta('estudio/escalas'), lema: 'Practicarlas en el mástil, con las notas del acorde marcadas' },
+      { nombre: 'Modos', href: ruta('estudio/modos'), lema: 'Paralelos y relativos, con su nota característica' },
       { nombre: 'Arpegios', href: ruta('estudio/arpegios'), lema: 'Cada grado del acorde en todo el mástil' },
       { nombre: 'Tríadas', href: ruta('estudio/triadas'), lema: 'Cerradas y abiertas en todos los grupos de cuerdas' },
       { nombre: 'Shell voicings', href: ruta('estudio/shells'), lema: 'Raíz, 3 y 7: el acompañamiento básico del jazz' },

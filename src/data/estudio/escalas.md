@@ -20,7 +20,7 @@ Una escala no se oye sola: se oye sobre un acorde. Activa *Nota pedal* en el eje
 
 - **Las notas del acorde** suenan estables: son donde se descansa.
 - **Las demás** crean tensión: algunas son tensiones que suenan bien sostenidas (9, 11 en menor, 13) y otras piden resolver (la 4 sobre un acorde mayor).
-- Compara escalas de la **misma tónica**: C jónico, C lidio, C mixolidio, C dórico… En la misma posición, fíjate en qué notas cambian. Ese cambio es todo el color de la escala.
+- Compara escalas de la **misma tónica**: C jónico, C lidio, C mixolidio, C dórico… En la misma posición, fíjate en qué notas cambian. Ese cambio es todo el color de la escala. Más en [Modos](../modos/).
 
 ## Cómo practicarlas
 
