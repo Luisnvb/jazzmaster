@@ -55,6 +55,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   </div>
   <aside class="ficha-lateral" data-resto></aside>
 </div>
+<div class="ficha-abajo" data-ficha-abajo></div>
 
 <div id="menu-acorde" class="menu-acorde" popover>
   <p class="menu-titulo" data-menu-titulo></p>
@@ -136,6 +137,38 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     margin: 0;
     font-weight: 700;
     font-size: 1.05rem;
+  }
+  .ficha-abajo {
+    margin-top: 2rem;
+  }
+  .ficha-abajo:empty {
+    display: none;
+  }
+  @media (min-width: 40.01rem) {
+    .ficha-abajo {
+      display: none;
+    }
+  }
+  @media (max-width: 40rem) {
+    .ficha-arriba {
+      display: none;
+    }
+    .autor {
+      margin-bottom: 0;
+    }
+    /* Controles de audio a todo el ancho, sin desbordar. */
+    /* (div. para ganar a las reglas generales, que van después) */
+    div.controles-audio {
+      width: auto;
+    }
+    div.controles-audio .control:has(input[type='range']) {
+      flex: 1 1 100%;
+    }
+    div.controles-audio input[type='range'] {
+      flex: 1 1 auto;
+      width: auto;
+      min-width: 0;
+    }
   }
   .barra-ficha {
     display: flex;

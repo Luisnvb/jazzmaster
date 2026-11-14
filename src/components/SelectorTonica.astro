@@ -111,4 +111,10 @@ const inicial = 'C';
       grid-template-columns: repeat(7, 1fr);
     }
   }
+  /* Móvil: fija ocuparía media pantalla; se queda arriba y se desplaza con la página. */
+  @media (max-width: 40rem) {
+    .selector {
+      position: static;
+    }
+  }
 </style>

@@ -34,18 +34,29 @@ interface Voz {
 }
 let sonando: Voz[] = [];
 let turno = 0;
+/** Sube con cada detener(): los programadores pendientes dejan de crear notas. */
+let corte = 0;
 /** Dónde empieza la siguiente vuelta de un bucle (tiempo del contexto). */
 let siguienteVuelta = 0;
 
 function obtenerContexto(): AudioContext {
   if (!contexto) {
-    contexto = new AudioContext();
-    // Compresor suave para que los acordes no saturen.
+    // En móviles y tabletas, un búfer más grande evita cortes y chasquidos cuando
+    // el procesador va justo; el retraso extra no importa para reproducir.
+    const tactil = matchMedia('(pointer: coarse)').matches;
+    contexto = new AudioContext({ latencyHint: tactil ? 'playback' : 'interactive' });
+    // Ganancia general por debajo de 1 y compresor casi limitador: un acorde de
+    // seis cuerdas sumadas no debe pasar de 0 dB (en el móvil eso se oye como ruido).
+    const general = contexto.createGain();
+    general.gain.value = 0.6;
     const compresor = contexto.createDynamicsCompressor();
-    compresor.threshold.value = -12;
-    compresor.ratio.value = 4;
-    compresor.connect(contexto.destination);
-    salida = compresor;
+    compresor.threshold.value = -10;
+    compresor.knee.value = 6;
+    compresor.ratio.value = 12;
+    compresor.attack.value = 0.003;
+    compresor.release.value = 0.2;
+    general.connect(compresor).connect(contexto.destination);
+    salida = general;
   }
   return contexto;
 }
@@ -72,6 +83,7 @@ function cargar(m: number): Promise<AudioBuffer> {
 /** Corta lo que esté sonando, con un fundido corto para que no chasquee. */
 export function detener() {
   turno++;
+  corte++;
   if (!contexto) return;
   const ahora = contexto.currentTime;
   for (const { fuentes, ganancia } of sonando) {
@@ -97,14 +109,21 @@ function oscilador(ctx: AudioContext, tipo: OscillatorType, f: number, peso: num
   return o;
 }
 
+/** Cuándo deja de sonar una nota sintetizada (con su cola). */
+function finSintetizada(e: Evento, inicio: number, instrumento: Instrumento): number {
+  if (e.clic) return inicio + 0.06;
+  const final = inicio + e.duracion;
+  return final + (instrumento === 'piano' ? 0.5 : instrumento === 'organo' ? 0.35 : 2);
+}
+
 /** Programa una nota sintetizada; devuelve la voz y cuándo deja de sonar. */
 function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrumento: Instrumento): Voz {
   const ganancia = ctx.createGain();
   ganancia.connect(salida!);
   const g = ganancia.gain;
   const final = inicio + e.duracion;
+  const fin = finSintetizada(e, inicio, instrumento);
   let fuentes: OscillatorNode[];
-  let fin: number;
 
   if (e.clic) {
     // Metrónomo: pitido corto, más agudo en la primera parte del compás.
@@ -112,7 +131,6 @@ function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrument
     g.setValueAtTime(0, inicio);
     g.linearRampToValueAtTime(e.clic === 'fuerte' ? 0.35 : 0.22, inicio + 0.002);
     g.exponentialRampToValueAtTime(0.0001, inicio + 0.05);
-    fin = inicio + 0.06;
   } else {
     const f = frecuencia(e.midi);
     if (instrumento === 'piano') {
@@ -121,13 +139,11 @@ function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrument
       g.linearRampToValueAtTime(0.16, inicio + 0.006);
       g.setTargetAtTime(0.05, inicio + 0.01, 0.7);
       g.setTargetAtTime(0, final, 0.08);
-      fin = final + 0.5;
     } else if (instrumento === 'organo') {
       fuentes = [1, 2, 3, 4].map((n, i) => oscilador(ctx, 'sine', f * n, [1, 0.5, 0.3, 0.12][i], ganancia));
       g.setValueAtTime(0, inicio);
       g.linearRampToValueAtTime(0.09, inicio + 0.02);
       g.setTargetAtTime(0, final, 0.05);
-      fin = final + 0.35;
     } else {
       // Pad: dos dientes de sierra desafinados y un filtro paso bajo, con ataque y caída lentos.
       const filtro = ctx.createBiquadFilter();
@@ -139,13 +155,14 @@ function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrument
       g.setValueAtTime(0, inicio);
       g.linearRampToValueAtTime(0.11, inicio + 0.35);
       g.setTargetAtTime(0, final, 0.3);
-      fin = final + 2;
     }
   }
   for (const o of fuentes) {
     o.start(inicio);
     o.stop(fin);
   }
+  // Al acabar, se suelta del grafo para que no se acumulen nodos en canciones largas.
+  fuentes[0].onended = () => ganancia.disconnect();
   return { fuentes, ganancia, fin };
 }
 
@@ -162,6 +179,9 @@ export interface OpcionesTocar {
 
 /** Margen con el que se programa la siguiente vuelta de un bucle. */
 const ANTELACION = 0.25;
+/** Segundos por delante que se crean notas (pestaña visible / en segundo plano). */
+const VENTANA = 1.5;
+const VENTANA_OCULTA = 12;
 
 /**
  * Reproduce una secuencia (sustituye a la anterior). La promesa se resuelve
@@ -188,14 +208,19 @@ export async function tocar(
   if (miTurno !== turno) return; // otra reproducción empezó mientras cargaba
 
   const t0 = op.encadenar && siguienteVuelta > ctx.currentTime + 0.01 ? siguienteVuelta : ctx.currentTime + 0.05;
-  let fin = 0;
-  eventos.forEach((e, i) => {
+
+  // Las notas no se crean todas de golpe: un programador va creando solo las de
+  // los próximos segundos. Con una canción entera (cientos de notas) crearlas al
+  // principio satura el móvil y produce cortes.
+  const pendientes = eventos.map((e, i) => ({ e, buffer: notas[i] })).sort((a, b) => a.e.inicio - b.e.inicio);
+  const finDe = ({ e, buffer }: (typeof pendientes)[number]) =>
+    buffer ? t0 + e.inicio + Math.min(e.duracion, buffer.duration) : finSintetizada(e, t0 + e.inicio, instrumento);
+  const fin = pendientes.reduce((m, p) => Math.max(m, finDe(p)), 0);
+
+  const programarNota = ({ e, buffer }: (typeof pendientes)[number]) => {
     const inicio = t0 + e.inicio;
-    const buffer = notas[i];
     if (!buffer) {
-      const voz = vozSintetizada(ctx, e, inicio, instrumento);
-      sonando.push(voz);
-      fin = Math.max(fin, voz.fin);
+      sonando.push(vozSintetizada(ctx, e, inicio, instrumento));
       return;
     }
     const fuente = ctx.createBufferSource();
@@ -209,9 +234,22 @@ export async function tocar(
     fuente.connect(ganancia).connect(salida!);
     fuente.start(inicio);
     fuente.stop(final + 0.01);
+    fuente.onended = () => ganancia.disconnect();
     sonando.push({ fuentes: [fuente], ganancia, fin: final + 0.01 });
-    fin = Math.max(fin, final);
-  });
+  };
+
+  const miCorte = corte;
+  let k = 0;
+  const programar = () => {
+    if (miCorte !== corte) return;
+    // Con la pestaña en segundo plano los temporizadores se espacian: se programa más por delante.
+    const horizonte = ctx.currentTime + (document.hidden ? VENTANA_OCULTA : VENTANA);
+    while (k < pendientes.length && t0 + pendientes[k].e.inicio < horizonte) programarNota(pendientes[k++]);
+    if (k < pendientes.length) setTimeout(programar, 200);
+    // Limpia de la lista lo que ya terminó.
+    if (sonando.length > 200) sonando = sonando.filter((v) => v.fin > ctx.currentTime);
+  };
+  programar();
 
   // Con duración musical, se espera hasta poco antes de ese momento (para encadenar).
   const esperarHasta = op.duracion != null ? t0 + op.duracion - ANTELACION : fin;

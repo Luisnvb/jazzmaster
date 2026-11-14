@@ -108,7 +108,7 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     return `<div class="compases">${compases
       .map(
         (acordes, i) =>
-          `<div class="compas">${acordes
+          `<div class="compas" style="--n:${acordes.length}">${acordes
             .map(
               (a, j) =>
                 `<span class="acorde" data-compas="${i}" data-acorde="${j}"><span class="simbolo">${esc(simboloEn(tonica, a))}</span><span class="grado">${esc(a.texto)}</span></span>`,
@@ -331,10 +331,21 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
   :global(.progresion header p) {
     margin: 0.4rem 0 1rem;
   }
+  /* La tarjeta es un contenedor: los compases se reparten según su ancho. */
+  :global(.progresion) {
+    container-type: inline-size;
+  }
   :global(.compases) {
+    --cols: 4;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
     border-left: 2px solid var(--texto-suave);
+  }
+  /* Tarjeta estrecha (móvil): dos compases por línea para que no se pisen los acordes. */
+  @container (max-width: 24rem) {
+    :global(.compases) {
+      --cols: 2;
+    }
   }
   :global(.compases .compas) {
     display: flex;
@@ -349,19 +360,25 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     align-content: center;
     justify-items: center;
     gap: 0.15rem;
-    margin: 0.2rem;
-    padding: 0.4rem 0.2rem;
+    margin: 0.15rem;
+    padding: 0.35rem 0.1rem;
     border-radius: var(--radio);
+    text-align: center;
   }
+  /* El cifrado encoge con el espacio de cada acorde (ancho de la tarjeta, compases
+     por línea y acordes en el compás); si aun así no cabe, parte la línea en vez de pisar al vecino. */
   :global(.compases .simbolo) {
-    font-size: 1.15rem;
+    font-size: clamp(0.8rem, calc((100cqi / var(--cols) / var(--n, 1) - 0.8rem) / 3.3), 1.15rem);
     font-weight: 700;
-    white-space: nowrap;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
   }
   :global(.compases .grado) {
     font-family: var(--fuente);
     font-size: 0.75rem;
+    line-height: 1.15;
     color: var(--acento);
+    overflow-wrap: anywhere;
   }
   :global(.compases .acorde.sonando-ahora) {
     background: var(--acento-suave);

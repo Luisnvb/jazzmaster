@@ -85,6 +85,26 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
             )
           }
         </nav>
+        <label class="nav-movil">
+          <span class="visualmente-oculto">Ir a la sección</span>
+          <select data-nav-movil>
+            <option value={ruta('')} selected={actual === ruta('')}>Inicio</option>
+            {
+              SECCIONES.map((s) =>
+                s.partes ? (
+                  <optgroup label={s.nombre}>
+                    <option value={s.href} selected={actual.startsWith(s.href)}>{s.nombre}</option>
+                    {s.partes.map((p) => (
+                      <option value={p.href} selected={esActual(p, actual)}>{p.nombre}</option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  <option value={s.href} selected={esActual(s, actual)}>{s.nombre}</option>
+                ),
+              )
+            }
+          </select>
+        </label>
       </div>
     </header>
     {
@@ -114,6 +134,11 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register(archivo('sw.js')).catch(console.error);
   }
+
+  // Navegación del móvil: un desplegable en lugar de la barra de secciones.
+  document.querySelector<HTMLSelectElement>('[data-nav-movil]')?.addEventListener('change', (e) => {
+    location.href = (e.target as HTMLSelectElement).value;
+  });
 </script>
 
 <style>
@@ -230,6 +255,43 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
   .partes .cabecera-dentro {
     height: 2.5rem;
     gap: 2rem;
+  }
+  .nav-movil {
+    display: none;
+  }
+  .visualmente-oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* Móvil: la barra de secciones no cabe; se cambia por un desplegable. */
+  @media (max-width: 56rem) {
+    .cabecera-dentro {
+      gap: 1rem;
+    }
+    .titulo-seccion {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 1.15rem;
+    }
+    nav[aria-label='Secciones'],
+    .partes {
+      display: none;
+    }
+    .nav-movil {
+      display: block;
+      flex: 0 0 auto;
+    }
+    .nav-movil select {
+      width: auto;
+      min-height: 2.4rem;
+      padding-right: 1.8rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
   }
   .partes a {
     font-family: var(--fuente);

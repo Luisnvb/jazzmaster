@@ -76,6 +76,7 @@ export function iniciarFicha() {
   const zonaCifrado = $('[data-cifrado]');
   const panel = $('[data-panel]');
   const resto = $('[data-resto]');
+  const fichaAbajo = $('[data-ficha-abajo]');
 
   // --- Controles de audio del cifrado -------------------------------------------
   // Sonido y metrónomo se recuerdan en este navegador; el tempo elegido vale para
@@ -188,11 +189,14 @@ export function iniciarFicha() {
       ['Estructura', cancion.estructura],
       ['Estilo', cancion.estilo],
     ].filter((p) => p[1]);
+    const lista = ficha.map(([n, v]) => `<div><dt>${n}</dt><dd>${esc(v)}</dd></div>`).join('');
     document.title = `${cancion.titulo} · Práctica`;
     cabecera.innerHTML = `
       <h1>${esc(cancion.titulo)}</h1>
       <p class="autor suave">${esc(cancion.autor)}${cancion.instrumental ? ' · Instrumental' : ''}</p>
-      ${ficha.length ? `<dl class="ficha">${ficha.map(([n, v]) => `<div><dt>${n}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}`;
+      ${ficha.length ? `<dl class="ficha ficha-arriba">${lista}</dl>` : ''}`;
+    // En el móvil, la ficha va al final para que el cifrado quede arriba.
+    fichaAbajo.innerHTML = ficha.length ? `<dl class="ficha">${lista}</dl>` : '';
   }
 
   function pintarBarra() {
