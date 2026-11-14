@@ -731,22 +731,6 @@
 
 # --- Del repertorio (npm run voicings-repertorio) ---
 
-- id: rep-maj7-5
-  grupo: maj7
-  nombre: '5'
-  tonica: E
-  trastes: [0, 2, 2, x, x, x]
-  grados: ['1', '5', '1', '', '', '']
-  notas: 'De: Black Hole Sun.'
-
-- id: rep-maj7-6
-  grupo: maj7
-  nombre: 'add9'
-  tonica: E
-  trastes: [0, 2, 4, 1, 0, 0]
-  grados: ['1', '5', '2', '3', '5', '1']
-  notas: 'De: Pyramid Song.'
-
 - id: rep-maj7-7
   grupo: maj7
   nombre: 'maj7'
@@ -763,46 +747,6 @@
   grados: ['1', '', '7', '3', '#4', '']
   notas: 'De: Are You Going With Me?.'
 
-- id: rep-maj7-9
-  grupo: maj7
-  nombre: 'sus4'
-  tonica: F#
-  trastes: [2, 4, 4, 4, 2, 2]
-  grados: ['1', '5', '1', '4', '5', '1']
-  notas: 'De: Exit Music (For a Film).'
-
-- id: rep-maj7-10
-  grupo: maj7
-  nombre: 'Tríada'
-  tonica: G
-  trastes: [3, 2, 0, 0, 0, 3]
-  grados: ['1', '3', '5', '1', '3', '1']
-  notas: 'De: Black Hole Sun, Exit Music (For a Film), Pyramid Song.'
-
-- id: rep-maj7-11
-  grupo: maj7
-  nombre: 'Tríada'
-  tonica: F
-  trastes: [1, 3, 3, 2, 1, 1]
-  grados: ['1', '5', '1', '3', '5', '1']
-  notas: 'De: Black Hole Sun, Exit Music (For a Film), Pyramid Song.'
-
-- id: rep-maj7-12
-  grupo: maj7
-  nombre: 'Tríada'
-  tonica: E
-  trastes: [0, 2, 2, 1, 0, 0]
-  grados: ['1', '5', '1', '3', '5', '1']
-  notas: 'De: Black Hole Sun.'
-
-- id: rep-maj7-13
-  grupo: maj7
-  nombre: 'Tríada/G'
-  tonica: C
-  trastes: [3, 3, 2, 0, 1, 0]
-  grados: ['5', '1', '3', '5', '1', '3']
-  notas: 'De: Exit Music (For a Film).'
-
 - id: rep-maj7-14
   grupo: maj7
   nombre: '6'
@@ -817,62 +761,6 @@
   tonica: C
   trastes: [x, 3, 2, 2, 1, 0]
   grados: ['', '1', '3', '6', '1', '3']
-  notas: 'De: Black Hole Sun.'
-
-- id: rep-maj7-16
-  grupo: maj7
-  nombre: 'sus2'
-  tonica: B
-  trastes: [x, 2, 4, 4, 2, 2]
-  grados: ['', '1', '5', '1', '2', '5']
-  notas: 'De: Exit Music (For a Film).'
-
-- id: rep-maj7-17
-  grupo: maj7
-  nombre: 'sus4'
-  tonica: B
-  trastes: [x, 2, 4, 4, 5, 2]
-  grados: ['', '1', '5', '1', '4', '5']
-  notas: 'De: Exit Music (For a Film).'
-
-- id: rep-maj7-18
-  grupo: maj7
-  nombre: 'Tríada'
-  tonica: A
-  trastes: [x, 0, 2, 2, 2, 0]
-  grados: ['', '1', '5', '1', '3', '5']
-  notas: 'De: Black Hole Sun.'
-
-- id: rep-maj7-19
-  grupo: maj7
-  nombre: 'Tríada'
-  tonica: Bb
-  trastes: [x, 1, 3, 3, 3, 1]
-  grados: ['', '1', '5', '1', '3', '5']
-  notas: 'De: Black Hole Sun, Exit Music (For a Film).'
-
-- id: rep-maj7-20
-  grupo: maj7
-  nombre: 'Tríada'
-  tonica: C
-  trastes: [x, 3, 2, 0, 1, 0]
-  grados: ['', '1', '3', '5', '1', '3']
-  notas: 'De: Black Hole Sun.'
-
-- id: rep-maj7-21
-  grupo: maj7
-  nombre: 'Tríada/A'
-  tonica: D
-  trastes: [x, 0, 0, 2, 3, 2]
-  grados: ['', '5', '1', '5', '1', '3']
-  notas: 'De: Exit Music (For a Film).'
-
-- id: rep-maj7-22
-  grupo: maj7
-  nombre: 'Tríada'
-  tonica: D
-  trastes: [x, x, 0, 2, 3, 2]
-  grados: ['', '', '1', '5', '1', '3']
   notas: 'De: Black Hole Sun.'
 
 - id: rep-m7-7
