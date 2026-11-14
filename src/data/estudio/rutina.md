@@ -86,7 +86,7 @@ Para cada acorde:
 2. **Canta antes de tocar.** Canta la raíz de cada acorde siguiendo la armonía; después la 3; después el arpegio entero. Toca solo para comprobar.
 3. **Restringe la improvisación** a pocas notas del acorde:
    - solo 1 y 5 · solo 3 y 7 · una sola nota por acorde
-   - un ritmo fijo (por ejemplo, solo negras) y después libre
+   - un ritmo fijo (por ejemplo, solo negras, o un patrón de [Ritmo](../ritmo/)) y después libre
    - Goodrick: con dos notas hay más música de la que parece. Agota la limitación antes de pasar a la siguiente.
 4. **Conecta las notas guía (3 y 7)** del acorde anterior con las del siguiente por la nota más cercana. En los ii–V–I la 7 de un acorde baja medio tono hasta la 3 del siguiente y la 3 se queda como 7: dos voces que casi no se mueven y dibujan toda la armonía. Toca la línea de notas guía sola y después úsala como esqueleto de la improvisación. Más en [Notas guía](../notas-guia/).
 5. **Encadena inversiones,** cerradas o abiertas, moviendo cada voz lo menos posible.

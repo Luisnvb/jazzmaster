@@ -1,0 +1,301 @@
+---
+// Ritmo (sección Estudio). El texto está en src/data/estudio/ritmo.md; aquí va la
+// rejilla rítmica con patrones, swing y metrónomo (lib/ritmo.ts).
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/ritmo.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { PATRONES_RITMO } from '../../lib/ritmo.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Ritmo">
+  <SelectorTonica clave="ritmo" etiqueta="Acorde">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="ritmo" inicial={120} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label="Rejilla rítmica">
+    <div class="opciones">
+      <label class="campo">Patrón
+        <select data-patron>
+          {PATRONES_RITMO.map((p) => <option value={p.id}>{p.nombre}</option>)}
+          <option value="propio">Propio</option>
+        </select>
+      </label>
+      <div class="grupo-botones" role="group" aria-label="División del pulso">
+        <button type="button" class="boton" data-division="2" aria-pressed="false">Corcheas</button>
+        <button type="button" class="boton" data-division="3" aria-pressed="false">Tresillos</button>
+        <button type="button" class="boton" data-division="4" aria-pressed="false">Semicorcheas</button>
+      </div>
+      <label class="campo">Compases
+        <select data-compases>{[1, 2, 3, 4].map((n) => <option value={n}>{n}</option>)}</select>
+      </label>
+    </div>
+    <div class="opciones">
+      <label class="campo control-swing" data-solo-corcheas>Swing
+        <input type="range" min="50" max="75" step="1" data-swing />
+        <span class="valor-swing" data-swing-valor></span>
+      </label>
+      <label class="campo">Metrónomo
+        <select data-metronomo>
+          <option value="todos">Todos los pulsos</option>
+          <option value="dos-cuatro">Solo 2 y 4</option>
+          <option value="uno">Solo el 1</option>
+          <option value="no">Sin metrónomo</option>
+        </select>
+      </label>
+      <label class="casilla"><input type="checkbox" data-cortos /> Golpes cortos</label>
+    </div>
+    <p class="descripcion" data-descripcion></p>
+    <div class="rejilla" data-rejilla></div>
+    <p class="suave leyenda">Pulsa una celda para poner o quitar un golpe. Las celdas con número son los pulsos.</p>
+    <div class="botones-audio">
+      <button type="button" data-audio="una" aria-pressed="false">▶ Tocar</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { PATRONES_RITMO, acordeGolpe, celdasPorCompas, etiquetaCelda, eventosRitmo, type Division, type OpcionesRitmo, type Rejilla } from '../../lib/ritmo.ts';
+
+  interface Estado extends Rejilla {
+    patron: string;
+    swing: number;
+    metronomo: NonNullable<OpcionesRitmo['metronomo']>;
+    cortos: boolean;
+  }
+  const CLAVE = 'ritmo:estado';
+  const inicial = PATRONES_RITMO[1];
+  const st: Estado = {
+    patron: inicial.id,
+    division: inicial.division,
+    pulsos: inicial.pulsos,
+    compases: inicial.compases,
+    golpes: [...inicial.golpes],
+    swing: 64,
+    metronomo: 'dos-cuatro',
+    cortos: false,
+    ...leerJSON<Partial<Estado>>(CLAVE),
+  };
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('ritmo:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selPatron = $<HTMLSelectElement>('[data-patron]');
+  const selCompases = $<HTMLSelectElement>('[data-compases]');
+  const selMetronomo = $<HTMLSelectElement>('[data-metronomo]');
+  const controlSwing = $<HTMLInputElement>('[data-swing]');
+  const casillaCortos = $<HTMLInputElement>('[data-cortos]');
+  const rejilla = $('[data-rejilla]');
+  const descripcion = $('[data-descripcion]');
+
+  const nombreSwing = (v: number) => (v <= 52 ? 'recto' : v <= 60 ? 'suave' : v <= 69 ? 'tresillo' : 'muy marcado');
+
+  function pintar() {
+    selPatron.value = st.patron;
+    selCompases.value = String(st.compases);
+    selMetronomo.value = st.metronomo;
+    controlSwing.value = String(st.swing);
+    casillaCortos.checked = st.cortos;
+    $('[data-swing-valor]').textContent = `${st.swing} % · ${nombreSwing(st.swing)}`;
+    $('[data-solo-corcheas]').hidden = st.division !== 2;
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-division]')) b.setAttribute('aria-pressed', String(Number(b.dataset.division) === st.division));
+    const p = PATRONES_RITMO.find((x) => x.id === st.patron);
+    descripcion.textContent = p ? p.descripcion : 'Patrón propio: pulsa las celdas para crear tu ritmo.';
+    const porCompas = celdasPorCompas(st);
+    const golpes = new Set(st.golpes);
+    rejilla.style.setProperty('--celdas', String(porCompas));
+    rejilla.innerHTML = Array.from(
+      { length: st.compases },
+      (_, c) =>
+        `<div class="compas-ritmo"><span class="num-compas">${c + 1}</span><div class="celdas">${Array.from({ length: porCompas }, (_, k) => {
+          const i = c * porCompas + k;
+          const pulso = k % st.division === 0;
+          return `<button type="button" class="celda-ritmo${pulso ? ' pulso' : ''}" data-celda="${i}" aria-pressed="${golpes.has(i)}" aria-label="Compás ${c + 1}, ${etiquetaCelda(st.division, k)}">${etiquetaCelda(st.division, k)}</button>`;
+        }).join('')}</div></div>`,
+    ).join('');
+    guardarJSON(CLAVE, st);
+  }
+
+  selPatron.addEventListener('change', () => {
+    const p = PATRONES_RITMO.find((x) => x.id === selPatron.value);
+    st.patron = selPatron.value;
+    if (p) Object.assign(st, { division: p.division, pulsos: p.pulsos, compases: p.compases, golpes: [...p.golpes], swing: p.swing ?? st.swing });
+    pintar();
+  });
+  selCompases.addEventListener('change', () => {
+    const n = Number(selCompases.value);
+    const porCompas = celdasPorCompas(st);
+    // Al añadir compases, se repite el primero; al quitarlos, se recortan.
+    const primero = st.golpes.filter((g) => g < porCompas);
+    st.golpes = Array.from({ length: n }, (_, c) => (c < st.compases ? st.golpes.filter((g) => Math.floor(g / porCompas) === c) : primero.map((g) => g + c * porCompas))).flat();
+    st.compases = n;
+    st.patron = 'propio';
+    pintar();
+  });
+  selMetronomo.addEventListener('change', () => ((st.metronomo = selMetronomo.value as Estado['metronomo']), pintar()));
+  controlSwing.addEventListener('input', () => ((st.swing = Number(controlSwing.value)), pintar()));
+  casillaCortos.addEventListener('change', () => ((st.cortos = casillaCortos.checked), pintar()));
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button');
+    if (!b) return;
+    if (b.dataset.celda) {
+      const i = Number(b.dataset.celda);
+      st.golpes = st.golpes.includes(i) ? st.golpes.filter((g) => g !== i) : [...st.golpes, i];
+      st.patron = 'propio';
+    } else if (b.dataset.division) {
+      const d = Number(b.dataset.division) as Division;
+      if (d === st.division) return;
+      // Al cambiar de división se conservan los golpes que caen en los pulsos.
+      st.golpes = st.golpes.filter((g) => g % st.division === 0).map((g) => (g / st.division) * d);
+      st.division = d;
+      st.patron = 'propio';
+    } else return;
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const { eventos, duracion, celdas } = eventosRitmo(st, tempo(), {
+      swing: st.swing / 100,
+      metronomo: st.metronomo,
+      cortos: st.cortos,
+      acorde: acordeGolpe(tonica),
+    });
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      rejilla.querySelector('.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) rejilla.querySelector(`[data-celda="${k}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => {
+        let k = -1;
+        for (let i = 0; i < celdas.length && celdas[i] <= t; i++) k = i;
+        marcar(k);
+      },
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .control-swing input {
+    width: 10rem;
+    accent-color: var(--acento);
+  }
+  .valor-swing {
+    min-width: 9rem;
+    font-weight: 400;
+    color: var(--texto-suave);
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .descripcion {
+    margin: 0 0 0.75rem;
+  }
+  .rejilla {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .rejilla :global(.compas-ritmo) {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .rejilla :global(.num-compas) {
+    font-weight: 700;
+    color: var(--texto-suave);
+    text-align: right;
+  }
+  .rejilla :global(.celdas) {
+    display: grid;
+    grid-template-columns: repeat(var(--celdas), minmax(0, 1fr));
+    gap: 0.2rem;
+  }
+  .rejilla :global(.celda-ritmo) {
+    min-width: 0;
+    height: 2.6rem;
+    padding: 0;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    cursor: pointer;
+  }
+  .rejilla :global(.celda-ritmo.pulso) {
+    font-weight: 700;
+    color: var(--texto);
+    border-color: var(--texto-suave);
+  }
+  .rejilla :global(.celda-ritmo[aria-pressed='true']) {
+    background: var(--acento); /* COLOR: celda con golpe */
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  .rejilla :global(.celda-ritmo.sonando-ahora) {
+    box-shadow: 0 0 0 3px var(--acento-suave), 0 0 0 1px var(--acento);
+  }
+  .leyenda {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+  }
+</style>
