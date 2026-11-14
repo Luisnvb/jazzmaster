@@ -86,9 +86,9 @@ Para cada acorde:
    - solo 1 y 5 · solo 3 y 7 · una sola nota por acorde
    - un ritmo fijo (por ejemplo, solo negras) y después libre
    - Goodrick: con dos notas hay más música de la que parece. Agota la limitación antes de pasar a la siguiente.
-4. **Conecta las notas guía (3 y 7)** del acorde anterior con las del siguiente por la nota más cercana. En los ii–V–I la 7 de un acorde baja medio tono hasta la 3 del siguiente y la 3 se queda como 7: dos voces que casi no se mueven y dibujan toda la armonía. Toca la línea de notas guía sola y después úsala como esqueleto de la improvisación.
+4. **Conecta las notas guía (3 y 7)** del acorde anterior con las del siguiente por la nota más cercana. En los ii–V–I la 7 de un acorde baja medio tono hasta la 3 del siguiente y la 3 se queda como 7: dos voces que casi no se mueven y dibujan toda la armonía. Toca la línea de notas guía sola y después úsala como esqueleto de la improvisación. Más en [Notas guía](../notas-guia/).
 5. **Encadena inversiones,** cerradas o abiertas, moviendo cada voz lo menos posible.
-   - Goodrick ordena estos encadenamientos por **ciclos** según cómo se mueve la raíz: ciclo 4 (sube una cuarta: ii–V–I, el más común en jazz), ciclo 2 (por grados), ciclo 3 (por terceras), ciclo 5, ciclo 6… Practica la progresión en el ciclo que le corresponde y nota qué voces se quedan quietas.
+   - Goodrick ordena estos encadenamientos por **ciclos** según cómo se mueve la raíz: ciclo 4 (sube una cuarta: ii–V–I, el más común en jazz), ciclo 2 (por grados), ciclo 3 (por terceras), ciclo 5, ciclo 6… Practica la progresión en el ciclo que le corresponde y nota qué voces se quedan quietas. Más en [Ciclos de Goodrick](../ciclos/).
    - Fíjate en la voz de arriba: ella sola puede ser la melodía del acompañamiento.
 6. **Añade cromatismo en los tiempos débiles** (2 y 4, o en las corcheas a contratiempo): notas cromáticas de paso o aproximaciones de medio tono, por arriba o por abajo, que caen en una nota del acorde en el tiempo fuerte (1 y 3).
 7. **Añade notas de la escala** de cada acorde para rellenar entre notas del acorde, y prueba las tensiones (9, 11, 13) como notas largas.
