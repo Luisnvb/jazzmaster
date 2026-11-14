@@ -1,0 +1,695 @@
+{
+  "version": 4,
+  "bars": [
+    {
+      "id": 10,
+      "cells": [
+        {
+          "id": 9,
+          "root": "C",
+          "type": "Minor",
+          "interval": "5",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            3,
+            5,
+            5,
+            4,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": {
+        "label": "4/4",
+        "top": 4,
+        "bottom": 4
+      },
+      "section": "Estrofa",
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 12,
+      "cells": [
+        {
+          "id": 11,
+          "root": "G",
+          "type": "Dominant",
+          "interval": "1",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              "5",
+              "b7",
+              "3",
+              "5",
+              "1"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            3,
+            5,
+            3,
+            4,
+            3,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 14,
+      "cells": [
+        {
+          "id": 13,
+          "root": "C",
+          "type": "Minor",
+          "interval": "5",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            3,
+            5,
+            5,
+            4,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 16,
+      "cells": [
+        {
+          "id": 15,
+          "root": "G",
+          "type": "Dominant",
+          "interval": "1",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              "5",
+              "b7",
+              "3",
+              "5",
+              "1"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            3,
+            5,
+            3,
+            4,
+            3,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 18,
+      "cells": [
+        {
+          "id": 17,
+          "root": "C",
+          "type": "Minor",
+          "interval": "5",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            3,
+            5,
+            5,
+            4,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 20,
+      "cells": [
+        {
+          "id": 19,
+          "root": "G",
+          "type": "Dominant",
+          "interval": "1",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              "5",
+              "b7",
+              "3",
+              "5",
+              "1"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            3,
+            5,
+            3,
+            4,
+            3,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 22,
+      "cells": [
+        {
+          "id": 21,
+          "root": "C",
+          "type": "Minor",
+          "interval": "5",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            3,
+            5,
+            5,
+            4,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 24,
+      "cells": [
+        {
+          "id": 23,
+          "root": "G",
+          "type": "Dominant",
+          "interval": "1",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              "5",
+              "b7",
+              "3",
+              "5",
+              "1"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            3,
+            5,
+            3,
+            4,
+            3,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 26,
+      "cells": [
+        {
+          "id": 25,
+          "root": "F",
+          "type": "Minor",
+          "interval": "1",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5",
+              "1"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            1,
+            3,
+            3,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": "Estribillo",
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 28,
+      "cells": [
+        {
+          "id": 27,
+          "root": "C",
+          "type": "Minor",
+          "interval": "5",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            3,
+            5,
+            5,
+            4,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 30,
+      "cells": [
+        {
+          "id": 29,
+          "root": "F",
+          "type": "Minor",
+          "interval": "1",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5",
+              "1"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            1,
+            3,
+            3,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 32,
+      "cells": [
+        {
+          "id": 31,
+          "root": "C",
+          "type": "Minor",
+          "interval": "5",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            3,
+            5,
+            5,
+            4,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 34,
+      "cells": [
+        {
+          "id": 33,
+          "root": "F",
+          "type": "Minor",
+          "interval": "1",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5",
+              "1"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            1,
+            3,
+            3,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 36,
+      "cells": [
+        {
+          "id": 35,
+          "root": "C",
+          "type": "Minor",
+          "interval": "5",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "1",
+              "b3",
+              "5"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            3,
+            5,
+            5,
+            4,
+            3
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 38,
+      "cells": [
+        {
+          "id": 37,
+          "root": "D",
+          "type": "Dominant",
+          "interval": "3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              null,
+              "1",
+              "5",
+              "b7",
+              "3"
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            null,
+            null,
+            0,
+            2,
+            1,
+            2
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 40,
+      "cells": [
+        {
+          "id": 39,
+          "root": "G",
+          "type": "Dominant",
+          "interval": "b6",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b6",
+              null
+            ],
+            "p": 0
+          },
+          "editFrets": [
+            3,
+            null,
+            3,
+            4,
+            4,
+            null
+          ]
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    }
+  ],
+  "timeSigLabel": "4/4",
+  "defaultChordsPerBar": 2,
+  "spellingPreference": "flat",
+  "halfDimSymbol": "o",
+  "title": "Temptation",
+  "composer": "Tom Waits",
+  "tempoMarking": "",
+  "style": "",
+  "barsPerLine": 4,
+  "lineBreaksExplicit": true,
+  "showAllNotes": false,
+  "tempoBpm": 120,
+  "showDegrees": true,
+  "nextId": 41
+}

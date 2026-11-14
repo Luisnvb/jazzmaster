@@ -4,10 +4,13 @@ autor: Soundgarden
 instrumental: false
 tonalidad:
 tempo:
-compas:
-estructura:
+compas: 4/4
+estructura: "Intro, estrofa, estribillo, estrofa, estribillo, puente, estribillo"
 enlaces: {}
-notas:
+notas: |
+  Afinación medio tono abajo (Eb Ab Db Gb Bb Eb), y algo más baja para igualar la grabación. Los acordes se nombran por la forma, como en afinación normal.
+  La estrofa baja casi por semitonos (A6 – C6 – G – F#m – F – E5 – A – A7/G – Bb): practícala buscando las notas comunes entre acordes.
+  Intro y puente en arpegios; en el estribillo, el final cambia D – E por D – C.
 ---
 
 In my eyes

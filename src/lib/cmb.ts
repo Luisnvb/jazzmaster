@@ -8,7 +8,7 @@
 //   editFrets  trastes puestos a mano, de 6ª a 1ª (null = apagada)
 // Los campos que esta web no usa se conservan tal cual al editar y exportar.
 import { catalogoFormas, gradoSuperior, gradosDeTrastes, trastesDeGrados, type Forma, type GradosCuerdas } from './formas.ts';
-import { parseGrado, parseNota, pitchClass } from './teoria.ts';
+import { formatNota, notaDeGrado, parseGrado, parseNota, pitchClass } from './teoria.ts';
 import type { Traste } from './voicings.ts';
 
 export const TIPOS = ['Major', 'Minor', 'Dominant', 'Half-Diminished', 'Diminished'] as const;
@@ -215,6 +215,8 @@ function semitonosPresentes(grados: readonly string[]): Set<number> {
 /**
  * Cifrado de una celda: raíz + calidad, con las tensiones que suenan en su forma
  * (Dm7 con la 4 → Dm11; A7 con la b9 → A7b9; Cm con la 6 y sin 7 → Cm6).
+ * Una tríada mayor sin 3 es sus4, sus2 o quinta (E5). Con `showBass`, si el
+ * bajo no es la raíz, se añade (D/A).
  */
 export function simboloCelda(celda: CeldaCmb, grados: readonly string[] = [], semidisminuido = 'o'): string {
   const raiz = raizWeb(celda.root);
@@ -226,6 +228,11 @@ export function simboloCelda(celda: CeldaCmb, grados: readonly string[] = [], se
   switch (celda.type) {
     case 'Major': {
       const nueve = tiene(2);
+      // Sin 3 ni 6 ni 7: suspendido o quinta (Bsus4, Bsus2, E5).
+      if (conForma && !tiene(4) && !tiene(3) && !tiene(9) && !tiene(10) && !tiene(11)) {
+        calidad = tiene(5) ? 'sus4' : nueve ? 'sus2' : '5';
+        break;
+      }
       // Aumentado: #5 sin 5 justa (C+, Cmaj7#5).
       if (tiene(8) && !tiene(7)) {
         calidad = tiene(11) ? 'maj7#5' : '+';
@@ -271,7 +278,10 @@ export function simboloCelda(celda: CeldaCmb, grados: readonly string[] = [], se
     default:
       calidad = ` ${celda.type}`;
   }
-  return raiz + calidad;
+  // Bajo distinto de la raíz, si el cifrado lo pide (D/A, E7/G#).
+  const bajo = grados.find(Boolean);
+  const conBajo = celda.showBass === true && bajo && bajo !== '1' ? `/${formatNota(notaDeGrado(raiz, bajo))}` : '';
+  return raiz + calidad + conBajo;
 }
 
 /** Grupo de acordes (grupos.yaml) de una celda, para enlazar con Acordes y Escalas. */

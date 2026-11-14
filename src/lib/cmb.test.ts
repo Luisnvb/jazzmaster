@@ -105,3 +105,14 @@ test('cifrado sostenido y con metrónomo', async () => {
   assert.equal(clics[1].clic, 'debil');
   assert.equal(clics[1].inicio, 0.5);
 });
+
+test('tríadas sin 3 y bajo distinto de la raíz', () => {
+  assert.equal(simbolo(celda('E', 'Major', ['1', '5', '1', null, null, null])), 'E5');
+  assert.equal(simbolo(celda('B', 'Major', [null, '1', '5', '1', '4', '5'])), 'Bsus4');
+  assert.equal(simbolo(celda('B', 'Major', [null, '1', '5', '1', '2', '5'])), 'Bsus2');
+  const conBajo = (c: CeldaCmb) => ({ ...c, showBass: true });
+  assert.equal(simbolo(conBajo(celda('D', 'Major', [null, '5', '1', '5', '1', '3']))), 'D/A');
+  assert.equal(simbolo(conBajo(celda('E', 'Dominant', ['3', null, 'b7', '3', '5', '9']))), 'E9/G#');
+  // Sin showBass, el bajo no se escribe (los voicings de jazz llevan a menudo la 3 o la 7 abajo).
+  assert.equal(simbolo(celda('D', 'Major', [null, '5', '1', '5', '1', '3'])), 'D');
+});
