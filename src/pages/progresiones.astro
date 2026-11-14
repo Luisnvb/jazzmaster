@@ -300,15 +300,6 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
 </script>
 
 <style>
-  /* En el móvil, botones más estrechos: Tocar, Continuo y Detener caben en una fila (y en edición, Editar, Duplicar y Eliminar en otra). Las tarjetas se pintan desde el script. */
-  @media (max-width: 40rem) {
-    .lista-progresiones :global(.botones-audio) {
-      gap: 0.4rem;
-    }
-    .lista-progresiones :global(.botones-audio button) {
-      padding: 0 0.7rem;
-    }
-  }
   .barra-edicion {
     display: flex;
     flex-wrap: wrap;

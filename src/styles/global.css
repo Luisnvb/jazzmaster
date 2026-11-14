@@ -240,6 +240,11 @@ label.casilla input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: va
   color: var(--mal);
   border-color: var(--mal);
 }
+/* En el móvil, botones de audio más estrechos para que quepan más por fila (Rasgueo, Arpegiado y Continuo; Tocar, Continuo y Detener…). */
+@media (max-width: 40rem) {
+  .botones-audio { gap: 0.4rem; }
+  .botones-audio button { padding: 0 0.7rem; }
+}
 [data-restaurar-eliminados] { margin: 0 0 1rem; }
 .herramientas [data-restaurar-eliminados] { margin: 0; }
 

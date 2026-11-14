@@ -8,7 +8,7 @@ import { CUERDAS } from './voicings.ts';
 
 const SEP_CUERDA = 30;
 const ALTO_TRASTE = 38;
-const MARGEN_IZQ = 34;
+const MARGEN_IZQ = 38;
 const MARGEN_SUP = 34;
 const MARGEN_DER = 16;
 const MARGEN_INF = 12;
@@ -50,7 +50,8 @@ export function diagramaSVG({ trastes, grados, trastesVisibles = 4 }: DatosDiagr
     partes.push(`<rect class="cejuela" x="${x(0) - 1}" y="${y(0) - 5}" width="${fin - x(0) + 2}" height="6"/>`);
   } else {
     partes.push(
-      `<text class="num-traste" x="${x(0) - 12}" y="${y(0) + ALTO_TRASTE / 2}" text-anchor="end" dominant-baseline="central">${inicio}</text>`,
+      // Separado del círculo de la 6ª cuerda (radio RADIO) para que no lo tape.
+      `<text class="num-traste" x="${x(0) - RADIO - 4}" y="${y(0) + ALTO_TRASTE / 2}" text-anchor="end" dominant-baseline="central">${inicio}</text>`,
     );
   }
   // Cuerdas (líneas verticales).
