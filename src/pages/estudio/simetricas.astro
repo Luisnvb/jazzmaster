@@ -16,6 +16,7 @@ const RECORRIDOS = [
   ['grupos-4', 'Grupos de 4'],
   ['eco', 'Posición y su eco'],
 ];
+import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
 ---
 
 <Base titulo="Disminuida y tonos enteros">
@@ -40,7 +41,7 @@ const RECORRIDOS = [
       <span class="campo" data-solo="posicion">
         <button type="button" class="boton" data-mover="-1" aria-label="Mover el dibujo hacia la cejuela">◀</button>
         <label class="campo">Desde el traste
-          <select data-desde>{Array.from({ length: 12 }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
+          <select data-desde>{Array.from({ length: ULTIMA_POSICION }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
         </label>
         <button type="button" class="boton" data-mover="1" aria-label="Mover el dibujo hacia el puente">▶</button>
       </span>
@@ -80,7 +81,7 @@ const RECORRIDOS = [
 
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
-  import { eventosArpegio, mastilSVG, notasFormula, ordenadas, recorrido, secuenciaZona, type NotaMastil, type Zona } from '../../lib/arpegios.ts';
+  import { eventosArpegio, mastilSVG, notasFormula, ordenadas, recorrido, secuenciaZona, type NotaMastil, type Zona, posicionValida } from '../../lib/arpegios.ts';
   import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { SIMETRICAS, acordesComunes, moverPosicion } from '../../lib/simetricas.ts';
   import { parseNota, pitchClass } from '../../lib/teoria.ts';
@@ -105,6 +106,7 @@ const RECORRIDOS = [
     pedal: false,
     ...leerJSON<Partial<Opciones>>(CLAVE),
   };
+  op.desde = posicionValida(op.desde);
   if (!SIMETRICAS.some((s) => s.id === op.escala)) op.escala = SIMETRICAS[0].id;
   let tonica = 'C';
   const tempo = conectarTempo();

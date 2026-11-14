@@ -7,6 +7,10 @@ import { AFINACION, type Evento } from './secuencias.ts';
 import { formatNota, notaDeGrado, pitchClass, semitonosGrado } from './teoria.ts';
 
 export const TRASTES = 15;
+/** Traste inicial de la última posición entera (5 trastes, hasta el 15). */
+export const ULTIMA_POSICION = TRASTES - 4;
+/** Un traste inicial guardado, dentro de 1 … ULTIMA_POSICION. */
+export const posicionValida = (desde: number) => Math.min(Math.max(Math.round(desde) || 1, 1), ULTIMA_POSICION);
 const mod = (n: number, m = 12) => ((n % m) + m) % m;
 
 export interface NotaMastil {

@@ -2,6 +2,7 @@
 // Se repiten a un intervalo fijo (3 trastes la disminuida, 2 la de tonos enteros),
 // así que el mismo dibujo vale en varias posiciones y para varios acordes.
 // Funciones puras, sin DOM.
+import { ULTIMA_POSICION } from './arpegios.ts';
 import { formatNota, notaDeGrado, semitonosGrado } from './teoria.ts';
 
 export interface Simetrica {
@@ -61,10 +62,14 @@ export function esSimetrica(formula: readonly string[], semitonos: number): bool
   return [...pcs].every((pc) => pcs.has((pc + semitonos) % 12));
 }
 
-/** Traste inicial de la siguiente posición con el mismo dibujo (de 1 a 12, dando la vuelta). */
+/**
+ * Traste inicial de la siguiente posición con el mismo dibujo, dentro de
+ * 1 … ULTIMA_POSICION. Al pasarse por arriba vuelve a la más baja equivalente
+ * y al pasarse por abajo, a la más alta (equivalentes = a distancia de `periodo`).
+ */
 export function moverPosicion(desde: number, periodo: number, sentido: 1 | -1): number {
-  let d = desde + sentido * periodo;
-  if (d > 12) d -= 12;
-  if (d < 1) d += 12;
+  const d = desde + sentido * periodo;
+  if (d > ULTIMA_POSICION) return ((d - 1) % periodo) + 1;
+  if (d < 1) return d + periodo * Math.floor((ULTIMA_POSICION - d) / periodo);
   return d;
 }

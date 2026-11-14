@@ -31,4 +31,11 @@ test('el dibujo de una posición se repite al moverla el periodo', () => {
   }
   assert.equal(moverPosicion(11, 3, 1), 2);
   assert.equal(moverPosicion(1, 2, -1), 11);
+  // Nunca pasa del 11 (la posición del 12 no cabe entera en 15 trastes).
+  assert.equal(moverPosicion(9, 3, 1), 3);
+  assert.equal(moverPosicion(3, 3, -1), 9);
+  for (const p of [2, 3]) for (let d = 1; d <= 11; d++) for (const s of [1, -1] as const) {
+    const r = moverPosicion(d, p, s);
+    assert.ok(r >= 1 && r <= 11 && (((r - d) % p) + p) % p === 0, `${d} ${p} ${s} → ${r}`);
+  }
 });

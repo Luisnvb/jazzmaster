@@ -16,6 +16,7 @@ const FIGURAS = [
   ['alterna', 'A sube, B baja'],
   ['escala', 'Escala de seis notas'],
 ];
+import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
 ---
 
 <Base titulo="Pares de tríadas">
@@ -38,7 +39,7 @@ const FIGURAS = [
         <button type="button" class="boton" data-zona="dos-cuerdas" aria-pressed="false">Dos cuerdas</button>
       </div>
       <label class="campo" data-solo="posicion">Desde el traste
-        <select data-desde>{Array.from({ length: 12 }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
+        <select data-desde>{Array.from({ length: ULTIMA_POSICION }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
       </label>
       <label class="campo" data-solo="cuerda">Cuerda
         <select data-cuerda>{CUERDAS.map((c) => <option value={6 - c}>{c}ª</option>)}</select>
@@ -74,7 +75,7 @@ const FIGURAS = [
 
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
-  import { eventosArpegio, mastilSVG, recorrido, type NotaMastil, type Zona } from '../../lib/arpegios.ts';
+  import { eventosArpegio, mastilSVG, recorrido, type NotaMastil, type Zona, posicionValida } from '../../lib/arpegios.ts';
   import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { PARES, letrasTriada, lineaPar, nombreTriada, notasPar, type Figura, type Triada } from '../../lib/pares-triadas.ts';
   import { parseNota, pitchClass } from '../../lib/teoria.ts';
@@ -99,6 +100,7 @@ const FIGURAS = [
     pedal: false,
     ...leerJSON<Partial<Opciones>>(CLAVE),
   };
+  op.desde = posicionValida(op.desde);
   if (!PARES.some((p) => p.id === op.par)) op.par = PARES[0].id;
   let tonica = 'C';
   const tempo = conectarTempo();
