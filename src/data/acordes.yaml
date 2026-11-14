@@ -21,14 +21,6 @@
   grados: ['1', '', 'b7', '4', '5', '']
   notas: Voicing de ejemplo.
 
-- id: aug-5
-  grupo: aug
-  nombre: Tríada
-  tonica: C
-  trastes: [x, 3, 2, 1, 1, x]
-  grados: ['', '1', '3', '#5', '1', '']
-  notas: Voicing de ejemplo.
-
 # --- Del repertorio (npm run voicings-repertorio) ---
 
 - id: rep-maj7-2
