@@ -30,6 +30,7 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Rutina', nombre: 'Ritmo', href: ruta('estudio/ritmo'), lema: 'Pulso, subdivisiones, swing y patrones de acompañamiento' },
       // Armonía
       { grupo: 'Armonía', nombre: 'Armonía funcional', href: ruta('estudio/armonia'), lema: 'Tónica, subdominante y dominante; analizar progresiones' },
+      { grupo: 'Armonía', nombre: 'Oído armónico', href: ruta('estudio/oido-armonico'), lema: 'Entrenador de cualidades, cadenas por grados y progresiones' },
       { grupo: 'Armonía', nombre: 'Rearmonización', href: ruta('estudio/rearmonizacion'), lema: 'Sustituciones, dominantes secundarios, tritonos y más' },
       { grupo: 'Armonía', nombre: 'Blues', href: ruta('estudio/blues'), lema: 'Básico, de jazz, Bird blues y menor, compás a compás' },
       { grupo: 'Armonía', nombre: 'Tensiones y avoid notes', href: ruta('estudio/tensiones'), lema: 'Las 12 notas sobre un acorde: cuáles suenan y cuáles chocan' },
@@ -39,6 +40,7 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Improvisación', nombre: 'Escalas', href: ruta('estudio/escalas'), lema: 'Practicarlas en el mástil, con las notas del acorde marcadas' },
       { grupo: 'Improvisación', nombre: 'Modos', href: ruta('estudio/modos'), lema: 'Paralelos y relativos, con su nota característica' },
       { grupo: 'Improvisación', nombre: 'Arpegios', href: ruta('estudio/arpegios'), lema: 'Cada grado del acorde en todo el mástil' },
+      { grupo: 'Improvisación', nombre: 'Disminuida y tonos enteros', href: ruta('estudio/simetricas'), lema: 'Escalas simétricas: un dibujo que se repite cada 3 o 2 trastes' },
       { grupo: 'Improvisación', nombre: 'Pares de tríadas', href: ruta('estudio/pares-triadas'), lema: 'Dos tríadas sin notas comunes: líneas modernas sobre cada acorde' },
       // Acordes
       { grupo: 'Acordes', nombre: 'Ciclos de Goodrick', href: ruta('estudio/ciclos'), lema: 'Los acordes de la tonalidad por ciclos, con conducción de voces' },

@@ -342,6 +342,7 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 .mastil .cejuela { fill: var(--texto); }
 .mastil .marca { fill: var(--borde); }
 .mastil .zona { fill: var(--acento-suave); } /* COLOR: zona del mástil que se practica */
+.mastil .eco { fill: none; stroke: var(--acento); stroke-width: 1.5; stroke-dasharray: 5 4; } /* COLOR: posición donde se repite el dibujo (escalas simétricas) */
 .mastil .nota circle { fill: var(--texto); }
 .mastil .nota .grado { fill: var(--fondo); font-size: 11px; font-weight: 700; font-family: var(--fuente); }
 .mastil .nota .grado.largo { font-size: 9px; }
@@ -350,4 +351,5 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 .mastil .nota.de-escala circle { fill: var(--fondo); stroke: var(--texto); stroke-width: 1.5; } /* COLOR: nota de la escala que no es del acorde */
 .mastil .nota.de-escala .grado { fill: var(--texto); }
 .mastil .nota.fuera { opacity: 0.18; }
+.mastil .nota.en-eco { opacity: 0.55; }
 .mastil .nota.sonando circle { stroke: var(--acento); stroke-width: 4; } /* COLOR: nota que suena */

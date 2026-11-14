@@ -142,19 +142,26 @@ const MARCAS = [3, 5, 7, 9, 15];
 /**
  * SVG del mástil con las notas dadas (rotuladas con su grado). Las notas fuera
  * de `zona` se dibujan atenuadas; `sonando` resalta una (por su altura y cuerda).
+ * Con una zona de posición, `ecos` son otras posiciones (traste inicial) que se
+ * dibujan solo con el contorno: dónde se repite el mismo dibujo en una escala simétrica.
  */
-export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'todo' }): string {
+export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'todo' }, ecos: readonly number[] = []): string {
   const ancho = MARGEN_IZQ + ANCHO_TRASTE * (TRASTES + 0.5);
   const alto = MARGEN_SUP + SEP_CUERDA * 5 + MARGEN_INF;
   const yCuerda = (c: number) => MARGEN_SUP + SEP_CUERDA * (5 - c);
   const xTraste = (t: number) => MARGEN_IZQ + ANCHO_TRASTE * t; // línea del traste t
   const xNota = (t: number) => (t === 0 ? MARGEN_IZQ - 16 : xTraste(t) - ANCHO_TRASTE / 2);
   const partes: string[] = [];
+  const ecosValidos = ecos.filter((d) => d >= 1 && d + 4 <= TRASTES);
 
   // Zona resaltada.
   if (zona.tipo === 'posicion') {
     const x0 = zona.desde === 1 ? MARGEN_IZQ - 30 : xTraste(zona.desde - 1);
     partes.push(`<rect class="zona" x="${x0}" y="${MARGEN_SUP - 12}" width="${xTraste(zona.desde + 4) - x0}" height="${SEP_CUERDA * 5 + 24}" rx="6"/>`);
+    for (const d of ecosValidos) {
+      const xe = d === 1 ? MARGEN_IZQ - 30 : xTraste(d - 1);
+      partes.push(`<rect class="eco" x="${xe}" y="${MARGEN_SUP - 14}" width="${xTraste(d + 4) - xe}" height="${SEP_CUERDA * 5 + 28}" rx="6"/>`);
+    }
   } else if (zona.tipo === 'cuerda' || zona.tipo === 'dos-cuerdas') {
     const arriba = zona.tipo === 'cuerda' ? zona.cuerda : zona.cuerda + 1;
     const y0 = yCuerda(arriba) - 12;
@@ -173,7 +180,8 @@ export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'to
   for (let c = 0; c < 6; c++) partes.push(`<line class="cuerda" x1="${MARGEN_IZQ}" y1="${yCuerda(c)}" x2="${xTraste(TRASTES)}" y2="${yCuerda(c)}"/>`);
   // Notas.
   for (const n of notas) {
-    const fuera = enZona(n, zona) ? '' : ' fuera';
+    const enEco = zona.tipo === 'posicion' && ecosValidos.some((d) => enZona(n, { tipo: 'posicion', desde: d }));
+    const fuera = enZona(n, zona) ? '' : enEco ? ' en-eco' : ' fuera';
     const raiz = n.grado === '1' ? ' raiz' : '';
     const deEscala = n.delAcorde === false ? ' de-escala' : '';
     const x = xNota(n.traste);
