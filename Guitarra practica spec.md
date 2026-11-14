@@ -263,3 +263,4 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - Estado de aprendizaje o seguimiento del repertorio.
 - Resumen o panel de práctica en la portada.
 - Reproducción de grabaciones de las canciones.
+- [x] **Progresiones clásicas e inversiones (2026-11-14):** cadencias, Pachelbel, andaluza, Folía, Romanesca, Monte y Fonte; tríadas ° y sus4; inversiones con barra y la nota del acorde en el bajo (I/3, I/5, V7/7), que se ven como C/E y suenan con esa nota en el bajo.

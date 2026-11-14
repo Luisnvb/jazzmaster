@@ -4,6 +4,9 @@
 #              Grado (I…VII, con b o # delante) + calidad: maj7, 6, m7, m6, mMaj7, 7,
 #              9, 13, 7sus4, 7alt, 7b9, 7#9, 7#5, +, maj7#5, m7b5 (o ø7), °7…
 #              Tríadas: sin sufijo (I = mayor), m (VIm = menor), ° (VII° = disminuida), sus4.
+#              Inversiones: barra y la nota del acorde que va en el bajo:
+#              I/3 (1.ª inversión, C/E en Do), I/5 (2.ª, C/G), V7/7 (3.ª, G7/F).
+#              En un acorde menor, /3 es su tercera menor (IVm/3 → Dm/F en La).
 #   pulsos:    opcional, pulsos por compás (4 por defecto).
 #
 # Ojo: los textos con # van entre comillas (en YAML, " #" empieza un comentario).
@@ -135,3 +138,30 @@
   nombre: 'Secuencia de Fonte'
   descripcion: 'Baja un tono: ii con su dominante y después I con el suyo.'
   compases: ['VI7 IIm', 'V7 I']
+
+# --- Con inversiones ---
+
+- id: cadencia-64
+  nombre: 'Cadencia con 6/4 cadencial'
+  descripcion: 'La tónica en segunda inversión (I/5) retrasa la dominante antes del final.'
+  compases: ['I', 'IV', 'I/5 V7', 'I']
+
+- id: cadencia-frigia
+  nombre: 'Cadencia frigia'
+  descripcion: 'En menor: iv en primera inversión y el bajo baja un semitono hasta la dominante.'
+  compases: ['Im', 'IVm/3', 'V', 'V']
+
+- id: bajo-descendente
+  nombre: 'Bajo descendente por grados'
+  descripcion: 'El bajo baja la escala nota a nota gracias a las inversiones (como el Aria de Bach).'
+  compases: ['I V/3', 'VIm IIIm/3', 'IV I/3', 'IIm V']
+
+- id: lamento
+  nombre: 'Bajo de lamento'
+  descripcion: 'En menor, el bajo desciende de la tónica a la dominante.'
+  compases: ['Im', 'V/3', 'bVII', 'IV/3', 'bVI', 'V']
+
+- id: tercera-inversion
+  nombre: 'Dominante en tercera inversión'
+  descripcion: 'V7/7: la séptima en el bajo baja a la tercera de la tónica (I/3).'
+  compases: ['I', 'V7/7', 'I/3', 'IV', 'V7', 'I']

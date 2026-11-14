@@ -29,6 +29,24 @@ test('grados romanos con alteraciones y calidades', () => {
   assert.throws(() => parseAcordeGrado('V7xx'), /Calidad no reconocida/);
 });
 
+test('inversiones: la nota del acorde en el bajo', () => {
+  assert.equal(simboloEn('C', parseAcordeGrado('I/3')), 'C/E');
+  assert.equal(simboloEn('C', parseAcordeGrado('I/5')), 'C/G');
+  assert.equal(simboloEn('C', parseAcordeGrado('V7/7')), 'G7/F');
+  // /3 en un acorde menor es su tercera menor; en Bb, Gm/Bb.
+  assert.equal(simboloEn('Bb', parseAcordeGrado('VIm/3')), 'Gm/Bb');
+  assert.equal(parseAcordeGrado('IVm/3').bajo, 'b3');
+  assert.equal(parseAcordeGrado('I/1').bajo, undefined);
+  assert.throws(() => parseAcordeGrado('I/7'), /no tiene 7ª/);
+  assert.throws(() => parseAcordeGrado('I/4'), /Inversión no válida/);
+  assert.throws(() => parseAcordeGrado('I/3/5'), /solo una barra/);
+  // Audio: C/E con el bajo en E3 (52) y C y G por encima.
+  const { eventos } = secuenciaProgresion('C', analizarProgresion(['I/3']), 120);
+  assert.equal(eventos[0].midi, 52);
+  assert.deepEqual(eventos.slice(1).map((e) => e.midi % 12).sort(), [0, 7]);
+  assert.ok(eventos.slice(1).every((e) => e.midi > 52));
+});
+
 test('texto editable ↔ compases', () => {
   const compases = compasesDeTexto(' IIm7   V7 | Imaj7 |  ');
   assert.deepEqual(compases, ['IIm7 V7', 'Imaj7']);

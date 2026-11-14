@@ -75,10 +75,33 @@ export interface AcordeGrado {
   sufijo: string;
   formula: string[];
   grupo: string;
+  /**
+   * Inversión: nota del acorde que va en el bajo, como grado de la fórmula
+   * ('3', 'b3', '5', 'b7'…). Sin ella, el bajo es la raíz.
+   */
+  bajo?: string;
 }
 
+/** Inversiones: I/3 (primera), I/5 (segunda), V7/7 (tercera). El número es la nota del acorde. */
+const INVERSIONES = ['1', '3', '5', '7'];
+
 export function parseAcordeGrado(texto: string): AcordeGrado {
-  const m = /^(b|#)?(VII|VI|IV|V|III|II|I)(.*)$/i.exec(texto.trim());
+  // "I/3": acorde y, tras la barra, la nota del acorde que va en el bajo.
+  const [acorde, inversion, sobra] = texto.trim().split('/');
+  if (sobra !== undefined) throw new Error(`Acorde no válido: "${texto}" (solo una barra: I/3)`);
+  const base = parseAcordeSinBajo(texto.trim(), acorde);
+  if (inversion === undefined) return base;
+  if (!INVERSIONES.includes(inversion)) {
+    throw new Error(`Inversión no válida en "${texto}": después de la barra va 3, 5 o 7 (la nota del acorde que hace de bajo).`);
+  }
+  // La nota con ese número en la fórmula (/3 en un acorde menor es su b3).
+  const bajo = base.formula.find((g) => g.replace(/^[b#]+/, '') === inversion);
+  if (!bajo) throw new Error(`"${texto}": el acorde no tiene ${inversion}ª para ponerla en el bajo.`);
+  return bajo === '1' ? base : { ...base, bajo };
+}
+
+function parseAcordeSinBajo(texto: string, acorde: string): AcordeGrado {
+  const m = /^(b|#)?(VII|VI|IV|V|III|II|I)(.*)$/i.exec(acorde);
   if (!m) throw new Error(`Acorde no válido: "${texto}" (usa grados romanos: IIm7, V7, bVI7…)`);
   const numero = ROMANOS.indexOf(m[2].toUpperCase()) + 1;
   // En minúsculas (ii, vi) y sin sufijo se entiende menor.
@@ -110,8 +133,9 @@ export const textoDeCompases = (compases: readonly string[]) => compases.join(' 
 /** Raíz de un acorde en una tónica: (Bb, bVII7) → Ab. */
 export const raizEn = (tonica: string, a: AcordeGrado) => formatNota(notaDeGrado(tonica, a.grado));
 
-/** Cifrado de un acorde en una tónica: (Bb, bVII7) → Ab7. */
-export const simboloEn = (tonica: string, a: AcordeGrado) => raizEn(tonica, a) + a.sufijo;
+/** Cifrado de un acorde en una tónica: (Bb, bVII7) → Ab7; (C, I/3) → C/E. */
+export const simboloEn = (tonica: string, a: AcordeGrado) =>
+  raizEn(tonica, a) + a.sufijo + (a.bajo ? `/${formatNota(notaDeGrado(notaDeGrado(tonica, a.grado), a.bajo))}` : '');
 
 export interface Tramo {
   compas: number;
@@ -150,15 +174,17 @@ export function secuenciaProgresion(
     const dur = (pulsos * pulso) / acordes.length;
     const notas = op.sostenido ? 1 : 0.95;
     acordes.forEach((a, j) => {
-      const pc = pitchClass(notaDeGrado(tonica, a.grado));
+      // Con inversión, el bajo es esa nota del acorde y el resto (raíz incluida) va encima.
+      const gradoBajo = a.bajo ?? '1';
+      const sobreBajo = semitonosGrado(gradoBajo) % 12;
+      const pc = (pitchClass(notaDeGrado(tonica, a.grado)) + sobreBajo) % 12;
       const bajo = 43 + ((pc - 7 + 12) % 12); // G2 (43) … F#3 (54)
       eventos.push({ midi: bajo, inicio: t, duracion: dur * notas });
-      for (const g of a.formula.slice(1)) {
-        // Tensiones (9, 11, 13) dentro de la octava sobre el bajo.
+      for (const g of a.formula.filter((g) => g !== gradoBajo)) {
+        // Notas y tensiones (9, 11, 13) dentro de la octava sobre el bajo.
+        const midi = bajo + 12 + ((semitonosGrado(g) - sobreBajo + 120) % 12);
         eventos.push(
-          op.sostenido
-            ? { midi: bajo + 12 + (semitonosGrado(g) % 12), inicio: t, duracion: dur }
-            : { midi: bajo + 12 + (semitonosGrado(g) % 12), inicio: t + 0.02, duracion: dur * 0.9 },
+          op.sostenido ? { midi, inicio: t, duracion: dur } : { midi, inicio: t + 0.02, duracion: dur * 0.9 },
         );
       }
       tramos.push({ compas: i, acorde: j, inicio: t, fin: t + dur });
