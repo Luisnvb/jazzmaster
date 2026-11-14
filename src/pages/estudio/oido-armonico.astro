@@ -298,6 +298,8 @@ const MODOS = [
     respuestaCadena = [];
     for (const b of $$<HTMLButtonElement>('[data-modo]')) b.setAttribute('aria-pressed', String(b.dataset.modo === modo));
     for (const f of $$<HTMLElement>('[data-ajuste]')) f.hidden = f.dataset.ajuste !== modo;
+    // En la cualidad, el acorde ya suena sobre la tónica: el botón no aporta nada.
+    botonTonica.hidden = modo === 'cualidad';
     botonRepetir.disabled = botonTonica.disabled = true;
     pintarResultado('', 'Pulsa «Nuevo», escucha y responde.');
     actualizar();
