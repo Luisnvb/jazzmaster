@@ -47,14 +47,6 @@
   grados: ['', '1', '2', '5', '7', '']
   notas: 'De: Days of Wine and Roses, E.S.P., How Insensitive, Infant Eyes, Stella By Starlight.'
 
-- id: rep-m7-1
-  grupo: m7
-  nombre: 'm6'
-  tonica: Bb
-  trastes: [6, x, 5, 6, 6, x]
-  grados: ['1', '', '6', 'b3', '5', '']
-  notas: 'De: I''ll See You in My Dreams.'
-
 - id: rep-m7-2
   grupo: m7
   nombre: 'm7'
@@ -78,22 +70,6 @@
   trastes: [x, 8, 8, 8, 9, x]
   grados: ['', '1', '4', 'b7', 'b3', '']
   notas: 'De: Cantaloupe Island, Days of Wine and Roses, E.S.P., Footprints, How Insensitive, I''ll See You in My Dreams, Infant Eyes, Stella By Starlight, Turnaround.'
-
-- id: rep-m7-5
-  grupo: m7
-  nombre: 'm6'
-  tonica: C
-  trastes: [x, 3, 5, 2, 2, x]
-  grados: ['', '1', '5', '6', 'b2', '']
-  notas: 'De: How Insensitive.'
-
-- id: rep-m7-6
-  grupo: m7
-  nombre: 'm6'
-  tonica: C
-  trastes: [x, 3, 5, 2, 4, x]
-  grados: ['', '1', '5', '6', 'b3', '']
-  notas: 'De: How Insensitive.'
 
 - id: rep-dom7-1
   grupo: dom7
@@ -344,22 +320,6 @@
   trastes: [x, 3, 1, 3, 3, 1]
   grados: ['', '1', 'b3', 'b7', '9', '11']
   notas: 'De: Minor-7th-Stock-Voicings.pdf. La raíz del bajo es opcional (triángulo en el original).'
-
-- id: chords-m7-8
-  grupo: m7
-  nombre: 'm6/9'
-  tonica: C
-  trastes: [x, 3, 1, 2, 3, x]
-  grados: ['', '1', 'b3', '6', '9', '']
-  notas: 'De: Minor-7th-Stock-Voicings.pdf. En el original pone Cmin6.'
-
-- id: chords-m7-9
-  grupo: m7
-  nombre: 'm6#5'
-  tonica: C
-  trastes: [8, x, 7, 8, 9, x]
-  grados: ['1', '', '6', 'b3', '#5', '']
-  notas: 'De: Minor/min6(5#).png.'
 
 - id: chords-m7-10
   grupo: m7
