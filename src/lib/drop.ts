@@ -1,15 +1,23 @@
-// Voicings drop 2 y drop 3: el acorde en posición cerrada con la segunda (drop 2)
-// o la tercera (drop 3) voz empezando por arriba bajada una octava. Los drop 2 caben
-// en cuatro cuerdas seguidas; los drop 3, con una cuerda saltada entre el bajo y el
-// resto. Aquí se calculan sus inversiones en un grupo de cuerdas y su encadenamiento
-// a lo largo de una progresión. Funciones puras, sin DOM.
+// Voicings por grupos de cuerdas: tríadas (cerradas o abiertas) y cuatriadas en
+// drop 2 y drop 3. Drop 2 / drop 3: la posición cerrada con la segunda / tercera voz
+// empezando por arriba bajada una octava. Tríada abierta: la cerrada con la voz
+// central bajada una octava (el "drop 2" de una tríada). Aquí se calculan sus
+// inversiones en un grupo de cuerdas y su encadenamiento a lo largo de una
+// progresión. Funciones puras, sin DOM.
 import { simboloEn, type AcordeGrado } from './progresiones.ts';
 import { AFINACION, ligarRepetidos, type Evento } from './secuencias.ts';
 import { notaDeGrado, pitchClass, semitonosGrado } from './teoria.ts';
 import type { Traste } from './voicings.ts';
 
-/** Grupos de cuerdas (índice 0 = 6ª) y el tipo de drop que se toca en cada uno. */
+/** Grupos de cuerdas (índice 0 = 6ª) y el tipo de voicing que se toca en cada uno. */
 export const GRUPOS_CUERDAS = [
+  { id: '654', nombre: 'Cuerdas 6-5-4', cuerdas: [0, 1, 2], tipo: 'triada' },
+  { id: '543', nombre: 'Cuerdas 5-4-3', cuerdas: [1, 2, 3], tipo: 'triada' },
+  { id: '432', nombre: 'Cuerdas 4-3-2', cuerdas: [2, 3, 4], tipo: 'triada' },
+  { id: '321', nombre: 'Cuerdas 3-2-1', cuerdas: [3, 4, 5], tipo: 'triada' },
+  { id: '643', nombre: 'Cuerdas 6-4-3 (abierta)', cuerdas: [0, 2, 3], tipo: 'triada-abierta' },
+  { id: '532', nombre: 'Cuerdas 5-3-2 (abierta)', cuerdas: [1, 3, 4], tipo: 'triada-abierta' },
+  { id: '421', nombre: 'Cuerdas 4-2-1 (abierta)', cuerdas: [2, 4, 5], tipo: 'triada-abierta' },
   { id: '4321', nombre: 'Cuerdas 4-3-2-1', cuerdas: [2, 3, 4, 5], tipo: 'drop2' },
   { id: '5432', nombre: 'Cuerdas 5-4-3-2', cuerdas: [1, 2, 3, 4], tipo: 'drop2' },
   { id: '6543', nombre: 'Cuerdas 6-5-4-3', cuerdas: [0, 1, 2, 3], tipo: 'drop2' },
@@ -18,7 +26,7 @@ export const GRUPOS_CUERDAS = [
 ] as const;
 export type IdGrupo = (typeof GRUPOS_CUERDAS)[number]['id'];
 export type TipoDrop = (typeof GRUPOS_CUERDAS)[number]['tipo'];
-export const gruposDe = (tipo: TipoDrop) => GRUPOS_CUERDAS.filter((g) => g.tipo === tipo);
+export const gruposDe = (...tipos: TipoDrop[]) => GRUPOS_CUERDAS.filter((g) => tipos.includes(g.tipo));
 
 export interface Drop {
   simbolo: string;
@@ -45,30 +53,55 @@ export function cuatroNotas(formula: readonly string[]): string[] {
   return (sin5.length === 4 ? sin5 : formula.filter((g) => g !== '1')).slice(0, 4);
 }
 
+/**
+ * Las tres notas de una tríada: raíz, 3 (o 4 en los sus) y 5 (o b5, #5). Sin 5
+ * (como en el 7alt), la b7.
+ */
+export function tresNotas(formula: readonly string[]): string[] {
+  const busca = (...nums: string[]) => nums.map((n) => formula.find((g) => num(g) === n)).find(Boolean);
+  return ['1', busca('3', '4') ?? formula[1], busca('5') ?? busca('7') ?? formula[2]];
+}
+
 const NOMBRE_INVERSION: Record<string, string> = { '1': 'Fundamental', '3': '1ª inversión', '4': '1ª inversión', '5': '2ª inversión', '7': '3ª inversión', '6': '3ª inversión' };
 
-/** Las cuatro inversiones de un acorde en un grupo de cuerdas (drop 2 o drop 3 según el grupo), en todo el mástil. */
+/** Orden de las voces (de grave a agudo) a partir de la posición cerrada, según el tipo. */
+function disponer(cerrada: string[], tipo: TipoDrop): string[] {
+  switch (tipo) {
+    case 'drop2': // la segunda voz desde arriba (índice 2) pasa al bajo
+      return [cerrada[2], cerrada[0], cerrada[1], cerrada[3]];
+    case 'drop3': // la tercera voz desde arriba (índice 1)
+      return [cerrada[1], cerrada[0], cerrada[2], cerrada[3]];
+    case 'triada-abierta': // la voz central de la tríada
+      return [cerrada[1], cerrada[0], cerrada[2]];
+    default:
+      return cerrada;
+  }
+}
+
+/** Las inversiones de un acorde en un grupo de cuerdas (tríada, drop 2 o drop 3 según el grupo), en todo el mástil. */
 export function inversionesDrop(tonica: string, a: AcordeGrado, grupo: IdGrupo, trasteMax = 15): Drop[] {
   const { cuerdas, tipo } = GRUPOS_CUERDAS.find((g) => g.id === grupo)!;
   const raiz = pitchClass(notaDeGrado(tonica, a.grado));
+  const triada = tipo === 'triada' || tipo === 'triada-abierta';
   // Grados en orden de la posición cerrada fundamental (de grave a agudo).
-  const grados = cuatroNotas(a.formula).sort((x, y) => mod(semitonosGrado(x)) - mod(semitonosGrado(y)));
+  const grados = (triada ? tresNotas(a.formula) : cuatroNotas(a.formula)).sort((x, y) => mod(semitonosGrado(x)) - mod(semitonosGrado(y)));
+  const voces = grados.length;
   const res: Drop[] = [];
-  for (let inv = 0; inv < 4; inv++) {
+  for (let inv = 0; inv < voces; inv++) {
     const cerrada = [...grados.slice(inv), ...grados.slice(0, inv)];
-    // Drop 2: la segunda voz desde arriba (índice 2) pasa al bajo; drop 3: la tercera (índice 1).
-    const orden = tipo === 'drop2' ? [cerrada[2], cerrada[0], cerrada[1], cerrada[3]] : [cerrada[1], cerrada[0], cerrada[2], cerrada[3]];
+    const orden = disponer(cerrada, tipo);
     for (let base = 1; base <= trasteMax; base++) {
       if (mod(AFINACION[cuerdas[0]] + base) !== mod(raiz + semitonosGrado(orden[0]))) continue;
       let altura = AFINACION[cuerdas[0]] + base;
       const trastesVoces = [base];
-      for (let i = 1; i < 4; i++) {
+      for (let i = 1; i < voces; i++) {
         const pc = mod(raiz + semitonosGrado(orden[i]));
         altura += mod(pc - altura) || 12;
         trastesVoces.push(altura - AFINACION[cuerdas[i]]);
       }
       if (trastesVoces.some((t) => t < 1 || t > trasteMax + 3)) continue;
-      if (Math.max(...trastesVoces) - Math.min(...trastesVoces) > 4) continue;
+      // Apertura máxima: 4 trastes (5 en las tríadas abiertas, que separan mucho las voces).
+      if (Math.max(...trastesVoces) - Math.min(...trastesVoces) > (tipo === 'triada-abierta' ? 5 : 4)) continue;
       const trastes: Traste[] = ['x', 'x', 'x', 'x', 'x', 'x'];
       const gradosCuerda = ['', '', '', '', '', ''];
       cuerdas.forEach((c, i) => {
@@ -79,7 +112,7 @@ export function inversionesDrop(tonica: string, a: AcordeGrado, grupo: IdGrupo, 
         simbolo: simboloEn(tonica, { ...a, bajo: undefined }),
         romano: a.texto,
         inversion: NOMBRE_INVERSION[num(orden[0])] ?? `Bajo en ${orden[0]}`,
-        arriba: orden[3],
+        arriba: orden[voces - 1],
         trastes,
         grados: gradosCuerda,
       });
@@ -89,13 +122,13 @@ export function inversionesDrop(tonica: string, a: AcordeGrado, grupo: IdGrupo, 
 }
 
 const pisados = (d: Drop) => d.trastes.filter((t): t is number => t !== 'x');
-const centro = (d: Drop) => pisados(d).reduce((x, y) => x + y, 0) / 4;
+const centro = (d: Drop) => pisados(d).reduce((x, y) => x + y, 0) / pisados(d).length;
 const alturas = (d: Drop) => d.trastes.flatMap((t, c) => (t === 'x' ? [] : [AFINACION[c] + t]));
 
-/** Las cuatro inversiones en orden ascendente por el mástil, empezando por la más grave. */
+/** Las inversiones (3 en tríadas, 4 en cuatriadas) en orden ascendente por el mástil, empezando por la más grave. */
 export function escaleraInversiones(tonica: string, a: AcordeGrado, grupo: IdGrupo): Drop[] {
   const todas = inversionesDrop(tonica, a, grupo).sort((x, y) => centro(x) - centro(y));
-  return todas.slice(0, 4);
+  return todas.slice(0, new Set(todas.map((d) => d.inversion)).size);
 }
 
 /**

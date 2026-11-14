@@ -34,7 +34,7 @@ Las tres notas del acorde dentro de una octava, en **grupos de tres cuerdas adya
 - **Horizontal (a lo largo del mástil):** en un solo grupo de cuerdas, sube por las tres inversiones hasta la octava y vuelve.
 - **Arpegio cuerda a cuerda:** una nota de la tríada por cuerda, y cada nota en la cuerda adyacente a la anterior. Sube de la 6ª a la 1ª y baja, cambiando de inversión cuando haga falta para no saltar ninguna cuerda.
 - **Escucha la voz de arriba:** di qué grado queda en la nota más aguda (1, 3 o 5). Es la que se oye como melodía.
-- **Goodrick:** toca las tríadas diatónicas de la escala (I, ii, iii, IV…) en un grupo de cuerdas y muévete de una a la siguiente con el menor movimiento posible de cada voz.
+- **Goodrick:** toca las tríadas diatónicas de la escala (I, ii, iii, IV…) en un grupo de cuerdas y muévete de una a la siguiente con el menor movimiento posible de cada voz. Más en [Tríadas](../triadas/).
 
 ### A3. Arpegio (cuatriada)
 

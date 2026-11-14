@@ -71,3 +71,22 @@ test('drop 3 con la raíz en el bajo: alterna 5ª y 6ª cuerda en el ii–V–I'
   const v = dropProgresion('C', analizarProgresion(['IIm7', 'V7', 'Imaj7']), ['6432', '5321'], 5, true);
   assert.deepEqual(v.map((d) => d.trastes.join('')), ['x5x565', '3x343x', 'x3x453']);
 });
+
+test('tríadas cerradas y abiertas: tres inversiones en cada grupo de cuerdas', () => {
+  for (const g of ['654', '543', '432', '321', '643', '532', '421'] as const) {
+    for (const c of ['I', 'Im', 'I°', 'I+', 'Isus4']) {
+      const inv = escaleraInversiones('C', parseAcordeGrado(c), g);
+      // Mayor, menor y aumentada caben siempre; algunas sus4 y disminuidas abiertas, no todas.
+      if (['I', 'Im', 'I+'].includes(c)) assert.equal(inv.length, 3, `${c} en ${g}`);
+      else assert.ok(inv.length >= 2, `${c} en ${g}`);
+      for (const d of inv) assert.equal(d.trastes.filter((t) => t !== 'x').length, 3);
+    }
+  }
+  // Do mayor en 3-2-1: fundamental x x x 5 5 3 (C E G); abierta en 4-2-1: C G E.
+  assert.deepEqual(escaleraInversiones('C', parseAcordeGrado('I'), '321').find((d) => d.inversion === 'Fundamental')!.trastes, ['x', 'x', 'x', 5, 5, 3]);
+  const abierta = escaleraInversiones('C', parseAcordeGrado('I'), '421').find((d) => d.inversion === 'Fundamental')!;
+  assert.deepEqual(notas(abierta.trastes), ['C', 'G', 'E']);
+  // Progresiones de la web con tríadas en un grupo de cuerdas.
+  const ps = parse(readFileSync(new URL('../data/progresiones.yaml', import.meta.url), 'utf8')) as { compases: string[] }[];
+  for (const p of ps) for (const g of ['432', '532'] as const) dropProgresion('Eb', analizarProgresion(p.compases), g);
+});

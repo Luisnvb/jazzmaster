@@ -19,7 +19,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     <Tempo clave="drop2" inicial={80} />
   </SelectorTonica>
 
-  <EjemploDrop tipo="drop2" />
+  <EjemploDrop clave="drop2" tipos={["drop2"]} />
 
   <nav class="indice" aria-label="En esta página">
     {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}

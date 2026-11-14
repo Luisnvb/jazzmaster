@@ -1,16 +1,22 @@
 ---
-// Ejemplo interactivo de las páginas Drop 2 y Drop 3 (lib/drop.ts): las inversiones
-// de un acorde en un grupo de cuerdas o una progresión encadenada, con diagramas y audio.
-// La página pone el selector de tónica (con [data-instrumento] y el tempo).
+// Ejemplo interactivo de las páginas Tríadas, Drop 2 y Drop 3 (lib/drop.ts): las
+// inversiones de un acorde en un grupo de cuerdas o una progresión encadenada, con
+// diagramas y audio. La página pone el selector de tónica (con [data-instrumento] y el tempo).
 import { getCollection } from 'astro:content';
 import { gruposDe, type TipoDrop } from '../lib/drop.ts';
 import { porOrden } from '../lib/orden.ts';
 
 interface Props {
-  tipo: TipoDrop;
+  /** Clave con la que se recuerdan las opciones y el sonido. */
+  clave: string;
+  /** Tipos de voicing que se ofrecen (cada uno con sus grupos de cuerdas). */
+  tipos: TipoDrop[];
+  /** Acordes del modo Inversiones: [grado en romanos, nombre]. */
+  cualidades?: [string, string][];
+  /** Si "Raíz en el bajo" empieza marcado. */
+  fundamental?: boolean;
 }
-const { tipo } = Astro.props;
-const grupos = gruposDe(tipo);
+const NOMBRE_TIPO: Record<TipoDrop, string> = { triada: 'Cerradas', 'triada-abierta': 'Abiertas', drop2: 'Drop 2', drop3: 'Drop 3' };
 const progresiones = porOrden(await getCollection('progresiones')).map(({ id, data }) => ({
   id,
   nombre: data.nombre,
@@ -18,33 +24,52 @@ const progresiones = porOrden(await getCollection('progresiones')).map(({ id, da
   compases: data.compases,
 }));
 const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
-const CUALIDADES = [
-  ['Imaj7', 'maj7'],
-  ['I7', '7'],
-  ['Im7', 'm7'],
-  ['Im7b5', 'm7b5'],
-  ['I°7', '°7'],
-  ['I6', '6'],
-  ['Im6', 'm6'],
-  ['ImMaj7', 'mMaj7'],
-  ['I7sus4', '7sus4'],
-];
+const {
+  clave,
+  tipos,
+  fundamental = false,
+  cualidades = [
+    ['Imaj7', 'maj7'],
+    ['I7', '7'],
+    ['Im7', 'm7'],
+    ['Im7b5', 'm7b5'],
+    ['I°7', '°7'],
+    ['I6', '6'],
+    ['Im6', 'm6'],
+    ['ImMaj7', 'mMaj7'],
+    ['I7sus4', '7sus4'],
+  ],
+} = Astro.props;
+const grupos = gruposDe(...tipos);
 ---
 
-<section class="ejemplo" aria-label="Ejemplo" data-ejemplo-drop={tipo} data-grupos={grupos.map((g) => g.id).join(',')}>
+<section class="ejemplo" aria-label="Ejemplo" data-ejemplo-drop={clave} data-fundamental-inicial={String(fundamental)} data-grupos={grupos.map((g) => g.id).join(',')}>
   <div class="opciones">
     <div class="grupo-botones" role="group" aria-label="Qué ver">
       <button type="button" class="boton" data-modo="inversiones" aria-pressed="false">Inversiones</button>
       <button type="button" class="boton" data-modo="progresion" aria-pressed="false">Progresión</button>
     </div>
     <label class="campo" data-solo="inversiones">Acorde
-      <select data-cualidad>{CUALIDADES.map(([v, n]) => <option value={v}>{n}</option>)}</select>
+      <select data-cualidad>{cualidades.map(([v, n]) => <option value={v}>{n}</option>)}</select>
     </label>
     <label class="campo" data-solo="progresion">Progresión
       <select data-progresion></select>
     </label>
-    <div class="grupo-botones" role="group" aria-label="Cuerdas">
-      {grupos.map((g) => <button type="button" class="boton" data-grupo={g.id} aria-pressed="false" title={g.nombre}>{g.id.split('').join('-')}</button>)}
+    {
+      tipos.length > 1 &&
+        tipos.map((t) => (
+          <div class="grupo-botones" role="group" aria-label={`Cuerdas (${NOMBRE_TIPO[t]})`}>
+            <span class="etiqueta">{NOMBRE_TIPO[t]}</span>
+            {gruposDe(t).map((g) => (
+              <button type="button" class="boton" data-grupo={g.id} aria-pressed="false" title={g.nombre}>
+                {g.id.split('').join('-')}
+              </button>
+            ))}
+          </div>
+        ))
+    }
+    <div class="grupo-botones" role="group" aria-label="Cuerdas" hidden={tipos.length > 1}>
+      {tipos.length === 1 && grupos.map((g) => <button type="button" class="boton" data-grupo={g.id} aria-pressed="false" title={g.nombre}>{g.id.split('').join('-')}</button>)}
       {
         grupos.length === 2 && (
           <button type="button" class="boton" data-grupo="ambos" data-solo="progresion" aria-pressed="false" title="Cambia de grupo de cuerdas entre acordes">
@@ -79,7 +104,7 @@ const CUALIDADES = [
   import { analizarProgresion, aplicarCambiosProgresiones, parseAcordeGrado, type CambiosProgresiones, type Progresion } from '../lib/progresiones.ts';
 
   const raiz = document.querySelector<HTMLElement>('[data-ejemplo-drop]')!;
-  const tipo = raiz.dataset.ejemploDrop!;
+  const clave = raiz.dataset.ejemploDrop!;
   const gruposTipo = raiz.dataset.grupos!.split(',') as IdGrupo[];
 
   // Las progresiones de la sección Progresiones, con lo editado en este navegador.
@@ -102,20 +127,20 @@ const CUALIDADES = [
     zona: number;
     fundamental: boolean;
   }
-  const CLAVE = `${tipo}:opciones`;
+  const CLAVE = `${clave}:opciones`;
   const op: Opciones = {
     modo: 'inversiones',
     cualidad: 'Imaj7',
     progresion: 'ii-v-i-mayor',
     grupo: gruposTipo[0],
     zona: 7,
-    fundamental: tipo === 'drop3',
+    fundamental: raiz.dataset.fundamentalInicial === 'true',
     ...leerJSON<Partial<Opciones>>(CLAVE),
   };
   if (op.grupo !== 'ambos' && !gruposTipo.includes(op.grupo as IdGrupo)) op.grupo = gruposTipo[0];
   let tonica = 'C';
   const tempo = conectarTempo();
-  const instrumento = conectarInstrumento(`${tipo}:sonido`);
+  const instrumento = conectarInstrumento(`${clave}:sonido`);
 
   const $ = <T extends HTMLElement>(s: string) => raiz.querySelector<T>(s)!;
   const selCualidad = $<HTMLSelectElement>('[data-cualidad]');
@@ -123,6 +148,8 @@ const CUALIDADES = [
   const casillaFundamental = $<HTMLInputElement>('[data-fundamental]');
   selProgresion.innerHTML = progresiones.map((p) => `<option value="${esc(p.id)}">${esc(p.nombre)}</option>`).join('');
   if (!progresiones.some((p) => p.id === op.progresion)) op.progresion = progresiones[0]?.id ?? '';
+  // Si la opción guardada no está entre los acordes de esta página, la primera.
+  if (![...selCualidad.options].some((o) => o.value === op.cualidad)) op.cualidad = selCualidad.options[0].value;
   selCualidad.value = op.cualidad;
   selProgresion.value = op.progresion;
   casillaFundamental.checked = op.fundamental;
