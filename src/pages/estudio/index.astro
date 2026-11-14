@@ -1,13 +1,32 @@
 ---
-// Sección múltiple: reúne páginas de teoría, ideas y prácticas concretas
-// (sus partes están en lib/secciones.ts).
+// Sección múltiple: reúne páginas de teoría, ideas y prácticas concretas,
+// por grupos (sus partes están en lib/secciones.ts).
 import Base from '../../layouts/Base.astro';
 import Mosaico from '../../components/Mosaico.astro';
-import { SECCIONES } from '../../lib/secciones.ts';
+import { SECCIONES, agrupar } from '../../lib/secciones.ts';
 
 const estudio = SECCIONES.find((s) => s.nombre === 'Estudio')!;
+const grupos = agrupar(estudio.partes!);
+// Numeración continua entre grupos.
+const desde = grupos.map((_, i) => 1 + grupos.slice(0, i).reduce((n, g) => n + g.partes.length, 0));
 ---
 
 <Base titulo="Estudio">
-  <Mosaico secciones={estudio.partes!} />
+  {
+    grupos.map((g, i) => (
+      <section class="grupo" id={g.id} aria-labelledby={`titulo-${g.id}`}>
+        <h2 id={`titulo-${g.id}`}>{g.nombre}</h2>
+        <Mosaico secciones={g.partes} desde={desde[i]} />
+      </section>
+    ))
+  }
 </Base>
+
+<style>
+  .grupo {
+    margin-bottom: 2.25rem;
+  }
+  .grupo h2 {
+    margin: 0 0 0.75rem;
+  }
+</style>

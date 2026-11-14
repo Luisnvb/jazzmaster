@@ -99,6 +99,13 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
   }
   const CLAVE = 'armonia:opciones';
   const op: Opciones = { modoTabla: 'mayor', progresion: 'turnaround-dominantes', modoAnalisis: 'auto', ...leerJSON<Partial<Opciones>>(CLAVE) };
+  // Enlace desde otra página (Blues): #progresion=<id> abre esa progresión en el analizador.
+  const delEnlace = /^#progresion=(.+)$/.exec(location.hash)?.[1];
+  if (delEnlace && progresiones.some((p) => p.id === delEnlace)) {
+    op.progresion = delEnlace;
+    op.modoAnalisis = 'auto';
+    requestAnimationFrame(() => document.getElementById('titulo-analisis')?.scrollIntoView());
+  }
   let tonica = 'C';
   const tempo = conectarTempo();
   const instrumento = conectarInstrumento('armonia:sonido');

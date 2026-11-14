@@ -101,19 +101,60 @@ export function analizar(a: AcordeGrado, modo: Modo): Analisis {
 const raizDe = (a: AcordeGrado) => ((semitonosGrado(a.grado) % 12) + 12) % 12;
 
 /**
- * Análisis de una progresión, mirando el acorde siguiente: un acorde de séptima
- * dominante que resuelve una quinta por debajo es un dominante secundario aunque
- * en la tabla tenga otro papel (el I7 que va al IV es V7/IV; si no, tónica de blues).
+ * Análisis de una progresión, mirando lo que viene después:
+ * - un acorde de séptima dominante que resuelve una quinta por debajo es un
+ *   dominante secundario aunque en la tabla tenga otro papel (el I7 que va al IV
+ *   es V7/IV; si no, tónica de blues);
+ * - uno que baja medio tono es un sustituto tritonal secundario (bVI7 → V: subV7/V);
+ * - un m7 o m7b5 seguido de un dominante una cuarta por encima es el II de un
+ *   ii–V secundario (VIIø – III7 → VIm), también si ese dominante es un subV
+ *   (bVIm7 – bII7 → I);
+ * - un ii–V que va a parar a otro m7 medio tono por debajo es un ii–V cromático
+ *   (IIIm7 VI7 | bIIIm7 bVI7 | IIm7 del Bird blues).
  */
 export function analizarSecuencia(acordes: readonly AcordeGrado[], modo: Modo): Analisis[] {
   return acordes.map((a, i) => {
     const base = analizar(a, modo);
     const siguiente = acordes[i + 1];
+    if (!siguiente) return base;
     const s = raizDe(a);
-    if (familia(a) !== 'dom' || !siguiente || s === 7 || base.papel === 'subV7') return base;
-    if (raizDe(siguiente) === (s + 5) % 12 && base.funcion !== 'D') {
+    const t = raizDe(siguiente);
+    const f = familia(a);
+    const anterior = acordes[i - 1];
+    // ii–V cromático: el II de este dominante va justo antes y lo que sigue es un m7 medio tono por debajo de ese II.
+    const p = anterior ? raizDe(anterior) : -1;
+    if (f === 'dom' && anterior && familia(anterior) === 'm' && p === (s + 7) % 12 && familia(siguiente) === 'm' && t === (p + 11) % 12) {
       const destino = ROMANO_MAYOR[(s + 5) % 12];
-      return D(`V7/${destino}`, `Dominante secundario: lleva al ${destino}.`);
+      return D(`V7/${destino}`, `Dominante de un ii–V hacia el ${destino} que no resuelve: el ii–V baja medio tono (ii–V cromáticos).`);
+    }
+    if (f === 'dom') {
+      if (s === 7 || base.papel.startsWith('subV7')) return base;
+      if (t === (s + 5) % 12 && base.funcion !== 'D') {
+        const destino = ROMANO_MAYOR[t];
+        return D(`V7/${destino}`, `Dominante secundario: lleva al ${destino}.`);
+      }
+      if (t === (s + 11) % 12 && t !== 0) {
+        const destino = ROMANO_MAYOR[t];
+        return D(`subV7/${destino}`, `Sustituto tritonal del V7/${destino}: resuelve medio tono por debajo, al ${destino}.`);
+      }
+      return base;
+    }
+    if ((f === 'm' || f === 'semi') && familia(siguiente) === 'dom' && t === (s + 5) % 12 && ![2, 5, 7].includes(s)) {
+      // (Salvo el IIm–V del tono, el IVm–bVII7 de la puerta de atrás y el Vm7–I7 hacia el IV, que ya tienen su papel.)
+      // Adónde va el ii–V: una quinta por debajo del dominante o, si es un subV, medio tono por debajo.
+      const despues = acordes[i + 2];
+      const papel = `${ROMANO_MAYOR[s]}${f === 'semi' ? 'ø' : 'm'}`;
+      if (despues && familia(despues) === 'm' && raizDe(despues) === (s + 11) % 12) {
+        return SD(papel, `IIm de un ii–V hacia el ${ROMANO_MAYOR[(t + 5) % 12]} que no resuelve: medio tono por encima del ${ROMANO_MAYOR[(s + 11) % 12]}m que sigue (ii–V cromáticos).`);
+      }
+      const sub = despues && raizDe(despues) === (t + 11) % 12;
+      const destino = ROMANO_MAYOR[sub ? (t + 11) % 12 : (t + 5) % 12];
+      return SD(
+        papel,
+        sub
+          ? `IIm del ii–V sustituto hacia el ${destino}: el ii–V a un tritono, que resuelve por medio tono.`
+          : `IIm de un ii–V secundario hacia el ${destino}.`,
+      );
     }
     return base;
   });

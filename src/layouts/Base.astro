@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import { archivo, ruta } from '../lib/rutas.ts';
-import { SECCIONES, esActual } from '../lib/secciones.ts';
+import { SECCIONES, agrupar, esActual } from '../lib/secciones.ts';
 
 interface Props {
   /** Título de la pestaña. */
@@ -19,6 +19,9 @@ const Titulo = conH1 ? 'h1' : 'p';
 const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
 // Sección múltiple en la que estamos (para la barra de sus partes).
 const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
+// Sus grupos y el de la página actual: la barra muestra los grupos y abre ese.
+const gruposMultiple = multiple ? agrupar(multiple.partes!) : [];
+const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, actual)));
 ---
 
 <!doctype html>
@@ -47,10 +50,17 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
                   <a href={s.href} aria-current={esActual(s, actual) ? 'page' : undefined} aria-haspopup="true">
                     {s.nombre} <span aria-hidden="true">▾</span>
                   </a>
-                  <ul class="desplegable">
-                    {s.partes.map((p) => (
+                  <ul class:list={['desplegable', { 'con-grupos': agrupar(s.partes).length > 1 }]}>
+                    {agrupar(s.partes).map((g) => (
                       <li>
-                        <a href={p.href}>{p.nombre}</a>
+                        {g.nombre && <a class="desplegable-grupo" href={`${s.href}#${g.id}`}>{g.nombre}</a>}
+                        <ul>
+                          {g.partes.map((p) => (
+                            <li>
+                              <a href={p.href}>{p.nombre}</a>
+                            </li>
+                          ))}
+                        </ul>
                       </li>
                     ))}
                   </ul>
@@ -70,12 +80,18 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
             {
               SECCIONES.map((s) =>
                 s.partes ? (
-                  <optgroup label={s.nombre}>
-                    <option value={s.href} selected={actual.startsWith(s.href)}>{s.nombre}</option>
-                    {s.partes.map((p) => (
-                      <option value={p.href} selected={esActual(p, actual)}>{p.nombre}</option>
+                  <>
+                    <optgroup label={s.nombre}>
+                      <option value={s.href} selected={actual === s.href}>{s.nombre}</option>
+                    </optgroup>
+                    {agrupar(s.partes).map((g) => (
+                      <optgroup label={g.nombre ? `${s.nombre} · ${g.nombre}` : s.nombre}>
+                        {g.partes.map((p) => (
+                          <option value={p.href} selected={esActual(p, actual)}>{p.nombre}</option>
+                        ))}
+                      </optgroup>
                     ))}
-                  </optgroup>
+                  </>
                 ) : (
                   <option value={s.href} selected={esActual(s, actual)}>{s.nombre}</option>
                 ),
@@ -90,11 +106,25 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
         <nav class="partes" aria-label={multiple.nombre}>
           <div class="cabecera-dentro">
             <a class="partes-titulo" href={multiple.href}>{multiple.nombre}</a>
-            {multiple.partes!.map((p) => (
-              <a href={p.href} aria-current={esActual(p, actual) ? 'page' : undefined}>
-                {p.nombre}
-              </a>
-            ))}
+            {gruposMultiple.map((g) =>
+              g.nombre && gruposMultiple.length > 1 ? (
+                <span class:list={['partes-grupo', { abierto: g === grupoActual }]}>
+                  <a class="partes-grupo-nombre" href={`${multiple.href}#${g.id}`}>{g.nombre}</a>
+                  {g === grupoActual &&
+                    g.partes.map((p) => (
+                      <a href={p.href} aria-current={esActual(p, actual) ? 'page' : undefined}>
+                        {p.nombre}
+                      </a>
+                    ))}
+                </span>
+              ) : (
+                g.partes.map((p) => (
+                  <a href={p.href} aria-current={esActual(p, actual) ? 'page' : undefined}>
+                    {p.nombre}
+                  </a>
+                ))
+              ),
+            )}
           </div>
         </nav>
       )
@@ -224,6 +254,31 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     color: var(--acento);
     background: var(--superficie);
   }
+  .desplegable ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* Con grupos, una columna por grupo. */
+  .desplegable.con-grupos {
+    /* Es ancho: se abre hacia la izquierda para no salirse de la pantalla. */
+    left: auto;
+    right: -1rem;
+    grid-template-columns: repeat(4, minmax(12rem, auto));
+    gap: 0 0.5rem;
+    padding: 0.75rem 0.5rem;
+  }
+  .multiple:hover .desplegable.con-grupos,
+  .multiple:focus-within .desplegable.con-grupos {
+    display: grid;
+  }
+  .desplegable a.desplegable-grupo {
+    padding-bottom: 0.35rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--texto);
+  }
 
   /* Partes de la sección múltiple actual */
   .partes {
@@ -282,6 +337,26 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     color: var(--acento);
   }
   .partes .partes-titulo {
+    color: var(--texto);
+  }
+  /* Grupos: solo el de la página actual muestra sus páginas. */
+  .partes-grupo {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 1.1rem;
+  }
+  .partes-grupo.abierto {
+    padding: 0.1rem 0.75rem;
+    background: var(--superficie-2);
+    border-radius: var(--radio);
+  }
+  .partes .partes-grupo-nombre {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .partes .abierto .partes-grupo-nombre {
     color: var(--texto);
   }
 </style>

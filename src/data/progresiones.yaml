@@ -51,10 +51,20 @@
   descripcion: 'IVm7 y bVII7 resolviendo a la tónica.'
   compases: ['IVm7', 'bVII7', 'Imaj7', 'Imaj7']
 
+- id: blues-basico
+  nombre: 'Blues básico'
+  descripcion: 'Blues de 12 compases con I7, IV7 y V7.'
+  compases: ['I7', 'IV7', 'I7', 'I7', 'IV7', 'IV7', 'I7', 'I7', 'V7', 'IV7', 'I7', 'V7']
+
 - id: blues-jazz
   nombre: 'Blues de jazz'
   descripcion: 'Blues de 12 compases con ii–V y disminuido de paso.'
   compases: ['I7', 'IV7', 'I7', 'Vm7 I7', 'IV7', '#IV°7', 'I7', 'VI7alt', 'IIm7', 'V7', 'I7 VI7', 'IIm7 V7']
+
+- id: blues-bird
+  nombre: 'Bird blues'
+  descripcion: 'Blues de Charlie Parker (Blues for Alice): ii–V que bajan por el ciclo hasta el IIm7.'
+  compases: ['Imaj7', 'VIIm7b5 III7b9', 'VIm7 II7', 'Vm7 I7', 'IV7', 'IVm7 bVII7', 'IIIm7 VI7', 'bIIIm7 bVI7', 'IIm7', 'V7', 'Imaj7 VI7', 'IIm7 V7']
 
 - id: blues-menor
   nombre: 'Blues menor'

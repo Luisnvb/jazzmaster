@@ -4,9 +4,11 @@ import type { Seccion } from '../lib/secciones.ts';
 
 interface Props {
   secciones: Seccion[];
+  /** Número de la primera tarjeta (para seguir la cuenta entre grupos). */
+  desde?: number;
 }
 
-const { secciones } = Astro.props;
+const { secciones, desde = 1 } = Astro.props;
 ---
 
 <ul class="portada">
@@ -14,7 +16,7 @@ const { secciones } = Astro.props;
     secciones.map((s, i) => (
       <li>
         <a href={s.href}>
-          <span class="kicker">{String(i + 1).padStart(2, '0')}</span>
+          <span class="kicker">{String(i + desde).padStart(2, '0')}</span>
           <span class="nombre">{s.nombre}</span>
           <span class="lema">{s.lema}</span>
         </a>

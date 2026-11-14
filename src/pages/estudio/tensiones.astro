@@ -1,0 +1,382 @@
+---
+// Tensiones y avoid notes (sección Estudio). El texto está en src/data/estudio/tensiones.md;
+// aquí van las 12 notas sobre el acorde elegido, con su papel y audio, y la tabla
+// de todos los acordes (lib/tensiones.ts).
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/tensiones.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { CONTEXTOS, ROLES } from '../../lib/tensiones.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Tensiones y avoid notes">
+  <SelectorTonica clave="tensiones" etiqueta="Raíz">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="tensiones" inicial={80} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-labelledby="titulo-doce">
+    <h2 id="titulo-doce">Las 12 notas sobre un acorde</h2>
+    <div class="contextos" role="group" aria-label="Acorde">
+      {
+        CONTEXTOS.map((c) => (
+          <button type="button" class="boton" data-contexto={c.id} aria-pressed="false">
+            <strong>{c.nombre}</strong> <span class="suave">{c.escala.nombre}</span>
+          </button>
+        ))
+      }
+    </div>
+    <p class="resumen" data-resumen></p>
+    <div class="doce" data-doce></div>
+    <p class="detalle" data-detalle aria-live="polite"></p>
+    <div class="botones-audio">
+      <button type="button" data-audio="acorde" aria-pressed="false">▶ Acorde</button>
+      <button type="button" data-audio="doce" aria-pressed="false" title="El acorde con cada una de las 12 notas encima, de la raíz a la 7">▶ Las 12 sobre el acorde</button>
+      <button type="button" data-audio="tensiones" aria-pressed="false" title="Solo las tensiones y las alteradas">▶ Solo tensiones</button>
+      <button type="button" data-audio="evitar" aria-pressed="false" title="Cada nota a evitar y su resolución medio tono abajo">▶ Avoid notes y resolución</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+    <ul class="roles">
+      {
+        ROLES.map((r) => (
+          <li>
+            <span class={`muestra rol-${r.id}`} aria-hidden="true" />
+            <strong>{r.nombre}</strong> <span class="suave">{r.resumen}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="ejemplo" aria-labelledby="titulo-todos">
+    <h2 id="titulo-todos">Todos los acordes</h2>
+    <p class="suave">Las 12 notas desde la raíz (en semitonos) sobre cada acorde. Pulsa una fila para verla arriba.</p>
+    <div class="tabla-desliza">
+      <table class="tabla-tensiones" data-tabla></table>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import type { Evento } from '../../lib/secuencias.ts';
+  import { formatNota, notaDeGrado, parseNota, pitchClass, semitonosGrado } from '../../lib/teoria.ts';
+  import { CONTEXTOS, ROLES, notasSobre, type NotaSobreAcorde } from '../../lib/tensiones.ts';
+
+  const NOMBRE_ROL = Object.fromEntries(ROLES.map((r) => [r.id, r.nombre]));
+  const CLAVE = 'tensiones:opciones';
+  const op = { contexto: CONTEXTOS[0].id, nota: -1, ...leerJSON<{ contexto: string; nota: number }>(CLAVE) };
+  if (!CONTEXTOS.some((c) => c.id === op.contexto)) op.contexto = CONTEXTOS[0].id;
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('tensiones:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const contexto = () => CONTEXTOS.find((c) => c.id === op.contexto)!;
+  const notaEn = (n: NotaSobreAcorde) => formatNota(notaDeGrado(tonica, n.grado));
+
+  function pintar() {
+    const c = contexto();
+    const notas = notasSobre(c);
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-contexto]')) b.setAttribute('aria-pressed', String(b.dataset.contexto === c.id));
+    $('[data-resumen]').innerHTML = `<strong class="cifrado">${esc(tonica + c.sufijo)}</strong> como ${esc(c.nombre)}, con la escala <strong>${esc(c.escala.nombre)}</strong>. <span class="suave">${esc(c.uso)}.</span>`;
+    $('[data-doce]').innerHTML = notas
+      .map(
+        (n) => `<button type="button" class="nota rol-${n.rol}${n.semitonos === op.nota ? ' elegida' : ''}" data-audio="nota" data-s="${n.semitonos}" aria-pressed="false" title="${esc(n.nota)}">
+          <span class="grado">${esc(n.grado)}</span>
+          <span class="nombre-nota">${esc(notaEn(n))}</span>
+          <span class="rol">${esc(NOMBRE_ROL[n.rol])}</span>
+        </button>`,
+      )
+      .join('');
+    const elegida = notas[op.nota];
+    $('[data-detalle]').innerHTML = elegida
+      ? `<strong>${esc(elegida.grado)} (${esc(notaEn(elegida))})</strong> · ${esc(NOMBRE_ROL[elegida.rol])}: ${esc(elegida.nota)}`
+      : '<span class="suave">Pulsa una nota para oírla sobre el acorde y ver por qué tiene ese papel.</span>';
+
+    $('[data-tabla]').innerHTML =
+      `<thead><tr><th scope="col">Acorde</th>${Array.from({ length: 12 }, (_, s) => `<th scope="col">${s}</th>`).join('')}</tr></thead><tbody>` +
+      CONTEXTOS.map(
+        (x) => `<tr data-fila="${x.id}"${x.id === c.id ? ' class="actual"' : ''}>
+          <th scope="row"><button type="button" class="enlace-fila" data-contexto="${x.id}">${esc(tonica + x.sufijo)}</button> <span class="suave">${esc(x.escala.nombre)}</span></th>
+          ${notasSobre(x)
+            .map((n) => `<td class="rol-${n.rol}" title="${esc(`${n.grado}: ${NOMBRE_ROL[n.rol]}`)}">${esc(n.grado)}</td>`)
+            .join('')}
+        </tr>`,
+      ).join('') +
+      '</tbody>';
+    guardarJSON(CLAVE, op);
+  }
+
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button');
+    if (!b) return;
+    if (b.dataset.contexto) {
+      op.contexto = b.dataset.contexto;
+      op.nota = -1;
+      pintar();
+      if (b.classList.contains('enlace-fila')) document.getElementById('titulo-doce')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (b.dataset.s) {
+      op.nota = Number(b.dataset.s);
+      // Sin repintar las notas: el botón pulsado tiene que seguir siendo el mismo para el audio.
+      for (const x of document.querySelectorAll('[data-doce] .nota')) x.classList.toggle('elegida', x === b);
+      const n = notasSobre(contexto())[op.nota];
+      $('[data-detalle]').innerHTML = `<strong>${esc(n.grado)} (${esc(notaEn(n))})</strong> · ${esc(NOMBRE_ROL[n.rol])}: ${esc(n.nota)}`;
+      guardarJSON(CLAVE, op);
+    }
+  });
+
+  // --- Audio: el acorde (bajo y notas en posición cerrada) y la nota encima. ---
+  function bajo(): number {
+    const pc = pitchClass(parseNota(tonica));
+    return 43 + ((pc - 7 + 12) % 12); // G2 … F#3
+  }
+  function acorde(inicio: number, dur: number): Evento[] {
+    const b = bajo();
+    return [
+      { midi: b, inicio, duracion: dur },
+      ...contexto()
+        .acorde.filter((g) => g !== '1')
+        .map((g) => ({ midi: b + 12 + (semitonosGrado(g) % 12), inicio: inicio + 0.02, duracion: dur })),
+    ];
+  }
+  /** La nota, por encima del acorde. */
+  const arriba = (s: number) => bajo() + 24 + s;
+
+  /** Una serie de notas, cada una con el acorde debajo; devuelve también qué nota suena en cada tramo. */
+  function serie(pasos: { s: number; dur: number; conAcorde: boolean }[]) {
+    const eventos: Evento[] = [];
+    const tramos: { s: number; inicio: number; fin: number }[] = [];
+    let t = 0;
+    for (const p of pasos) {
+      if (p.conAcorde) eventos.push(...acorde(t, p.dur * 0.95));
+      eventos.push({ midi: arriba(p.s), inicio: t + 0.03, duracion: p.dur * 0.95 });
+      tramos.push({ s: p.s, inicio: t, fin: t + p.dur });
+      t += p.dur;
+    }
+    return { eventos, tramos, duracion: t };
+  }
+
+  conectarAudio((boton) => {
+    const pulso = 60 / tempo();
+    const notas = notasSobre(contexto());
+    const modo = boton.dataset.audio;
+    if (modo === 'acorde') return acorde(0, pulso * 4);
+    if (modo === 'nota') return serie([{ s: Number(boton.dataset.s), dur: pulso * 4, conAcorde: true }]).eventos;
+    const pasos =
+      modo === 'doce'
+        ? notas.map((n) => ({ s: n.semitonos, dur: pulso * 2, conAcorde: true }))
+        : modo === 'tensiones'
+          ? notas.filter((n) => n.rol === 'tension' || n.rol === 'alterada').map((n) => ({ s: n.semitonos, dur: pulso * 2, conAcorde: true }))
+          : // Cada nota a evitar y su resolución a la nota del acorde que tiene al lado (abajo; en el sus, la 3 sube a la 4).
+            notas
+              .filter((n) => n.rol === 'evitar')
+              .flatMap((n) => [
+                { s: n.semitonos, dur: pulso * 2, conAcorde: true },
+                { s: notas[(n.semitonos + 11) % 12].rol === 'acorde' ? n.semitonos - 1 : n.semitonos + 1, dur: pulso * 2, conAcorde: false },
+              ]);
+    if (!pasos.length) {
+      $('[data-detalle]').innerHTML = `<span class="suave">Este acorde no tiene ${modo === 'evitar' ? 'notas a evitar' : 'tensiones'}.</span>`;
+      return [];
+    }
+    const { eventos, tramos, duracion } = serie(pasos);
+    let marcada = -1;
+    const marcar = (s: number) => {
+      if (s === marcada) return;
+      marcada = s;
+      document.querySelector('[data-doce] .sonando-ahora')?.classList.remove('sonando-ahora');
+      if (s >= 0) document.querySelector(`[data-doce] [data-s="${s}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      alProgresar: (t) => marcar(tramos.find((x) => t >= x.inicio && t < x.fin)?.s ?? -1),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 2rem;
+  }
+  .ejemplo h2 {
+    margin: 0 0 0.75rem;
+  }
+  .contextos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.9rem;
+  }
+  .contextos .boton[aria-pressed='true'] .suave {
+    color: var(--sobre-acento);
+  }
+  .resumen {
+    margin: 0 0 0.75rem;
+  }
+  .resumen :global(.cifrado) {
+    font-size: 1.3rem;
+  }
+  .doce {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+  @media (max-width: 60rem) {
+    .doce {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 26rem) {
+    .doce {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .doce :global(.nota) {
+    display: grid;
+    justify-items: center;
+    gap: 0.1rem;
+    min-width: 0;
+    padding: 0.55rem 0.15rem;
+    font: inherit;
+    color: var(--texto);
+    border: 2px solid var(--borde);
+    border-radius: var(--radio);
+    cursor: pointer;
+  }
+  .doce :global(.nota:hover) {
+    border-color: var(--acento);
+  }
+  .doce :global(.nota.elegida),
+  .doce :global(.nota.sonando-ahora) {
+    box-shadow: 0 0 0 3px var(--texto);
+  }
+  .doce :global(.grado) {
+    font-weight: 700;
+    font-size: 1.3rem;
+    line-height: 1.1;
+  }
+  .doce :global(.nombre-nota) {
+    font-size: 0.85rem;
+  }
+  .doce :global(.rol) {
+    font-size: 0.68rem;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .detalle {
+    min-height: 3em;
+    margin: 0.75rem 0;
+  }
+
+  /* Papeles: del más estable (relleno) al que choca (rojo). */
+  :global(.rol-acorde) {
+    background: var(--acento); /* COLOR: nota del acorde */
+    color: var(--sobre-acento) !important;
+    border-color: var(--acento) !important;
+  }
+  :global(.rol-tension) {
+    background: var(--acento-suave); /* COLOR: tensión disponible */
+    border-color: var(--acento) !important;
+  }
+  :global(.rol-alterada) {
+    background: var(--fondo); /* COLOR: tensión alterada (borde discontinuo) */
+    border: 2px dashed var(--acento) !important;
+  }
+  :global(.rol-evitar) {
+    background: color-mix(in srgb, var(--mal) 12%, var(--fondo)); /* COLOR: nota a evitar */
+    border-color: var(--mal) !important;
+    color: var(--mal) !important;
+  }
+  :global(.rol-fuera) {
+    background: var(--superficie); /* COLOR: nota fuera de la escala */
+    color: var(--texto-suave) !important;
+  }
+
+  .roles {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.88rem;
+  }
+  .roles li {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .muestra {
+    flex: 0 0 auto;
+    align-self: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid var(--borde);
+    border-radius: var(--radio);
+  }
+
+  .tabla-desliza {
+    overflow-x: auto;
+  }
+  .tabla-tensiones {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    font-size: 0.85rem;
+  }
+  .tabla-tensiones :global(th) {
+    padding: 0.25rem 0.4rem;
+    text-align: left;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+  .tabla-tensiones :global(thead th) {
+    text-align: center;
+    color: var(--texto-suave);
+  }
+  .tabla-tensiones :global(td) {
+    min-width: 2.4rem;
+    padding: 0.3rem 0.2rem;
+    text-align: center;
+    font-weight: 700;
+    border: 2px solid transparent;
+    border-radius: var(--radio);
+  }
+  .tabla-tensiones :global(tr.actual th) {
+    color: var(--acento);
+  }
+  .tabla-tensiones :global(.enlace-fila) {
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>
