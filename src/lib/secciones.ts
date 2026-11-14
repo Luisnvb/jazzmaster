@@ -39,6 +39,7 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Improvisación', nombre: 'Escalas', href: ruta('estudio/escalas'), lema: 'Practicarlas en el mástil, con las notas del acorde marcadas' },
       { grupo: 'Improvisación', nombre: 'Modos', href: ruta('estudio/modos'), lema: 'Paralelos y relativos, con su nota característica' },
       { grupo: 'Improvisación', nombre: 'Arpegios', href: ruta('estudio/arpegios'), lema: 'Cada grado del acorde en todo el mástil' },
+      { grupo: 'Improvisación', nombre: 'Pares de tríadas', href: ruta('estudio/pares-triadas'), lema: 'Dos tríadas sin notas comunes: líneas modernas sobre cada acorde' },
       // Acordes
       { grupo: 'Acordes', nombre: 'Ciclos de Goodrick', href: ruta('estudio/ciclos'), lema: 'Los acordes de la tonalidad por ciclos, con conducción de voces' },
       { grupo: 'Acordes', nombre: 'Tríadas', href: ruta('estudio/triadas'), lema: 'Cerradas y abiertas en todos los grupos de cuerdas' },
