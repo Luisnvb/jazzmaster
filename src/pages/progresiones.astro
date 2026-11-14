@@ -186,7 +186,8 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     try {
       vistaPrevia.innerHTML = htmlCompases(p, tonicaActual);
     } catch (error) {
-      vistaPrevia.innerHTML = '';
+      // Mientras se escribe, el motivo sale en lugar de la vista previa (no desaparece sin más).
+      vistaPrevia.innerHTML = `<p class="errores">${esc((error as Error).message)}</p>`;
       lista.push((error as Error).message);
     }
     return lista;
@@ -299,6 +300,15 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
 </script>
 
 <style>
+  /* En el móvil, botones más estrechos: Tocar, Continuo y Detener caben en una fila (y en edición, Editar, Duplicar y Eliminar en otra). Las tarjetas se pintan desde el script. */
+  @media (max-width: 40rem) {
+    .lista-progresiones :global(.botones-audio) {
+      gap: 0.4rem;
+    }
+    .lista-progresiones :global(.botones-audio button) {
+      padding: 0 0.7rem;
+    }
+  }
   .barra-edicion {
     display: flex;
     flex-wrap: wrap;
@@ -390,12 +400,23 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     grid-template-columns: 2fr 1fr;
     gap: 0.75rem;
   }
+  /* Contenedor, como la tarjeta: en el diálogo estrecho (móvil) también salen dos compases por línea. */
   .vista-previa {
     margin: 0.75rem 0;
+    container-type: inline-size;
   }
   .errores {
     color: var(--mal);
     font-weight: 600;
     padding-left: 1.25rem;
+  }
+  /* El error de la vista previa se pinta desde el script: el estilo con ámbito no le llega. */
+  .vista-previa :global(.errores) {
+    margin: 0;
+    padding: 0;
+    color: var(--mal);
+    font-size: 0.85rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
   }
 </style>
