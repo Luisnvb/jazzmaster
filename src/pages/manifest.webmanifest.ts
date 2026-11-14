@@ -11,8 +11,8 @@ export function GET() {
     start_url: BASE,
     scope: BASE,
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#ffffff',
+    background_color: '#ffffff', // COLOR: fondo al abrir la app instalada (igual que --fondo)
+    theme_color: '#ffffff', // COLOR: barra del sistema en la app instalada
     icons: [
       { src: archivo('iconos/icono-192.png'), sizes: '192x192', type: 'image/png' },
       { src: archivo('iconos/icono-512.png'), sizes: '512x512', type: 'image/png' },

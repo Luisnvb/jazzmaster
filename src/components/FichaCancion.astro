@@ -353,7 +353,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     box-shadow: 0 0 0 2px var(--acento);
   }
   .celda.sel {
-    background: color-mix(in srgb, var(--acento) 18%, transparent);
+    background: color-mix(in srgb, var(--acento) 18%, transparent); /* COLOR: acorde seleccionado en el editor (acento al 18 %) */
     outline: 2px solid var(--acento) !important;
   }
 
@@ -369,7 +369,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     background: var(--superficie);
     border: 2px solid var(--acento);
     border-radius: 0.75rem;
-    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.25);
+    box-shadow: 0 0.5rem 2rem var(--sombra-fuerte);
   }
   .panel h3 {
     margin: 0;
@@ -431,10 +431,10 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: 0.75rem;
-    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.3);
+    box-shadow: 0 0.5rem 2rem var(--sombra-fuerte);
   }
   .menu-acorde::backdrop {
-    background: rgb(0 0 0 / 0.3);
+    background: var(--velo);
   }
   .menu-titulo {
     margin: 0 0 0.75rem;

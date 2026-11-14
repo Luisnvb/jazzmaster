@@ -46,16 +46,14 @@ test('midi y rango de guitarra', () => {
   assert.deepEqual(ajustarARango([90, 94]), [78, 82]);
 });
 
-test('paleta de acento: colores válidos, distintos y legibles sobre blanco', async () => {
-  const { PALETA_ACENTO } = await import('./acento.ts');
-  assert.ok(PALETA_ACENTO.length >= 4);
-  assert.equal(new Set(PALETA_ACENTO).size, PALETA_ACENTO.length);
+test('color de acento: legible sobre blanco (texto y fondo de botón)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../styles/global.css', import.meta.url), 'utf8');
+  const acento = css.match(/--acento:\s*(#[0-9a-f]{6})/i)?.[1];
+  assert.ok(acento, 'falta --acento en global.css');
   const lum = (hex: string) => {
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   };
-  for (const c of PALETA_ACENTO) {
-    assert.match(c, /^#[0-9a-f]{6}$/);
-    assert.ok(1.05 / (lum(c) + 0.05) >= 4.5, `${c} con poco contraste`);
-  }
+  assert.ok(1.05 / (lum(acento) + 0.05) >= 4.5, `${acento} con poco contraste`);
 });

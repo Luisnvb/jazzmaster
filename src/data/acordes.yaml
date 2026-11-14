@@ -223,7 +223,7 @@
   grados: ['', '1', 'b5', 'bb7', 'b3', '']
   notas: 'De: How Insensitive.'
 
-# --- De la carpeta chords/ (PDF, PNG y II-V-I) ---
+# --- De láminas de voicings (PDF, PNG y II-V-I por grupos de cuerdas) ---
 
 - id: chords-maj7-1
   grupo: maj7

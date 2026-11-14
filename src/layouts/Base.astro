@@ -2,7 +2,6 @@
 import '../styles/global.css';
 import { archivo, ruta } from '../lib/rutas.ts';
 import { SECCIONES, esActual } from '../lib/secciones.ts';
-import { PALETA_ACENTO } from '../lib/acento.ts';
 
 interface Props {
   /** Título de la pestaña. */
@@ -28,33 +27,12 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
+    <!-- COLOR: barra del navegador en el móvil (igual que --fondo en global.css) -->
     <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href={archivo('manifest.webmanifest')} />
     <link rel="icon" href={archivo('favicon.png')} type="image/png" />
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
     <title>{titulo} · Práctica</title>
-    <script is:inline define:vars={{ paleta: PALETA_ACENTO }}>
-      // Color de acento de esta sesión: se elige al abrir la pestaña (distinto del
-      // de la sesión anterior) y se mantiene al cambiar de página. Va en <head>
-      // para que no se vea el color por defecto un instante.
-      let acento = null;
-      try {
-        acento = sessionStorage.getItem('acento');
-      } catch {}
-      if (!paleta.includes(acento)) {
-        let anterior = null;
-        try {
-          anterior = localStorage.getItem('acento:ultimo');
-        } catch {}
-        const opciones = paleta.filter((c) => c !== anterior);
-        acento = opciones[Math.floor(Math.random() * opciones.length)];
-        try {
-          sessionStorage.setItem('acento', acento);
-          localStorage.setItem('acento:ultimo', acento);
-        } catch {}
-      }
-      document.documentElement.style.setProperty('--acento', acento);
-    </script>
   </head>
   <body>
     <header class="cabecera">
@@ -225,7 +203,7 @@ const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
     background: var(--fondo);
     border: 1px solid var(--borde);
     border-top: 0.25rem solid var(--acento);
-    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.08);
+    box-shadow: 0 0.5rem 1.5rem var(--sombra);
     display: none;
   }
   .multiple:hover .desplegable,
