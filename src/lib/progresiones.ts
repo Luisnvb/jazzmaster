@@ -87,10 +87,17 @@ const INVERSIONES = ['1', '3', '5', '7'];
 
 export function parseAcordeGrado(texto: string): AcordeGrado {
   // "I/3": acorde y, tras la barra, la nota del acorde que va en el bajo.
-  const [acorde, inversion, sobra] = texto.trim().split('/');
-  if (sobra !== undefined) throw new Error(`Acorde no válido: "${texto}" (solo una barra: I/3)`);
-  const base = parseAcordeSinBajo(texto.trim(), acorde);
-  if (inversion === undefined) return base;
+  // La barra también está en el cifrado 6/9: si todo el texto es un acorde válido, no es inversión.
+  const limpio = texto.trim();
+  try {
+    return parseAcordeSinBajo(limpio, limpio);
+  } catch (error) {
+    if (!limpio.includes('/')) throw error;
+  }
+  const corte = limpio.lastIndexOf('/');
+  const acorde = limpio.slice(0, corte);
+  const inversion = limpio.slice(corte + 1);
+  const base = parseAcordeSinBajo(limpio, acorde);
   if (!INVERSIONES.includes(inversion)) {
     throw new Error(`Inversión no válida en "${texto}": después de la barra va 3, 5 o 7 (la nota del acorde que hace de bajo).`);
   }

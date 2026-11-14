@@ -39,7 +39,11 @@ test('inversiones: la nota del acorde en el bajo', () => {
   assert.equal(parseAcordeGrado('I/1').bajo, undefined);
   assert.throws(() => parseAcordeGrado('I/7'), /no tiene 7ª/);
   assert.throws(() => parseAcordeGrado('I/4'), /Inversión no válida/);
-  assert.throws(() => parseAcordeGrado('I/3/5'), /solo una barra/);
+  assert.throws(() => parseAcordeGrado('I/3/5'), /no válid|no reconocida/);
+  // 6/9 es un cifrado, no una inversión; y se puede invertir.
+  assert.equal(parseAcordeGrado('I6/9').sufijo, '6/9');
+  assert.equal(parseAcordeGrado('I6/9').bajo, undefined);
+  assert.equal(simboloEn('C', parseAcordeGrado('I6/9/3')), 'C6/9/E');
   // Audio: C/E con el bajo en E3 (52) y C y G por encima.
   const { eventos } = secuenciaProgresion('C', analizarProgresion(['I/3']), 120);
   assert.equal(eventos[0].midi, 52);

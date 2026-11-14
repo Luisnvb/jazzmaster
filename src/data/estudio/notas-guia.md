@@ -30,7 +30,7 @@ Si cada nota guía va a la más cercana del acorde siguiente, aparecen dos líne
 
 1. **Escucha y canta.** Pon la progresión en bucle con el bajo y un sonido sostenido. Canta la línea aguda; luego la grave. Después quita el bajo e intenta oír la armonía solo con las dos líneas.
 2. **Dos notas en la guitarra.** Toca las notas guía en un par de cuerdas: 3-2 o 4-3 (por ejemplo, Dm7 con F en la 4ª y C en la 3ª). Sin mover la mano más de un traste por cambio.
-3. **Shell voicings.** Añade la raíz en la 6ª o 5ª cuerda: raíz + 3 + 7 (o raíz + 7 + 3). Son los acordes de tres notas del acompañamiento clásico de jazz; alterna los dos tipos para que la mano apenas se mueva.
+3. **Shell voicings.** Añade la raíz en la 6ª o 5ª cuerda: raíz + 3 + 7 (o raíz + 7 + 3). Son los acordes de tres notas del acompañamiento clásico de jazz; alterna los dos tipos para que la mano apenas se mueva. Más en [Shell voicings](../shells/).
 4. **Una nota guía por acorde.** Improvisa tocando solo una de las dos líneas, una nota por acorde en el tiempo 1. Luego dos notas por acorde (3 y 7 en el orden que quieras).
 5. **Llega a la nota guía.** Improvisa libremente pero cae en la nota guía en el tiempo 1 de cada acorde:
    - desde medio tono por debajo o por encima (aproximación cromática, en el tiempo 4 del compás anterior);

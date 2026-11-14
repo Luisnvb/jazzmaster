@@ -1,0 +1,244 @@
+---
+// Shell voicings (sección Estudio). El texto está en src/data/estudio/shells.md;
+// aquí va el ejemplo (lib/shells.ts) con las progresiones de la web y sus diagramas.
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/shells.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { porOrden } from '../../lib/orden.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+const progresiones = porOrden(await getCollection('progresiones')).map(({ id, data }) => ({
+  id,
+  nombre: data.nombre,
+  pulsos: data.pulsos,
+  compases: data.compases,
+}));
+const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
+---
+
+<Base titulo="Shell voicings">
+  <SelectorTonica clave="shells">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="shells" inicial={90} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label="Ejemplo">
+    <div class="opciones">
+      <label class="campo">Progresión
+        <select data-progresion></select>
+      </label>
+      <div class="grupo-botones" role="group" aria-label="Zona del mástil donde empieza el primer acorde">
+        <span class="etiqueta">Empezar en</span>
+        <button type="button" class="boton" data-zona="3" aria-pressed="false" title="El primer acorde, entre los trastes 1 y 6">Grave</button>
+        <button type="button" class="boton" data-zona="7" aria-pressed="false" title="El primer acorde, entre los trastes 4 y 10">Media</button>
+        <button type="button" class="boton" data-zona="11" aria-pressed="false" title="El primer acorde, entre los trastes 8 y 14">Aguda</button>
+      </div>
+      <label class="casilla"><input type="checkbox" data-tension /> Con tensión (9, 13…)</label>
+    </div>
+    <ol class="shells" data-shells></ol>
+    <div class="botones-audio">
+      <button type="button" data-audio="una" aria-pressed="false">▶ Tocar</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+
+  <script type="application/json" id="datos-shells" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { diagramaSVG } from '../../lib/diagrama.ts';
+  import { analizarProgresion, aplicarCambiosProgresiones, type CambiosProgresiones, type Progresion } from '../../lib/progresiones.ts';
+  import { conTension, eventosShells, shellsProgresion, type Shell } from '../../lib/shells.ts';
+
+  // Las progresiones de la sección Progresiones, con lo editado en este navegador.
+  const base: Progresion[] = JSON.parse(document.getElementById('datos-shells')!.textContent!);
+  const progresiones = aplicarCambiosProgresiones(base, leerJSON<CambiosProgresiones>('progresiones:cambios') ?? {}).filter((p) => {
+    try {
+      analizarProgresion(p.compases);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  interface Opciones {
+    progresion: string;
+    zona: number;
+    tension: boolean;
+  }
+  const CLAVE = 'shells:opciones';
+  const op: Opciones = { progresion: 'ii-v-i-mayor', zona: 7, tension: false, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('shells:sonido');
+
+  const selector = document.querySelector<HTMLSelectElement>('[data-progresion]')!;
+  selector.innerHTML = progresiones.map((p) => `<option value="${esc(p.id)}">${esc(p.nombre)}</option>`).join('');
+  if (!progresiones.some((p) => p.id === op.progresion)) op.progresion = progresiones[0]?.id ?? '';
+  selector.value = op.progresion;
+  const casillaTension = document.querySelector<HTMLInputElement>('[data-tension]')!;
+  casillaTension.checked = op.tension;
+  const lista = document.querySelector<HTMLElement>('[data-shells]')!;
+
+  const progresion = () => progresiones.find((p) => p.id === op.progresion)!;
+  function calcular(): { compases: ReturnType<typeof analizarProgresion>; shells: Shell[] } {
+    const compases = analizarProgresion(progresion().compases);
+    const acordes = compases.flat();
+    const shells = shellsProgresion(tonica, compases, op.zona).map((s, i) => (op.tension ? conTension(s, acordes[i], tonica) : s));
+    return { compases, shells };
+  }
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) b.setAttribute('aria-pressed', String(Number(b.dataset.zona) === op.zona));
+    if (!progresiones.length) {
+      lista.innerHTML = '<li class="suave">No hay progresiones.</li>';
+      return;
+    }
+    try {
+      lista.innerHTML = calcular()
+        .shells.map(
+          (s, i) => `<li class="shell" data-indice="${i}">
+            <span class="simbolo">${esc(s.simbolo)}</span>
+            <span class="forma">${esc(s.forma)}</span>
+            ${diagramaSVG({ trastes: s.trastes, grados: s.grados })}
+          </li>`,
+        )
+        .join('');
+    } catch (error) {
+      lista.innerHTML = `<li class="suave">${esc((error as Error).message)}</li>`;
+    }
+    guardarJSON(CLAVE, op);
+  }
+
+  selector.addEventListener('change', () => {
+    op.progresion = selector.value;
+    pintar();
+  });
+  casillaTension.addEventListener('change', () => {
+    op.tension = casillaTension.checked;
+    pintar();
+  });
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button[data-zona]');
+    if (!b) return;
+    op.zona = Number(b.dataset.zona);
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const { compases, shells } = calcular();
+    const { eventos, tramos, duracion } = eventosShells(compases, shells, tempo(), progresion().pulsos ?? 4, SOSTENIDOS.includes(instrumento()));
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      lista.querySelector('.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) lista.querySelector(`[data-indice="${k}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => marcar(tramos.findIndex((x) => t >= x.inicio && t < x.fin)),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin-bottom: 0.9rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .shells {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(46%, 10rem), 1fr));
+    gap: 0.5rem;
+  }
+  .shells :global(.shell) {
+    display: grid;
+    justify-items: center;
+    gap: 0.1rem;
+    padding: 0.6rem 0.4rem 0.4rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .shells :global(.shell.sonando-ahora) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+    box-shadow: 0 0 0 1px var(--acento);
+  }
+  .shells :global(.simbolo) {
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .shells :global(.forma) {
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+    text-align: center;
+  }
+  .shells :global(.diagrama) {
+    max-width: 9rem;
+    margin-top: 0.25rem;
+  }
+</style>
