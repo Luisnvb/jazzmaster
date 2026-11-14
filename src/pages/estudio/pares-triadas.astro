@@ -245,6 +245,13 @@ const FIGURAS = [
     margin-left: 1rem;
     font-size: 1rem;
   }
+  /* En el móvil, cada tríada en su línea para que no se corte a mitad. */
+  @media (max-width: 40rem) {
+    .titulo-escala :global(.triada) {
+      display: block;
+      margin-left: 0;
+    }
+  }
   .nota-par {
     margin: 0 0 0.6rem;
   }
