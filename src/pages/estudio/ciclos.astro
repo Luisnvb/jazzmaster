@@ -1,0 +1,250 @@
+---
+// Ciclos de Goodrick (sección Estudio). El texto está en src/data/estudio/ciclos.md;
+// aquí va el ejemplo interactivo (lib/ciclos.ts) y el índice.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/ciclos.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { CICLOS, DESCRIPCION_CICLO } from '../../lib/ciclos.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Ciclos de Goodrick">
+  <SelectorTonica clave="ciclos">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="ciclos" inicial={60} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-labelledby="ejemplo-titulo">
+    <h2 id="ejemplo-titulo" class="visualmente-oculto">Ejemplo</h2>
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label="Ciclo">
+        <span class="etiqueta">Ciclo</span>
+        {CICLOS.map((c) => <button type="button" class="boton" data-ciclo={c} aria-pressed="false" title={DESCRIPCION_CICLO[c]}>{c}</button>)}
+      </div>
+      <div class="grupo-botones" role="group" aria-label="Acordes">
+        <span class="etiqueta">Acordes</span>
+        <button type="button" class="boton" data-tipo="triadas" aria-pressed="false">Tríadas</button>
+        <button type="button" class="boton" data-tipo="cuatriadas" aria-pressed="false">Cuatriadas</button>
+      </div>
+      <div class="grupo-botones" role="group" aria-label="Disposición">
+        <span class="etiqueta">Disposición</span>
+        <button type="button" class="boton" data-disposicion="cerrada" aria-pressed="false">Cerrada</button>
+        <button type="button" class="boton" data-disposicion="drop2" aria-pressed="false" title="Solo con cuatriadas">Drop 2</button>
+      </div>
+    </div>
+    <p class="descripcion" data-descripcion></p>
+    <ol class="acordes-ciclo" data-acordes></ol>
+    <p class="suave leyenda">
+      Voces de aguda (arriba) a grave, con su grado en el acorde. <span class="comun-muestra">Resaltadas</span>: notas que se quedan del acorde anterior.
+    </p>
+    <div class="botones-audio">
+      <button type="button" data-audio="una" aria-pressed="false">▶ Tocar</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { DESCRIPCION_CICLO, eventosCiclo, secuenciaCiclo, type Ciclo, type Tipo } from '../../lib/ciclos.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+
+  // Opciones elegidas (se recuerdan en este navegador).
+  const CLAVE = 'ciclos:opciones';
+  interface Opciones {
+    ciclo: Ciclo;
+    tipo: Tipo;
+    disposicion: 'cerrada' | 'drop2';
+  }
+  const op: Opciones = { ciclo: 4, tipo: 'cuatriadas', disposicion: 'cerrada', ...leerJSON<Partial<Opciones>>(CLAVE) };
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('ciclos:sonido');
+  const lista = document.querySelector<HTMLElement>('[data-acordes]')!;
+  const descripcion = document.querySelector<HTMLElement>('[data-descripcion]')!;
+
+  const acordes = () => secuenciaCiclo(tonica, op.ciclo, op.tipo, op.tipo === 'triadas' ? 'cerrada' : op.disposicion);
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-ciclo]')) b.setAttribute('aria-pressed', String(Number(b.dataset.ciclo) === op.ciclo));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tipo]')) b.setAttribute('aria-pressed', String(b.dataset.tipo === op.tipo));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-disposicion]')) {
+      b.setAttribute('aria-pressed', String(b.dataset.disposicion === op.disposicion && op.tipo === 'cuatriadas'));
+      b.disabled = op.tipo === 'triadas';
+    }
+    const s = acordes();
+    const comunes = s[1].notas.filter((n) => n.comun).length;
+    descripcion.innerHTML = `<strong>Ciclo ${op.ciclo}:</strong> ${esc(DESCRIPCION_CICLO[op.ciclo])}. En cada cambio se ${
+      comunes === 1 ? 'queda 1 nota' : `quedan ${comunes} notas`
+    } y las demás se mueven por grado.`;
+    lista.innerHTML = s
+      .map(
+        (a, i) => `<li class="acorde-ciclo" data-indice="${i}">
+          <span class="simbolo">${esc(a.simbolo)}</span>
+          <span class="romano">${esc(a.romano)}</span>
+          <ul class="voces">${[...a.notas]
+            .reverse()
+            .map((n) => `<li class="${n.comun ? 'comun' : ''}"><span class="nota">${esc(n.nota)}</span><span class="grado">${esc(n.grado)}</span></li>`)
+            .join('')}</ul>
+        </li>`,
+      )
+      .join('');
+    guardarJSON(CLAVE, op);
+  }
+
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button');
+    if (!b) return;
+    if (b.dataset.ciclo) op.ciclo = Number(b.dataset.ciclo) as Ciclo;
+    else if (b.dataset.tipo) op.tipo = b.dataset.tipo as Tipo;
+    else if (b.dataset.disposicion) op.disposicion = b.dataset.disposicion as 'cerrada' | 'drop2';
+    else return;
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const s = acordes();
+    const pulsos = 4;
+    const { eventos, duracion } = eventosCiclo(s, tempo(), pulsos, SOSTENIDOS.includes(instrumento()));
+    const porAcorde = duracion / s.length;
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      lista.querySelector('.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) lista.querySelector(`[data-indice="${k}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => marcar(Math.min(s.length - 1, Math.floor(t / porAcorde))),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .grupo-botones [data-ciclo] {
+    min-width: 2.6rem;
+    padding: 0;
+  }
+  .descripcion {
+    margin: 0 0 0.75rem;
+  }
+  .acordes-ciclo {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+    gap: 0.5rem;
+  }
+  .acordes-ciclo :global(.acorde-ciclo) {
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+    padding: 0.6rem 0.4rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .acordes-ciclo :global(.acorde-ciclo.sonando-ahora) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+    box-shadow: 0 0 0 1px var(--acento);
+  }
+  .acordes-ciclo :global(.simbolo) {
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .acordes-ciclo :global(.romano) {
+    font-size: 0.78rem;
+    color: var(--acento);
+  }
+  .acordes-ciclo :global(.voces) {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.2rem;
+    width: 100%;
+  }
+  .acordes-ciclo :global(.voces li) {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.4rem;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    background: var(--fondo);
+  }
+  .acordes-ciclo :global(.voces .nota) {
+    font-weight: 700;
+  }
+  .acordes-ciclo :global(.voces .grado) {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+  }
+  /* Notas comunes con el acorde anterior. */
+  .acordes-ciclo :global(.voces li.comun),
+  .comun-muestra {
+    background: var(--acento); /* COLOR: nota común (se queda del acorde anterior) */
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  .acordes-ciclo :global(.voces li.comun .grado) {
+    color: var(--sobre-acento);
+  }
+  .comun-muestra {
+    padding: 0 0.35rem;
+    border-radius: var(--radio);
+  }
+  .leyenda {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+  }
+</style>
