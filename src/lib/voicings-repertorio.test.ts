@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { validarCmb } from './cmb.ts';
-import { claveForma, voicingsDeCifrados } from './voicings-repertorio.ts';
+import { claveForma, encajaEnGrupo, voicingsDeCifrados } from './voicings-repertorio.ts';
 import type { Voicing } from './acordes-datos.ts';
 
 const cmb = validarCmb(JSON.parse(readFileSync(new URL('../content/repertorio/how-insensitive.cmb.json', import.meta.url), 'utf8')));
@@ -23,4 +23,16 @@ test('voicings de un cifrado: sin repetidos, con ids únicos y la canción en la
   for (const v of nuevos) assert.match(v.notas!, /How Insensitive/);
   // Lo que ya existe no se vuelve a añadir.
   assert.deepEqual(voicingsDeCifrados([{ titulo: 'How Insensitive', cmb }], nuevos, GRUPOS), []);
+});
+
+test('qué formas incompletas encajan en cada grupo', () => {
+  assert.ok(encajaEnGrupo('maj7', ['', '1', '3', '6', '9', ''])); // 6/9
+  assert.ok(encajaEnGrupo('maj7', ['1', '5', '2', '3', '5', '1'])); // add9
+  assert.ok(!encajaEnGrupo('maj7', ['', '1', '5', '1', '3', '5'])); // tríada
+  assert.ok(!encajaEnGrupo('maj7', ['', '1', '5', '1', '2', '5'])); // sus2
+  assert.ok(!encajaEnGrupo('maj7', ['1', '5', '1', '', '', ''])); // quinta
+  assert.ok(encajaEnGrupo('mmaj7', ['', '1', '5', '6', 'b3', ''])); // m6
+  assert.ok(!encajaEnGrupo('mmaj7', ['', '1', '5', '6', 'b2', ''])); // sin b3
+  assert.ok(!encajaEnGrupo('m7', ['', '1', '5', '1', 'b3', '5'])); // tríada menor
+  assert.ok(encajaEnGrupo('sus', ['', '1', '5', '1', '4', '5'])); // tríada sus4
 });

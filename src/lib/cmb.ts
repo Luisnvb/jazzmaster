@@ -289,9 +289,12 @@ export function grupoDeCelda(celda: CeldaCmb, grados: readonly string[] = []): s
   const s = semitonosPresentes(grados);
   switch (celda.type) {
     case 'Major':
-      return s.has(8) && !s.has(7) ? 'aug' : 'maj7';
+      if (s.has(8) && !s.has(7)) return 'aug';
+      // Sin 3 y con 4: tríada sus4, que hace de dominante suspendido.
+      return s.has(5) && !s.has(4) ? 'sus' : 'maj7';
     case 'Minor':
-      return s.has(11) && !s.has(10) ? 'mmaj7' : 'm7';
+      // Sin b7 y con 7 o 6: tónica menor (mMaj7, m6, m6/9).
+      return (s.has(11) || s.has(9)) && !s.has(10) ? 'mmaj7' : 'm7';
     case 'Dominant':
       if ([1, 3, 8].some((n) => s.has(n) && !(n === 3 && !s.has(4)))) return 'alt7';
       return s.has(5) && !s.has(4) ? 'sus' : 'dom7';

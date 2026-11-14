@@ -23,6 +23,28 @@ export function claveForma(v: Pick<Voicing, 'grupo' | 'trastes' | 'grados' | 'to
   return [v.grupo, v.grados.join(','), dibujo, alAire ? v.tonica : ''].join('|');
 }
 
+/**
+ * Si una forma tiene sentido en su grupo aunque no lleve la cuatríada entera: sin
+ * tríadas sueltas, quintas ni sus2. El maj7 admite el 6, el 6/9 y el add9 (misma
+ * función de tónica); el mMaj7, el m6; el sus, la tríada sus4; el m7 pide la b7.
+ */
+export function encajaEnGrupo(grupo: string, grados: readonly string[]): boolean {
+  const s = new Set(grados.filter(Boolean).map((g) => ((semitonosGrado(g) % 12) + 12) % 12));
+  const alguno = (...n: number[]) => n.some((x) => s.has(x));
+  switch (grupo) {
+    case 'maj7':
+      return s.has(4) && alguno(11, 9, 2);
+    case 'mmaj7':
+      return s.has(3) && alguno(11, 9);
+    case 'm7':
+      return s.has(10);
+    case 'sus':
+      return s.has(5);
+    default:
+      return true;
+  }
+}
+
 const ORDEN_CUERDA = (v: Voicing) => v.trastes.findIndex((t) => t !== 'x');
 
 /**
@@ -41,10 +63,7 @@ export function voicingsDeCifrados(cifrados: readonly CifradoConTitulo[], existe
         if (!forma || forma.trastes.every((t) => t === 'x')) continue;
         const grupo = grupoDeCelda(celda, forma.grados);
         if (!grupo || !ordenGrupos.includes(grupo)) continue;
-        // El grupo maj7 solo recoge acordes con 7 mayor: tríadas, quintas, sus, add9 y 6 no van ahí.
-        if (grupo === 'maj7' && !forma.grados.some((g) => g && semitonosGrado(g) % 12 === 11)) continue;
-        // Y el m7 solo recoge acordes con b7: ni tríadas menores ni m6.
-        if (grupo === 'm7' && !forma.grados.some((g) => g && semitonosGrado(g) % 12 === 10)) continue;
+        if (!encajaEnGrupo(grupo, forma.grados)) continue;
         const tonica = raizWeb(celda.root);
         // Sin calidad es una tríada mayor (C → "Tríada", C/G → "Tríada/G").
         const calidad = simboloCelda(celda, forma.grados).slice(tonica.length);

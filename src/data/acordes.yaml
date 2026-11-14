@@ -29,6 +29,54 @@
   grados: ['', '1', '3', '#5', '1', '']
   notas: Voicing de ejemplo.
 
+- id: aug-1
+  grupo: aug
+  nombre: 'Tríada'
+  tonica: C
+  trastes: [8, 7, 6, x, x, x]
+  grados: ['1', '3', '#5', '', '', '']
+  notas: 'Tríada en las cuerdas graves.'
+
+- id: aug-2
+  grupo: aug
+  nombre: 'Tríada'
+  tonica: C
+  trastes: [x, x, x, 5, 5, 4]
+  grados: ['', '', '', '1', '3', '#5']
+  notas: 'Tríada en las cuerdas agudas. Se repite cada 4 trastes (es simétrica).'
+
+- id: aug-3
+  grupo: aug
+  nombre: '7#5'
+  tonica: C
+  trastes: [8, x, 8, 9, 9, x]
+  grados: ['1', '', 'b7', '3', '#5', '']
+  notas: 'Dominante aumentado (C7#5): bajo en la 6ª.'
+
+- id: aug-4
+  grupo: aug
+  nombre: '7#5'
+  tonica: C
+  trastes: [x, 3, x, 3, 5, 4]
+  grados: ['', '1', '', 'b7', '3', '#5']
+  notas: 'Dominante aumentado (C7#5): bajo en la 5ª.'
+
+- id: aug-6
+  grupo: aug
+  nombre: 'maj7#5'
+  tonica: C
+  trastes: [8, x, 9, 9, 9, x]
+  grados: ['1', '', '7', '3', '#5', '']
+  notas: 'Maj7 aumentado (Cmaj7#5): tónica de la menor melódica (III+maj7).'
+
+- id: aug-7
+  grupo: aug
+  nombre: 'maj7#5'
+  tonica: C
+  trastes: [x, 3, x, 4, 5, 4]
+  grados: ['', '1', '', '7', '3', '#5']
+  notas: 'Maj7 aumentado (Cmaj7#5): bajo en la 5ª.'
+
 # --- Del repertorio (npm run voicings-repertorio) ---
 
 - id: rep-maj7-2
@@ -46,6 +94,22 @@
   trastes: [x, 8, 5, 5, 5, x]
   grados: ['', '1', '2', '5', '7', '']
   notas: 'De: Days of Wine and Roses, E.S.P., How Insensitive, Infant Eyes, Stella By Starlight.'
+
+- id: rep-maj7-1
+  grupo: maj7
+  nombre: '6'
+  tonica: Bb
+  trastes: [6, x, 5, 7, 8, x]
+  grados: ['1', '', '6', '3', '6', '']
+  notas: 'De: I''ll See You in My Dreams.'
+
+- id: rep-maj7-3
+  grupo: maj7
+  nombre: '6'
+  tonica: F
+  trastes: [x, 8, 7, 7, 6, x]
+  grados: ['', '1', '3', '6', '1', '']
+  notas: 'De: Days of Wine and Roses, I''ll See You in My Dreams.'
 
 - id: rep-m7-2
   grupo: m7
@@ -233,6 +297,14 @@
   grados: ['', '1', '3', '7', '9', '']
   notas: 'De: Major-7th-Stock-Voicings.pdf.'
 
+- id: chords-maj7-7
+  grupo: maj7
+  nombre: '6/9'
+  tonica: C
+  trastes: [x, 3, 2, 2, 3, x]
+  grados: ['', '1', '3', '6', '9', '']
+  notas: 'De: Major-7th-Stock-Voicings.pdf.'
+
 - id: chords-maj7-8
   grupo: maj7
   nombre: 'maj9#11'
@@ -328,6 +400,30 @@
   trastes: [x, 3, 5, 4, 4, 3]
   grados: ['', '1', '5', '7', 'b3', '5']
   notas: 'De: Minor/minor(Maj7).png.'
+
+- id: rep-m7-1
+  grupo: mmaj7
+  nombre: 'm6'
+  tonica: Bb
+  trastes: [6, x, 5, 6, 6, x]
+  grados: ['1', '', '6', 'b3', '5', '']
+  notas: 'De: I''ll See You in My Dreams.'
+
+- id: rep-m7-6
+  grupo: mmaj7
+  nombre: 'm6'
+  tonica: C
+  trastes: [x, 3, 5, 2, 4, x]
+  grados: ['', '1', '5', '6', 'b3', '']
+  notas: 'De: How Insensitive.'
+
+- id: chords-m7-8
+  grupo: mmaj7
+  nombre: 'm6/9'
+  tonica: C
+  trastes: [x, 3, 1, 2, 3, x]
+  grados: ['', '1', 'b3', '6', '9', '']
+  notas: 'De: Minor-7th-Stock-Voicings.pdf. En el original pone Cmin6.'
 
 - id: chords-m7-11
   grupo: m7
@@ -675,6 +771,30 @@
   grados: ['1', '', '7', '3', '#4', '']
   notas: 'De: Are You Going With Me?.'
 
+- id: rep-maj7-6
+  grupo: maj7
+  nombre: 'add9'
+  tonica: E
+  trastes: [0, 2, 4, 1, 0, 0]
+  grados: ['1', '5', '2', '3', '5', '1']
+  notas: 'De: Pyramid Song.'
+
+- id: rep-maj7-14
+  grupo: maj7
+  nombre: '6'
+  tonica: A
+  trastes: [x, 0, 2, 2, 2, 2]
+  grados: ['', '1', '5', '1', '3', '6']
+  notas: 'De: Black Hole Sun, Pyramid Song.'
+
+- id: rep-maj7-15
+  grupo: maj7
+  nombre: '6'
+  tonica: C
+  trastes: [x, 3, 2, 2, 1, 0]
+  grados: ['', '1', '3', '6', '1', '3']
+  notas: 'De: Black Hole Sun.'
+
 - id: rep-m7-8
   grupo: m7
   nombre: 'm9/G'
@@ -778,6 +898,22 @@
   trastes: [x, 1, 3, 1, 4, 1]
   grados: ['', '1', '5', 'b7', '4', '5']
   notas: 'De: Are You Going With Me?.'
+
+- id: rep-maj7-9
+  grupo: sus
+  nombre: 'sus4'
+  tonica: F#
+  trastes: [2, 4, 4, 4, 2, 2]
+  grados: ['1', '5', '1', '4', '5', '1']
+  notas: 'De: Exit Music (For a Film). Tríada sus4, sin b7.'
+
+- id: rep-maj7-17
+  grupo: sus
+  nombre: 'sus4'
+  tonica: B
+  trastes: [x, 2, 4, 4, 5, 2]
+  grados: ['', '1', '5', '1', '4', '5']
+  notas: 'De: Exit Music (For a Film). Tríada sus4, sin b7.'
 
 - id: rep-alt7-7
   grupo: alt7

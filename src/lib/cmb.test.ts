@@ -44,6 +44,8 @@ test('grupo de acordes de cada celda (para los enlaces)', () => {
   assert.equal(g(celda('E', 'Half-Diminished', [null, '1', 'b3', 'b5', 'b7', null])), 'm7b5');
   assert.equal(g(celda('C', 'Dominant', ['1', null, 'b7', '4', '5', null])), 'sus');
   assert.equal(g(celda('C', 'Major', [null, '1', '3', '#5', '1', null])), 'aug');
+  assert.equal(g(celda('C', 'Minor', [null, '1', '5', '6', 'b3', null])), 'mmaj7');
+  assert.equal(g(celda('B', 'Major', [null, '1', '5', '1', '4', '5'])), 'sus');
   assert.equal(simbolo(celda('C', 'Major', [null, '1', '3', '#5', '1', null])), 'C+');
   assert.equal(simbolo(celda('C', 'Dominant', ['1', null, 'b7', '4', '5', null])), 'C7sus4');
 });
