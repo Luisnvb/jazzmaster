@@ -323,6 +323,23 @@ const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, 
       font-size: 0.95rem;
     }
   }
+  /* Móvil estrecho: el desplegable mide lo que su opción más larga («Disminuida y tonos
+     enteros») y dejaba al título en dos letras. Se limita para que el título se lea. */
+  @media (max-width: 40rem) {
+    .nav-movil {
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 45%;
+    }
+    .nav-movil select {
+      width: 100%;
+      max-width: 100%;
+      text-overflow: ellipsis;
+    }
+    .titulo-seccion {
+      font-size: 1.05rem;
+    }
+  }
   .partes a {
     white-space: nowrap;
     font-family: var(--fuente);

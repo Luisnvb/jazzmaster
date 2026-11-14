@@ -57,6 +57,20 @@ const { secciones, desde = 1 } = Astro.props;
     color: var(--texto-suave);
     font-size: 1.05rem;
   }
+  /* En el móvil, tarjetas más bajas: las secciones se ven casi de un vistazo. */
+  @media (max-width: 40rem) {
+    .portada {
+      gap: 0.6rem;
+    }
+    .portada a {
+      min-height: 0;
+      gap: 0.35rem;
+      padding: 0.8rem 1rem;
+    }
+    .portada .lema {
+      font-size: 0.95rem;
+    }
+  }
   .portada a:hover {
     background: var(--acento);
     border-color: var(--acento);
