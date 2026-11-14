@@ -41,8 +41,8 @@ export function voicingsDeCifrados(cifrados: readonly CifradoConTitulo[], existe
         if (!forma || forma.trastes.every((t) => t === 'x')) continue;
         const grupo = grupoDeCelda(celda, forma.grados);
         if (!grupo || !ordenGrupos.includes(grupo)) continue;
-        // El grupo maj7 solo recoge acordes con 7 o 6: las tríadas, quintas, sus y add9 de rock y pop no van ahí.
-        if (grupo === 'maj7' && !forma.grados.some((g) => g && [9, 11].includes(semitonosGrado(g) % 12))) continue;
+        // El grupo maj7 solo recoge acordes con 7 mayor: tríadas, quintas, sus, add9 y 6 no van ahí.
+        if (grupo === 'maj7' && !forma.grados.some((g) => g && semitonosGrado(g) % 12 === 11)) continue;
         const tonica = raizWeb(celda.root);
         // Sin calidad es una tríada mayor (C → "Tríada", C/G → "Tríada/G").
         const calidad = simboloCelda(celda, forma.grados).slice(tonica.length);

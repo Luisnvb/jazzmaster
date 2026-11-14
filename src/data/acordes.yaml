@@ -747,22 +747,6 @@
   grados: ['1', '', '7', '3', '#4', '']
   notas: 'De: Are You Going With Me?.'
 
-- id: rep-maj7-14
-  grupo: maj7
-  nombre: '6'
-  tonica: A
-  trastes: [x, 0, 2, 2, 2, 2]
-  grados: ['', '1', '5', '1', '3', '6']
-  notas: 'De: Black Hole Sun, Pyramid Song.'
-
-- id: rep-maj7-15
-  grupo: maj7
-  nombre: '6'
-  tonica: C
-  trastes: [x, 3, 2, 2, 1, 0]
-  grados: ['', '1', '3', '6', '1', '3']
-  notas: 'De: Black Hole Sun.'
-
 - id: rep-m7-7
   grupo: m7
   nombre: 'm'
