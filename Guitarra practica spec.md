@@ -258,6 +258,18 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 - [x] **Acordes:** cambiar de posición los voicings dentro de su grupo (◀ ▶ en modo edición). El orden se guarda en el navegador y sale en «Exportar YAML».
 - [x] **Repertorio:** metrónomo opcional y selector de tempo. Tempo de 40 a 320 BPM (por defecto el de la ficha, con «↺ Original» para volver; no modifica la canción). El metrónomo marca cada pulso, con la primera parte del compás acentuada, y se recuerda en el navegador.
 
+## 10 quater. Comprobaciones en el móvil (pendientes, 2026-11-15)
+
+Revisión a 390 px de ancho (marco en Chrome, no en un teléfono real). Ya revisadas y arregladas: portada, Repertorio (lista y las 14 fichas, con y sin diagramas, reproducción y panel de edición), Acordes, Patrones, Intervalos y su entrenador, Progresiones, y en Estudio: Escalas, Arpegios, Pares de tríadas, Disminuida y tonos enteros y Oído armónico. Quedan:
+
+- [ ] **Escalas (diccionario, `/escalas/`):** la sección principal; no se ha revisado (sí Estudio › Escalas).
+- [ ] **Estudio, páginas sin revisar:** Rutina de práctica, Ritmo, Armonía funcional, Rearmonización, Blues, Tensiones y avoid notes, Notas guía, Aproximaciones cromáticas, Modos, Ciclos de Goodrick, Tríadas, Shell voicings, Drop 2 y Drop 3. Mirar sobre todo tablas anchas, diagramas y barras de opciones.
+- [ ] **Repertorio · canción nueva e importar** (`/repertorio/local/`, «+ Canción nueva», «Importar .cmb.json»): no se han probado en el móvil.
+- [ ] **Diálogos sin probar:** «+ Nuevo voicing», «Importar» y «Exportar YAML» en Acordes; «+ Nueva progresión» en Progresiones (solo se probó «Editar»).
+- [ ] **Escritorio tras los cambios globales:** comprobar en el monitor de 27" que siguen bien los diagramas de acorde (más margen a la izquierda del número de traste, `lib/diagrama.ts`), la cabecera (`layouts/Base.astro`) y los botones de audio (más estrechos solo por debajo de 40rem, `global.css`).
+- [ ] **Teléfono real:** repasar al menos portada, Repertorio y un entrenador en un móvil de verdad (sonido, pantalla encendida mientras suena, desplegables nativos).
+- [ ] **Decisiones abiertas:** limitar la altura del panel de edición de Repertorio al 65 % de la pantalla (ahora 80 %), para ver más cifrado en pantallas bajas; en ese panel, el desplegable de calidad muestra «Semidisminui…» en el móvil.
+
 ## 11. Fuera de alcance
 - Visualizador de escalas en el mástil.
 - Estado de aprendizaje o seguimiento del repertorio.
