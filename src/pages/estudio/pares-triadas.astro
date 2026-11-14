@@ -239,7 +239,8 @@ const FIGURAS = [
     border: 1px solid var(--borde);
     border-radius: var(--radio);
   }
-  .titulo-escala .triada {
+  /* Las tríadas se pintan desde el script: el estilo con ámbito no les llega. */
+  .titulo-escala :global(.triada) {
     margin-left: 1rem;
     font-size: 1rem;
   }
