@@ -247,9 +247,18 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     grid-template-columns: repeat(var(--n), minmax(0, 1fr));
     border-left: 2px solid var(--texto-suave);
   }
+  /* En el móvil, para que ningún cifrado se corte con «…» ni los diagramas queden diminutos:
+     dos compases por fila y uno en las líneas con algún compás de 3 o más acordes
+     (Pyramid Song), con el cifrado algo más pequeño. */
   @media (max-width: 40rem) {
-    .cifrado.con-diagramas .linea {
+    .cifrado .linea {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .cifrado .linea:has(.celdas > .celda:nth-child(3)) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .celda .simbolo {
+      font-size: 1.05rem;
     }
   }
   .compas {
@@ -427,9 +436,14 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     .panel {
       padding: 0.75rem;
     }
+    /* El diagrama encima y centrado: al lado de los controles quedaba diminuto. */
     .panel .vista {
-      grid-template-columns: minmax(0, 8rem) 1fr;
-      gap: 0.75rem;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.5rem;
+    }
+    .panel .vista > div:first-child {
+      justify-self: center;
+      width: min(10rem, 60%);
     }
   }
 
