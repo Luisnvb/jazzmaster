@@ -45,7 +45,7 @@ En menor, la tónica es más inestable y hay más subdominantes. Dos detalles:
 
 1. **Oye las funciones.** Toca I–IV–V–I y I–VIm–IIm–V en varias tonalidades y canta la tónica sobre cada acorde: en la T suena estable, en la SD se aleja, en la D tira hacia arriba o hacia abajo.
 2. **Analiza el repertorio.** Toma un standard del Repertorio y escribe encima de cada acorde su grado y su función. Busca los ii–V (y hacia qué acorde van), los dominantes secundarios y los acordes prestados. El analizador de arriba hace lo mismo con las progresiones.
-3. **Sustituye.** En una progresión, cambia un acorde por otro de la misma función: I por VIm o IIIm, IV por IIm, V7 por subV7 o VII°7. Escucha qué cambia y qué se mantiene.
+3. **Sustituye.** En una progresión, cambia un acorde por otro de la misma función: I por VIm o IIIm, IV por IIm, V7 por subV7 o VII°7. Escucha qué cambia y qué se mantiene. Más en [Rearmonización](../rearmonizacion/).
 4. **Añade ii–V.** Antes de cualquier acorde, pon su ii–V. Un I–IV se convierte en I – (Vm7 – I7) – IV. Es la forma más rápida de "jazzear" una progresión sencilla.
 5. **Improvisa con las funciones.** Sobre la dominante, apunta a las notas que resuelven (la 3 y la 7 del V7 hacia la 1 y la 3 del I). Sobre la tónica, descansa en la 3, la 5 o la 9.
 6. **Toca en todas las tonalidades.** Las funciones no dependen de la tonalidad: el ii–V–I es el mismo dibujo en las doce. Practícalo en las doce con [shell voicings](../shells/) o en [drop 2](../drop2/).
