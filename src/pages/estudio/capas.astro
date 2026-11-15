@@ -27,6 +27,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
       <div class="grupo-botones" role="group" aria-label="Forma CAGED">
         <span class="etiqueta">Forma</span>
         {FORMAS_CAGED.map((f) => <button type="button" class="boton forma" data-forma={f.letra} aria-pressed="false">{f.letra}</button>)}
+        <button type="button" class="boton" data-forma="todo" aria-pressed="false" title="Cada capa en todo el mástil, sin limitarse a una forma">Todo el mástil</button>
       </div>
       <button type="button" class="boton" data-sortear title="Raíz, cualidad y forma al azar; vuelve a la primera capa">🎲 Sortear</button>
     </div>
@@ -58,7 +59,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
       <button type="button" data-detener>■ Detener</button>
     </div>
     <p class="suave leyenda">
-      Tablatura: la 1ª cuerda arriba. La zona sombreada es la forma CAGED. La raíz, en color; en la pentatónica y la escala, las
+      Tablatura: la 1ª cuerda arriba. La zona sombreada es la forma CAGED (con «Todo el mástil», no hay zona). La raíz, en color; en la pentatónica y la escala, las
       notas que no son del acorde van huecas. Las flechas del teclado pasan de capa.
     </p>
   </section>
@@ -79,18 +80,17 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     FORMAS_CAGED,
     capas,
     cualidadCapas,
-    cuerdasVoicing,
     eventosCapa,
     mastilCapasSVG,
     simboloCapas,
     zonaCaged,
-    type LetraCaged,
+    type FormaCapas,
   } from '../../lib/capas.ts';
   import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
 
   interface Opciones {
     cualidad: string;
-    forma: LetraCaged;
+    forma: FormaCapas;
     capa: number;
     acumular: boolean;
     notas: boolean;
@@ -99,10 +99,10 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   }
   const CLAVE = 'capas:opciones';
   const op: Opciones = { cualidad: 'mayor', forma: 'E', capa: 0, acumular: true, notas: false, escalas: {}, ...leerJSON<Partial<Opciones>>(CLAVE) };
-  if (!FORMAS_CAGED.some((f) => f.letra === op.forma)) op.forma = 'E';
+  if (op.forma !== 'todo' && !FORMAS_CAGED.some((f) => f.letra === op.forma)) op.forma = 'E';
   let raiz = 'C';
   /** Voicing destacado en la capa actual (tríadas): undefined = todos. No se guarda. */
-  let voicing: number | undefined;
+  let voicing: string | undefined;
   const tempo = conectarTempo();
   const instrumento = conectarInstrumento('capas:sonido');
 
@@ -124,10 +124,10 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-cualidad]')) b.setAttribute('aria-pressed', String(b.dataset.cualidad === c.id));
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-forma]')) {
       b.setAttribute('aria-pressed', String(b.dataset.forma === op.forma));
-      b.title = `Forma de ${b.dataset.forma}: desde el traste ${zonaCaged(raiz, b.dataset.forma as LetraCaged).cejilla}`;
+      if (b.dataset.forma !== 'todo') b.title = `Forma de ${b.dataset.forma}: desde el traste ${zonaCaged(raiz, b.dataset.forma as FormaCapas).cejilla}`;
     }
     $('[data-titulo]').innerHTML =
-      `<strong>${esc(simboloCapas(raiz, c))}</strong> · forma de ${op.forma} · trastes ${z.desde}–${z.hasta}`;
+      `<strong>${esc(simboloCapas(raiz, c))}</strong> · ` + (op.forma === 'todo' ? 'todo el mástil' : `forma de ${op.forma} · trastes ${z.desde}–${z.hasta}`);
 
     lista.innerHTML = todas
       .map(
@@ -146,13 +146,15 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     escalas.innerHTML = c.escalas
       .map((e, k) => `<button type="button" class="boton" data-escala="${k}" aria-pressed="${k === escala()}">${esc(e.nombre)}</button>`)
       .join('');
-    if (voicing !== undefined && !capa.formas[voicing]) voicing = undefined;
+    // Un botón por etiqueta (grupo de cuerdas o forma CAGED): en todo el mástil, cada uno reúne varias.
+    const etiquetas = [...new Set(capa.etiquetas)];
+    if (voicing !== undefined && !etiquetas.includes(voicing)) voicing = undefined;
     const voicings = $('[data-voicings]');
-    voicings.hidden = capa.formas.length < 2;
+    voicings.hidden = etiquetas.length < 2;
     voicings.innerHTML =
       `<button type="button" class="boton" data-voicing="" aria-pressed="${voicing === undefined}">Todas</button>` +
-      capa.formas
-        .map((f, k) => `<button type="button" class="boton" data-voicing="${k}" aria-pressed="${k === voicing}">${cuerdasVoicing(f)}</button>`)
+      etiquetas
+        .map((e) => `<button type="button" class="boton" data-voicing="${esc(e)}" aria-pressed="${e === voicing}">${esc(e)}</button>`)
         .join('');
     $('[data-acumular]').setAttribute('aria-pressed', String(op.acumular));
     $('[data-rotulo]').setAttribute('aria-pressed', String(op.notas));
@@ -180,10 +182,10 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     if (!b) return;
     const d = b.dataset;
     if (d.cualidad) op.cualidad = d.cualidad;
-    else if (d.forma) op.forma = d.forma as LetraCaged;
+    else if (d.forma) op.forma = d.forma as FormaCapas;
     else if (d.capa) [op.capa, voicing] = [Number(d.capa), undefined];
     else if (d.paso) [op.capa, voicing] = [op.capa + Number(d.paso), undefined];
-    else if (d.voicing !== undefined) voicing = d.voicing === '' ? undefined : Number(d.voicing);
+    else if (d.voicing !== undefined) voicing = d.voicing || undefined;
     else if (d.escala) op.escalas = { ...op.escalas, [op.cualidad]: Number(d.escala) };
     else if ('acumular' in d) op.acumular = !op.acumular;
     else if ('rotulo' in d) op.notas = !op.notas;

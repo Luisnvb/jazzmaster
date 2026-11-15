@@ -3,7 +3,7 @@
 // arpegio, las tríadas abiertas, la pentatónica, la escala y el acorde. Cada capa
 // se apoya en la anterior. Inspirado en Guitar Burpees, de Noel Johnston.
 // Funciones puras, sin DOM.
-import type { NotaMastil } from './arpegios.ts';
+import { notasFormula, type NotaMastil } from './arpegios.ts';
 import { enPosicion } from './digitacion.ts';
 import { inversionesDrop, tresNotas, type IdGrupo } from './drop.ts';
 import { parseAcordeGrado, simboloEn, type AcordeGrado } from './progresiones.ts';
@@ -82,8 +82,14 @@ export const FORMAS_CAGED: FormaCaged[] = [
   { letra: 'D', trastes: [null, null, 0, 2, 3, 2], grados: ['', '', '1', '5', '1', '3'] },
 ];
 
+/** Lo que se elige en el selector de forma: una zona CAGED o todo el mástil. */
+export type FormaCapas = LetraCaged | 'todo';
+
+/** Último traste dibujado. */
+const TRASTES = 15;
+
 export interface ZonaCaged {
-  letra: LetraCaged;
+  letra: FormaCapas;
   /** Traste donde cae la «cejuela» de la forma (0 = la forma al aire). */
   cejilla: number;
   /** Posición de la mano (traste del índice, 1–12) para las escalas y arpegios. */
@@ -93,8 +99,12 @@ export interface ZonaCaged {
   hasta: number;
 }
 
-/** La zona de una forma CAGED para una raíz: la forma al aire desplazada hasta esa raíz (trastes 0–11). */
-export function zonaCaged(raiz: string, letra: LetraCaged): ZonaCaged {
+/**
+ * La zona de una forma CAGED para una raíz: la forma al aire desplazada hasta esa
+ * raíz (trastes 0–11). Con 'todo', el mástil entero.
+ */
+export function zonaCaged(raiz: string, letra: FormaCapas): ZonaCaged {
+  if (letra === 'todo') return { letra, cejilla: 0, posicion: 1, desde: 0, hasta: TRASTES };
   const f = FORMAS_CAGED.find((x) => x.letra === letra)!;
   const cuerdaRaiz = f.grados.indexOf('1');
   const pcForma = mod(AFINACION[cuerdaRaiz] + f.trastes[cuerdaRaiz]!);
@@ -184,6 +194,8 @@ export interface Capa {
   notas: NotaMastil[];
   /** Voicings (tríadas, el acorde): sus notas se unen en el dibujo y suenan juntas. */
   formas: NotaMastil[][];
+  /** Etiqueta de cada voicing (grupo de cuerdas o forma CAGED), para verlos por separado. */
+  etiquetas: string[];
 }
 
 const GRUPOS_CERRADAS: IdGrupo[] = ['654', '543', '432', '321'];
@@ -201,28 +213,36 @@ function nota(raiz: string, cuerda: number, traste: number, grado: string, delAc
   };
 }
 
-/** Las tríadas de unos grupos de cuerdas que caben enteras en la zona, de las cuerdas graves a las agudas. */
-function triadasEnZona(raiz: string, a: AcordeGrado, grupos: IdGrupo[], z: ZonaCaged): NotaMastil[][] {
-  return grupos.flatMap((g) =>
+/**
+ * Las tríadas de unos grupos de cuerdas que caben enteras en la zona, de las cuerdas
+ * graves a las agudas (y, en cada grupo, de grave a agudo), con su grupo como etiqueta.
+ */
+function triadasEnZona(raiz: string, a: AcordeGrado, grupos: IdGrupo[], z: ZonaCaged): { formas: NotaMastil[][]; etiquetas: string[] } {
+  const alto = (t: readonly (number | 'x')[]) => Math.max(...t.filter((x): x is number => x !== 'x'));
+  const lista = grupos.flatMap((g) =>
     inversionesDrop(raiz, a, g)
       .filter((d) => d.trastes.every((t) => t === 'x' || (t >= z.desde && t <= z.hasta)))
-      .map((d) => d.trastes.flatMap((t, c) => (t === 'x' ? [] : [nota(raiz, c, t, d.grados[c])]))),
+      .sort((x, y) => alto(x.trastes) - alto(y.trastes))
+      .map((d) => ({ forma: d.trastes.flatMap((t, c) => (t === 'x' ? [] : [nota(raiz, c, t, d.grados[c])])), etiqueta: g.split('').join('-') })),
   );
+  return { formas: lista.map((x) => x.forma), etiquetas: lista.map((x) => x.etiqueta) };
 }
 
-/** Las notas de una fórmula en la zona, digitadas en posición (cada altura, una vez). */
+/** Las notas de una fórmula en la zona, digitadas en posición (cada altura, una vez); en todo el mástil, todas. */
 function enLaZona(raiz: string, formula: readonly string[], z: ZonaCaged, acorde?: readonly string[]): NotaMastil[] {
+  if (z.letra === 'todo') return notasFormula(raiz, formula, acorde);
   const pcs = acorde ? new Set(acorde.map((g) => mod(pitchClass(notaDeGrado(raiz, g))))) : null;
   return enPosicion(raiz, formula, z.posicion).notas.map((n) => nota(raiz, n.cuerda, n.traste, n.grado, pcs ? pcs.has(mod(n.midi)) : undefined));
 }
 
 /**
- * Las capas de un acorde (`raiz` + cualidad) en una zona CAGED, en el orden en que
- * se practican. `escala` elige entre las escalas de la cualidad.
+ * Las capas de un acorde (`raiz` + cualidad) en una zona CAGED (o en todo el mástil),
+ * en el orden en que se practican. `escala` elige entre las escalas de la cualidad.
  */
-export function capas(raiz: string, cualidad: CualidadCapas, letra: LetraCaged, escala = 0): Capa[] {
+export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, escala = 0): Capa[] {
   const a = parseAcordeGrado(cualidad.romano);
   const z = zonaCaged(raiz, letra);
+  const todo = letra === 'todo';
   const simbolo = simboloEn(raiz, a);
   const tri = tresNotas(a.formula);
   const res: Capa[] = [];
@@ -230,58 +250,71 @@ export function capas(raiz: string, cualidad: CualidadCapas, letra: LetraCaged, 
   res.push({
     id: 'raiz',
     nombre: 'Raíz',
-    pista: `Todas las ${formatNota(notaDeGrado(raiz, '1'))} de la zona: los puntos de anclaje. Tócalas de grave a agudo diciendo el nombre.`,
+    pista: `Todas las ${formatNota(notaDeGrado(raiz, '1'))} ${todo ? 'del mástil' : 'de la zona'}: los puntos de anclaje. Tócalas de grave a agudo diciendo el nombre.`,
     notas: enLaZona(raiz, ['1'], z),
     formas: [],
+    etiquetas: [],
   });
   const cerradas = triadasEnZona(raiz, a, GRUPOS_CERRADAS, z);
   res.push({
     id: 'triadas',
     nombre: 'Tríadas cerradas',
-    pista: `${tri.join('-')} en tres cuerdas seguidas, sin mover la mano. Di qué grado queda arriba en cada una.`,
-    notas: cerradas.flat(),
-    formas: cerradas,
+    pista: todo
+      ? `${tri.join('-')} en tres cuerdas seguidas, por todo el mástil: en cada grupo de cuerdas, las inversiones suben una tras otra.`
+      : `${tri.join('-')} en tres cuerdas seguidas, sin mover la mano. Di qué grado queda arriba en cada una.`,
+    notas: cerradas.formas.flat(),
+    ...cerradas,
   });
   res.push({
     id: 'arpegio',
     nombre: 'Arpegio',
-    pista: `${a.formula.join('-')} por toda la zona: sube y baja, y empieza también desde la 3 y la 5.`,
+    pista: `${a.formula.join('-')} por ${todo ? 'todo el mástil' : 'toda la zona'}: sube y baja, y empieza también desde la 3 y la 5.`,
     notas: enLaZona(raiz, a.formula, z),
     formas: [],
+    etiquetas: [],
   });
   const abiertas = triadasEnZona(raiz, a, GRUPOS_ABIERTAS, z);
   res.push({
     id: 'abiertas',
     nombre: 'Tríadas abiertas',
     pista: 'La voz central de la cerrada, una octava arriba, en tres cuerdas con una saltada: 6-4-3, 5-3-2 y 4-2-1, o 6-5-3, 5-4-2 y 4-3-1.',
-    notas: abiertas.flat(),
-    formas: abiertas,
+    notas: abiertas.formas.flat(),
+    ...abiertas,
   });
   if (cualidad.penta) {
     res.push({
       id: 'pentatonica',
       nombre: 'Pentatónica',
-      pista: `${cualidad.penta.nombre} (${cualidad.penta.formula.join(' ')}), con la misma mano que el acorde. Las notas del acorde, rellenas.`,
+      pista: `${cualidad.penta.nombre} (${cualidad.penta.formula.join(' ')}), ${todo ? 'en todo el mástil' : 'con la misma mano que el acorde'}. Las notas del acorde, rellenas.`,
       notas: enLaZona(raiz, cualidad.penta.formula, z, a.formula),
       formas: [],
+      etiquetas: [],
     });
   }
   const e = cualidad.escalas[Math.min(Math.max(escala, 0), cualidad.escalas.length - 1)];
   res.push({
     id: 'escala',
     nombre: 'Escala',
-    pista: `${e.nombre} (${e.formula.join(' ')}): la posición entera. Las notas del acorde, rellenas; el resto, huecas.`,
+    pista: `${e.nombre} (${e.formula.join(' ')}): ${todo ? 'todo el mástil' : 'la posición entera'}. Las notas del acorde, rellenas; el resto, huecas.`,
     notas: enLaZona(raiz, e.formula, z, a.formula),
     formas: [],
+    etiquetas: [],
   });
-  const ac = acordeCaged(raiz, a, letra);
-  const notasAcorde = ac.trastes.flatMap((t, c) => (t === null ? [] : [nota(raiz, c, t, ac.grados[c])]));
+  // En todo el mástil, las cinco formas, de la más grave a la más aguda.
+  const letras: LetraCaged[] = letra === 'todo' ? zonasCaged(raiz).map((x) => x.letra as LetraCaged) : [letra];
+  const acordes = letras.map((l) => {
+    const ac = acordeCaged(raiz, a, l);
+    return ac.trastes.flatMap((t, c) => (t === null ? [] : [nota(raiz, c, t, ac.grados[c])]));
+  });
   res.push({
     id: 'acorde',
     nombre: 'Acorde',
-    pista: `${simbolo} con la forma de ${letra}: todo lo anterior gira alrededor de este acorde.`,
-    notas: notasAcorde,
-    formas: [notasAcorde],
+    pista: todo
+      ? `${simbolo} con las cinco formas CAGED (${letras.join('-')}), encadenadas a lo largo del mástil: cada una empieza donde acaba la anterior.`
+      : `${simbolo} con la forma de ${letra}: todo lo anterior gira alrededor de este acorde.`,
+    notas: acordes.flat(),
+    formas: acordes,
+    etiquetas: letras,
   });
   return res;
 }
@@ -297,16 +330,16 @@ export interface PasoCapa {
 
 /**
  * Cómo suena una capa: las notas sueltas suben y bajan en corcheas; los voicings,
- * uno tras otro (o solo el elegido), primero arpegiados y después juntos.
+ * uno tras otro (o solo los de la etiqueta elegida), primero arpegiados y después juntos.
  */
-export function eventosCapa(capa: Capa, bpm: number, voicing?: number): { eventos: Evento[]; pasos: PasoCapa[]; duracion: number } {
+export function eventosCapa(capa: Capa, bpm: number, voicing?: string): { eventos: Evento[]; pasos: PasoCapa[]; duracion: number } {
   const corchea = 30 / bpm;
   const eventos: Evento[] = [];
   const pasos: PasoCapa[] = [];
   let t = 0;
   if (capa.formas.length) {
     for (const [i, f] of capa.formas.entries()) {
-      if (voicing !== undefined && i !== voicing) continue;
+      if (voicing !== undefined && capa.etiquetas[i] !== voicing) continue;
       const orden = [...f].sort((x, y) => x.midi - y.midi);
       orden.forEach((n) => {
         eventos.push({ midi: n.midi, inicio: t, duracion: corchea * 0.95 });
@@ -332,7 +365,6 @@ export function eventosCapa(capa: Capa, bpm: number, voicing?: number): { evento
 
 // --- Dibujo ------------------------------------------------------------------------------
 
-const TRASTES = 15;
 const ANCHO_TRASTE = 46;
 const SEP_CUERDA = 26;
 const MARGEN_IZQ = 34;
@@ -355,8 +387,8 @@ export function mastilCapasSVG(
   z: ZonaCaged,
   acumular = true,
   rotulo: Rotulo = 'grado',
-  /** Índice del voicing de la capa actual que se destaca (el resto, atenuado); sin él, todos. */
-  voicing?: number,
+  /** Etiqueta de los voicings de la capa actual que se destacan (el resto, atenuado); sin ella, todos. */
+  voicing?: string,
 ): string {
   const ancho = MARGEN_IZQ + ANCHO_TRASTE * (TRASTES + 0.5);
   const alto = MARGEN_SUP + SEP_CUERDA * 5 + MARGEN_INF;
@@ -365,8 +397,10 @@ export function mastilCapasSVG(
   const xNota = (t: number) => (t === 0 ? MARGEN_IZQ - 16 : xTraste(t) - ANCHO_TRASTE / 2);
   const partes: string[] = [];
 
-  const x0 = z.desde <= 0 ? MARGEN_IZQ - 30 : xTraste(z.desde - 1);
-  partes.push(`<rect class="zona" x="${x0}" y="${MARGEN_SUP - 12}" width="${xTraste(z.hasta) - x0}" height="${SEP_CUERDA * 5 + 24}" rx="6"/>`);
+  if (z.letra !== 'todo') {
+    const x0 = z.desde <= 0 ? MARGEN_IZQ - 30 : xTraste(z.desde - 1);
+    partes.push(`<rect class="zona" x="${x0}" y="${MARGEN_SUP - 12}" width="${xTraste(z.hasta) - x0}" height="${SEP_CUERDA * 5 + 24}" rx="6"/>`);
+  }
   for (const m of MARCAS) partes.push(`<circle class="marca" cx="${xTraste(m) - ANCHO_TRASTE / 2}" cy="${alto - 10}" r="3.5"/>`);
   partes.push(
     `<circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 - 6}" cy="${alto - 10}" r="3.5"/><circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 + 6}" cy="${alto - 10}" r="3.5"/>`,
@@ -379,7 +413,7 @@ export function mastilCapasSVG(
   const capa = lista[actual];
   if (capa) {
     for (const [i, f] of capa.formas.entries()) {
-      if (voicing !== undefined && i !== voicing) continue;
+      if (voicing !== undefined && capa.etiquetas[i] !== voicing) continue;
       const puntos = [...f].sort((a, b) => a.cuerda - b.cuerda).map((n) => `${xNota(n.traste)},${yCuerda(n.cuerda)}`);
       if (puntos.length > 1) partes.push(`<polyline class="forma" points="${puntos.join(' ')}"/>`);
     }
@@ -391,7 +425,7 @@ export function mastilCapasSVG(
     if (k > actual || (!acumular && k !== actual)) return;
     for (const n of c.notas) sitios.set(`${n.cuerda}:${n.traste}`, { n, k });
   });
-  const elegido = voicing !== undefined ? capa?.formas[voicing] : undefined;
+  const elegido = voicing !== undefined && capa ? capa.formas.filter((_, i) => capa.etiquetas[i] === voicing).flat() : undefined;
   const enElegido = (n: NotaMastil) => !elegido || elegido.some((x) => x.cuerda === n.cuerda && x.traste === n.traste);
   for (const { n, k } of [...sitios.values()].sort((a, b) => a.k - b.k)) {
     const atras = k < actual || !enElegido(n);
@@ -404,16 +438,10 @@ export function mastilCapasSVG(
         `<text class="grado${texto.length > 2 ? ' largo' : ''}" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${texto}</text></g>`,
     );
   }
-  const etiqueta = capa ? `Mástil: ${capa.nombre}, trastes ${z.desde}–${z.hasta}` : 'Mástil';
+  const zona = z.letra === 'todo' ? 'todo el mástil' : `trastes ${z.desde}–${z.hasta}`;
+  const etiqueta = capa ? `Mástil: ${capa.nombre}, ${zona}` : 'Mástil';
   return `<svg class="mastil capas" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="${etiqueta}" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
 }
-
-/** Cuerdas de un voicing, de grave a aguda: «5-4-3». */
-export const cuerdasVoicing = (f: readonly NotaMastil[]) =>
-  [...f]
-    .sort((a, b) => a.cuerda - b.cuerda)
-    .map((n) => 6 - n.cuerda)
-    .join('-');
 
 /** Nombre del acorde (para el título). */
 export const simboloCapas = (raiz: string, c: CualidadCapas) => simboloEn(raiz, parseAcordeGrado(c.romano));

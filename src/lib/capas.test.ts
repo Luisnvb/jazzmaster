@@ -105,7 +105,7 @@ test('audio: notas sueltas suben y bajan; los voicings, arpegiados y juntos', ()
   const triadas = eventosCapa(lista[1], 120);
   assert.equal(triadas.pasos.length, lista[1].formas.length * 4);
   assert.equal(triadas.eventos.length, lista[1].formas.length * 6);
-  const una = eventosCapa(lista[1], 120, 1);
+  const una = eventosCapa(lista[1], 120, lista[1].etiquetas[1]);
   assert.equal(una.eventos.length, 6);
   assert.deepEqual(una.pasos[3].notas.map((n) => n.midi), [...lista[1].formas[1]].map((n) => n.midi).sort((a, b) => a - b));
 });
@@ -118,7 +118,26 @@ test('dibujo: la capa actual delante, las anteriores atenuadas o fuera', () => {
   const solo = mastilCapasSVG(lista, 2, zonaCaged('C', 'A'), false);
   assert.doesNotMatch(solo, /anterior/);
   assert.match(mastilCapasSVG(lista, 1, zonaCaged('C', 'A')), /<polyline class="forma"/);
-  const unaSola = mastilCapasSVG(lista, 1, zonaCaged('C', 'A'), false, 'grado', 0);
+  const unaSola = mastilCapasSVG(lista, 1, zonaCaged('C', 'A'), false, 'grado', lista[1].etiquetas[0]);
   assert.equal(unaSola.match(/<polyline/g)!.length, 1);
   assert.equal(unaSola.match(/class="nota[^"]*actual/g)!.length, 3);
+});
+
+test('todo el mástil: cada capa en los trastes 0–15, sin zona; las cinco formas CAGED en el acorde', () => {
+  const lista = capas('C', cualidadCapas('maj7'), 'todo');
+  const [raiz, cerradas, arpegio, abiertas, , escala, acorde] = lista;
+  // C en el mástil hasta el traste 15: 6ª (8), 5ª (3, 15), 4ª (10), 3ª (5), 2ª (1, 13), 1ª (8).
+  assert.equal(raiz.notas.length, 8);
+  assert.ok(arpegio.notas.every((n) => ['1', '3', '5', '7'].includes(n.grado)));
+  assert.ok(escala.notas.length > 40);
+  for (const c of [cerradas, abiertas]) {
+    assert.equal(c.etiquetas.length, c.formas.length);
+    for (const g of new Set(c.etiquetas)) assert.ok(c.etiquetas.filter((e) => e === g).length >= 2, `${c.id} ${g}`);
+  }
+  assert.deepEqual(acorde.etiquetas, ['C', 'A', 'G', 'E', 'D']);
+  assert.equal(acorde.formas.length, 5);
+  const svg = mastilCapasSVG(lista, 1, zonaCaged('C', 'todo'), true, 'grado', '5-4-3');
+  assert.doesNotMatch(svg, /class="zona"/);
+  assert.equal(svg.match(/<polyline/g)!.length, cerradas.etiquetas.filter((e) => e === '5-4-3').length);
+  assert.equal(eventosCapa(acorde, 120, 'G').pasos.length, 1 + acorde.formas[2].length);
 });
