@@ -348,7 +348,7 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 }
 
 /* Mástil horizontal (lib/arpegios.ts): notas de un arpegio en todo el mástil. */
-.mastil { display: block; width: 100%; min-width: 44rem; }
+.mastil { display: block; width: 100%; max-width: 60rem; min-width: 40rem; margin: 0 auto; }
 .mastil .traste { stroke: var(--borde); stroke-width: 1.5; }
 .mastil .cuerda { stroke: var(--texto-suave); stroke-width: 1; }
 .mastil .cejuela { fill: var(--texto); }
