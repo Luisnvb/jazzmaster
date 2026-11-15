@@ -62,6 +62,7 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Mano izquierda y técnica', nombre: 'Técnica de púa', href: ruta('estudio/pua'), lema: 'Alternada, economy y sweep, con metrónomo y subida progresiva de tempo' },
       // Oído y lectura
       { grupo: 'Oído y lectura', nombre: 'Transcripción', href: ruta('estudio/transcripcion'), lema: 'Sacar solos y acompañamientos de las grabaciones, paso a paso' },
+      { grupo: 'Oído y lectura', nombre: 'Lectura a primera vista', href: ruta('estudio/lectura'), lema: 'Una nota en el pentagrama: encuéntrala en el mástil, en su octava' },
     ],
   },
 ];

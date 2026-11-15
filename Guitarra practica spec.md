@@ -297,7 +297,7 @@ Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, pági
 **Oído y lectura** (grupo nuevo)
 
 - [x] **Transcripción:** texto en `src/data/estudio/transcripcion.md` (página solo de texto), primera del grupo nuevo «Oído y lectura»: qué transcribir, herramientas (bajar la velocidad, bucles, octava, ecualizar, afinar al disco), el método paso a paso (escuchar, cantar, frase a frase, intervalos, ritmo aparte, tocar con el disco, digitación del original), las pistas que da la armonía, cómo sacar acompañamientos (bajo, forma, voz de arriba, cualidad, voicing, ritmo), qué hacer después, errores frecuentes y plan de práctica, con enlaces a las páginas de Estudio relacionadas.
-- [ ] **Lectura a primera vista:** notas en el mástil desde el pentagrama. Ejemplo: leer una nota y tocarla.
+- [x] **Lectura a primera vista:** texto en `src/data/estudio/lectura.md` y ejercicio (`lib/lectura.ts`): una nota en clave de sol (redonda, con líneas adicionales y ♯ o ♭; escrita una octava por encima de como suena) y se pulsa en el mástil dónde se toca. Vale cualquier cuerda en su octava (si es la misma nota en otra octava, lo dice); los fallos quedan marcados y, al acertar o con «No lo sé», salen todos sus sitios con el nombre. Zona: trastes 0–12, una posición o una cuerda; solo naturales, con sostenidos, con bemoles o con los dos. Suena al pulsar y con «Escuchar»; aciertos, racha y tiempo medio, y paso automático a la siguiente al acertar.
 
 **Repertorio y forma** (grupo nuevo)
 
