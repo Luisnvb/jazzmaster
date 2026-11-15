@@ -187,7 +187,8 @@ export interface Capa {
 }
 
 const GRUPOS_CERRADAS: IdGrupo[] = ['654', '543', '432', '321'];
-const GRUPOS_ABIERTAS: IdGrupo[] = ['643', '532', '421'];
+// De la cuerda grave a la aguda: con la saltada arriba (6-5-3) o en medio (6-4-3).
+const GRUPOS_ABIERTAS: IdGrupo[] = ['653', '643', '542', '532', '431', '421'];
 
 function nota(raiz: string, cuerda: number, traste: number, grado: string, delAcorde?: boolean): NotaMastil {
   return {
@@ -252,7 +253,7 @@ export function capas(raiz: string, cualidad: CualidadCapas, letra: LetraCaged, 
   res.push({
     id: 'abiertas',
     nombre: 'Tríadas abiertas',
-    pista: 'La voz central de la cerrada, una octava arriba: cuerdas 6-4-3, 5-3-2 y 4-2-1, con una saltada.',
+    pista: 'La voz central de la cerrada, una octava arriba, en tres cuerdas con una saltada: 6-4-3, 5-3-2 y 4-2-1, o 6-5-3, 5-4-2 y 4-3-1.',
     notas: abiertas.flat(),
     formas: abiertas,
   });

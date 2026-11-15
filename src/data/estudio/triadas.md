@@ -29,7 +29,7 @@ Do mayor en las cuerdas agudas (trastes de la 6ª a la 1ª; x = no suena):
 
 ## Abiertas
 
-En una **tríada abierta** la voz central de la cerrada sube (o baja) una octava: las notas quedan más separadas y el sonido es más amplio, como el de una sección de cuerdas. Se tocan en tres cuerdas con una saltada: 6-4-3, 5-3-2 y 4-2-1.
+En una **tríada abierta** la voz central de la cerrada sube (o baja) una octava: las notas quedan más separadas y el sonido es más amplio, como el de una sección de cuerdas. Se tocan en tres cuerdas con una saltada: entre el bajo y las otras dos (6-4-3, 5-3-2 y 4-2-1) o entre las dos de arriba (6-5-3, 5-4-2 y 4-3-1).
 
 | | De grave a agudo |
 |---|---|
@@ -42,6 +42,8 @@ Do mayor abierto:
 |---|---|---|---|
 | 4-2-1 | `x x 10 x 8 12` | `x x 2 x 1 3` | `x x 5 x 5 8` |
 | 6-4-3 | `8 x 5 9 x x` | `12 x 10 12 x x` | `3 x 2 5 x x` |
+| 4-3-1 | `x x 10 12 x 12` | `x x 2 5 x 3` | `x x 5 9 x 8` |
+| 6-5-3 | `8 10 x 9 x x` | `12 15 x 12 x x` | `3 7 x 5 x x` |
 
 Es la misma idea que los [drop 2](../drop2/) y [drop 3](../drop3/) de cuatro notas: separar las voces moviendo una de ellas una octava.
 

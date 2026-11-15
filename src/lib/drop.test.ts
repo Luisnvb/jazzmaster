@@ -73,7 +73,7 @@ test('drop 3 con la raíz en el bajo: alterna 5ª y 6ª cuerda en el ii–V–I'
 });
 
 test('tríadas cerradas y abiertas: tres inversiones en cada grupo de cuerdas', () => {
-  for (const g of ['654', '543', '432', '321', '643', '532', '421'] as const) {
+  for (const g of ['654', '543', '432', '321', '643', '532', '421', '653', '542', '431'] as const) {
     for (const c of ['I', 'Im', 'I°', 'I+', 'Isus4']) {
       const inv = escaleraInversiones('C', parseAcordeGrado(c), g);
       // Mayor, menor y aumentada caben siempre; algunas sus4 y disminuidas abiertas, no todas.

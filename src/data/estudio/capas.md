@@ -15,7 +15,7 @@ Aquí cada forma marca una **zona de seis trastes**: la mano en posición (un de
 1. **Raíz.** Las tónicas de la zona: los puntos de anclaje. Todo lo demás se ve en relación a ellas.
 2. **Tríadas cerradas.** Las tres notas del acorde en tres cuerdas seguidas (6-5-4, 5-4-3, 4-3-2, 3-2-1), unidas por una línea. En una zona suele haber una por grupo de cuerdas, cada una en una inversión distinta.
 3. **Arpegio.** El acorde completo (con la 7 si la tiene) por toda la zona, cada altura una sola vez.
-4. **Tríadas abiertas.** La nota central de la cerrada sube una octava: grupos con una cuerda saltada (6-4-3, 5-3-2, 4-2-1). Suenan más amplias y son las del acompañamiento.
+4. **Tríadas abiertas.** La nota central de la cerrada sube una octava: grupos con una cuerda saltada, justo encima del bajo (6-4-3, 5-3-2, 4-2-1) o entre las dos de arriba (6-5-3, 5-4-2, 4-3-1). Suenan más amplias y son las del acompañamiento.
 5. **Pentatónica.** La que encaja con la cualidad (mayor en los acordes mayores y de dominante, menor en los menores, menor con b5 en el m7b5…). Las notas del acorde, rellenas; el resto, huecas.
 6. **Escala.** La posición entera. Cambia entre las escalas de la cualidad (jónica y lidia en un maj7; dórica, eólica y frigia en un m7…) y fíjate en qué notas cambian: la forma es casi la misma.
 7. **Acorde.** El voicing de la forma CAGED. Al final de la tanda, tócalo y escucha que todo lo anterior salía de ahí.
