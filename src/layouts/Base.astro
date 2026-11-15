@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import { archivo, ruta } from '../lib/rutas.ts';
-import { SECCIONES, agrupar, esActual } from '../lib/secciones.ts';
+import { SECCIONES, paginaActual, seccionActual } from '../lib/secciones.ts';
 
 interface Props {
   /** Título de la pestaña. */
@@ -17,6 +17,11 @@ const Titulo = conH1 ? 'h1' : 'p';
 
 // Con barra final para comparar igual "/acordes" y "/acordes/" con ruta('acordes').
 const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const seccion = seccionActual(actual);
+// Página de las secciones en la que estamos: se puede marcar como favorita (solo en
+// la propia página, no en las que cuelgan de ella, como cada canción del Repertorio).
+const pagina = paginaActual(actual);
+const favoritable = pagina && pagina.href === actual ? pagina : undefined;
 ---
 
 <!doctype html>
@@ -32,40 +37,45 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
     <title>{titulo} · Trastero251</title>
   </head>
-  <body>
+  <body data-pagina-actual={pagina?.href}>
     <header class="cabecera">
       <div class="cabecera-dentro">
-        <Titulo class="titulo-seccion">{encabezado}</Titulo>
+        <div class="titulo-caja">
+          <Titulo class="titulo-seccion">{encabezado}</Titulo>
+          {
+            favoritable && (
+              <button
+                type="button"
+                class="favorito favorito-pagina"
+                data-favorito-pagina={favoritable.href}
+                aria-pressed="false"
+                aria-label={`Página favorita: ${favoritable.nombre}`}
+                title="Marcar como favorita: sale la primera en el menú de su sección y en la portada"
+              >
+                ☆
+              </button>
+            )
+          }
+        </div>
         <nav aria-label="Secciones">
           <a href={ruta('')} aria-current={actual === ruta('') ? 'page' : undefined}>Inicio</a>
           {
-            SECCIONES.map((s) =>
-              s.partes ? (
-                <div class="multiple">
-                  <a href={s.href} aria-current={esActual(s, actual) ? 'page' : undefined} aria-haspopup="true">
-                    {s.nombre} <span aria-hidden="true">▾</span>
-                  </a>
-                  <ul class:list={['desplegable', { 'con-grupos': agrupar(s.partes).length > 1 }]}>
-                    {agrupar(s.partes).map((g) => (
-                      <li>
-                        {g.nombre && <a class="desplegable-grupo" href={`${s.href}#${g.id}`}>{g.nombre}</a>}
-                        <ul>
-                          {g.partes.map((p) => (
-                            <li>
-                              <a href={p.href}>{p.nombre}</a>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <a href={s.href} aria-current={esActual(s, actual) ? 'page' : undefined}>
-                  {s.nombre}
+            SECCIONES.map((s) => (
+              <div class="multiple">
+                <a href={s.href} aria-current={s === seccion ? 'page' : undefined} aria-haspopup="true">
+                  {s.nombre} <span aria-hidden="true">▾</span>
                 </a>
-              ),
-            )
+                <ul class="desplegable" data-lista-paginas>
+                  {s.partes.map((p) => (
+                    <li data-pagina={p.href}>
+                      <a href={p.href} aria-current={p === pagina ? 'page' : undefined}>
+                        {p.nombre}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
           }
         </nav>
         <label class="nav-movil">
@@ -73,24 +83,18 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
           <select data-nav-movil>
             <option value={ruta('')} selected={actual === ruta('')}>Inicio</option>
             {
-              SECCIONES.map((s) =>
-                s.partes ? (
-                  <>
-                    <optgroup label={s.nombre}>
-                      <option value={s.href} selected={actual === s.href}>{s.nombre}</option>
-                    </optgroup>
-                    {agrupar(s.partes).map((g) => (
-                      <optgroup label={g.nombre ? `${s.nombre} · ${g.nombre}` : s.nombre}>
-                        {g.partes.map((p) => (
-                          <option value={p.href} selected={esActual(p, actual)}>{p.nombre}</option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </>
-                ) : (
-                  <option value={s.href} selected={esActual(s, actual)}>{s.nombre}</option>
-                ),
-              )
+              SECCIONES.map((s) => (
+                <optgroup label={s.nombre}>
+                  <option value={s.href} selected={actual === s.href}>
+                    {s.nombre} (todas)
+                  </option>
+                  {s.partes.map((p) => (
+                    <option value={p.href} selected={p === pagina}>
+                      {p.nombre}
+                    </option>
+                  ))}
+                </optgroup>
+              ))
             }
           </select>
         </label>
@@ -104,6 +108,7 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
 
 <script>
   import { archivo } from '../lib/rutas.ts';
+  import { anotarReciente, aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
 
   // Modo sin conexión: solo en la web compilada (en desarrollo la caché estorbaría).
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
@@ -114,6 +119,29 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
   document.querySelector<HTMLSelectElement>('[data-nav-movil]')?.addEventListener('change', (e) => {
     location.href = (e.target as HTMLSelectElement).value;
   });
+
+  // Páginas favoritas: la estrella de la cabecera y el orden de los menús y listas.
+  const favoritas = paginasFavoritas();
+  const estrella = document.querySelector<HTMLButtonElement>('[data-favorito-pagina]');
+  const pintarEstrella = () => {
+    if (!estrella) return;
+    const si = favoritas.tiene(estrella.dataset.favoritoPagina!);
+    estrella.setAttribute('aria-pressed', String(si));
+    estrella.textContent = si ? '★' : '☆';
+    estrella.title = si ? 'Quitar de favoritas' : 'Marcar como favorita: sale la primera en el menú de su sección y en la portada';
+  };
+  estrella?.addEventListener('click', () => {
+    favoritas.alternar(estrella.dataset.favoritoPagina!);
+    pintarEstrella();
+    aplicarFavoritas();
+    document.dispatchEvent(new CustomEvent('favoritas-cambiadas'));
+  });
+  pintarEstrella();
+  aplicarFavoritas();
+
+  // Últimas páginas visitadas (para la portada).
+  const actual = document.body.dataset.paginaActual;
+  if (actual) anotarReciente(actual);
 </script>
 
 <style>
@@ -134,12 +162,24 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
     align-items: center;
     gap: 3rem;
   }
+  /* Ancho fijo para que la navegación no se mueva al cambiar de página. */
+  .titulo-caja {
+    flex: 0 0 18rem;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  /* La estrella va junto al título, no en una esquina como en las tarjetas. */
+  .favorito-pagina {
+    position: static;
+    flex: 0 0 auto;
+  }
   .titulo-seccion {
     margin: 0;
     padding: 0;
     border: 0;
-    /* Ancho fijo para que la navegación no se mueva al cambiar de página. */
-    flex: 0 0 16rem;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: var(--fuente);
@@ -221,44 +261,19 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
     color: var(--acento);
     background: var(--superficie);
   }
-  .desplegable ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  /* Las dos últimas secciones abren el menú hacia la izquierda, para no salirse. */
+  .multiple:nth-last-child(-n + 2) .desplegable {
+    left: auto;
+    right: -1rem;
   }
-  /* Con grupos: un panel a todo lo ancho bajo la cabecera, una columna por grupo (las
-     que quepan; el resto pasa a otra fila) y desplazable si no cabe en la pantalla. */
-  .desplegable.con-grupos {
-    position: fixed;
-    top: var(--cabecera-alto);
-    left: 0;
-    right: 0;
-    max-height: calc(100vh - var(--cabecera-alto));
+  /* Menús largos (Improvisación): desplazables si no caben en la pantalla. */
+  .desplegable {
+    max-height: calc(100vh - var(--cabecera-alto) - 1rem);
     overflow-y: auto;
-    overscroll-behavior: contain;
-    grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
-    align-content: start;
-    gap: 1rem 0.5rem;
-    padding: 1rem max(var(--margen), calc((100vw - var(--ancho)) / 2 + var(--margen)));
-    border-left: 0;
-    border-right: 0;
   }
-  .desplegable.con-grupos a {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.9rem;
+  .desplegable a[aria-current='page'] {
+    color: var(--acento);
   }
-  .multiple:hover .desplegable.con-grupos,
-  .multiple:focus-within .desplegable.con-grupos {
-    display: grid;
-  }
-  .desplegable a.desplegable-grupo {
-    padding-bottom: 0.35rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--texto);
-  }
-
   .nav-movil {
     display: none;
   }
@@ -267,9 +282,10 @@ const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.
     .cabecera-dentro {
       gap: 1rem;
     }
-    .titulo-seccion {
+    .titulo-caja {
       flex: 1 1 auto;
-      min-width: 0;
+    }
+    .titulo-seccion {
       font-size: 1.15rem;
     }
     nav[aria-label='Secciones'] {

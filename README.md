@@ -1,6 +1,6 @@
 # Trastero251
 
-Web personal de práctica: repertorio, acordes, escalas, patrones, intervalos (con entrenador de oído), progresiones y estudio (rutinas y apuntes).
+Web personal de práctica, en seis secciones ordenadas por su peso en la rutina: Rutina, Repertorio, Acordes, Improvisación, Armonía y Oído y técnica. La portada es un panel con las páginas favoritas (☆ junto al título de cada página) y las últimas abiertas.
 Estática, pensada para un monitor de escritorio y con modo sin conexión. La especificación está en `Guitarra practica spec.md`.
 
 ## Uso en local
@@ -25,7 +25,8 @@ Todo el contenido está en archivos de datos; no hace falta tocar el código.
 | Tipos de acorde | `src/data/grupos.yaml` |
 | Progresiones | `src/data/progresiones.yaml` (grados romanos; formato al principio del archivo) |
 | Patrones de práctica | `src/data/patrones.yaml` (formato al principio del archivo) |
-| Estudio (rutinas, ideas, teoría) | `src/data/estudio/*.md` (Markdown). Para añadir una página nueva: su `.md`, una página en `src/pages/estudio/` como `rutina.astro` y una entrada en las `partes` de Estudio en `src/lib/secciones.ts` |
+| Páginas de estudio (rutinas, ideas, teoría) | `src/data/estudio/*.md` (Markdown). Para añadir una página nueva: su `.md`, una página en `src/pages/estudio/` como `rutina.astro` y una entrada en las `partes` de su sección en `src/lib/secciones.ts` |
+| Secciones y menú | `src/lib/secciones.ts`: qué páginas van en cada sección y en qué orden. Cambiar una página de sección no cambia su dirección |
 | Canciones | `src/content/repertorio/*.md` (ficha y letra) — copia `_plantilla.md` |
 | Cifrados | `src/content/repertorio/<canción>.cmb.json` (formato del [Chord Melody Builder](https://www.noeljohnston.com/chord-melody-builder.html)) |
 

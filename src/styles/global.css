@@ -283,6 +283,8 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 }
 .favorito:hover { color: var(--acento); border-color: var(--borde); }
 .favorito[aria-pressed='true'] { color: var(--acento); }
+/* Páginas favoritas (lib/paginas-favoritas.ts) en los menús y listas de páginas. */
+[data-pagina].favorita > a::before { content: '★ '; color: var(--acento); }
 
 /* Páginas de Estudio: índice y texto en Markdown (src/data/estudio/*.md). */
 .indice {

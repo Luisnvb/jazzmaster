@@ -1,32 +1,21 @@
 ---
-// Sección múltiple: reúne páginas de teoría, ideas y prácticas concretas,
-// por grupos (sus partes están en lib/secciones.ts).
-import Base from '../../layouts/Base.astro';
-import Mosaico from '../../components/Mosaico.astro';
-import { SECCIONES, agrupar } from '../../lib/secciones.ts';
+// Antigua portada de Estudio: sus páginas están ahora repartidas en las secciones
+// de la web (lib/secciones.ts), cuya lista completa está en la portada. Se conserva
+// la dirección para no romper enlaces ni marcadores: lleva a la portada.
+import { ruta } from '../../lib/rutas.ts';
 
-const estudio = SECCIONES.find((s) => s.nombre === 'Estudio')!;
-const grupos = agrupar(estudio.partes!);
-// Numeración continua entre grupos.
-const desde = grupos.map((_, i) => 1 + grupos.slice(0, i).reduce((n, g) => n + g.partes.length, 0));
+const destino = ruta('');
 ---
 
-<Base titulo="Estudio">
-  {
-    grupos.map((g, i) => (
-      <section class="grupo" id={g.id} aria-labelledby={`titulo-${g.id}`}>
-        <h2 id={`titulo-${g.id}`}>{g.nombre}</h2>
-        <Mosaico secciones={g.partes} desde={desde[i]} />
-      </section>
-    ))
-  }
-</Base>
-
-<style>
-  .grupo {
-    margin-bottom: 2.25rem;
-  }
-  .grupo h2 {
-    margin: 0 0 0.75rem;
-  }
-</style>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="refresh" content={`0; url=${destino}`} />
+    <title>Trastero251</title>
+  </head>
+  <body>
+    <p>Estudio se ha repartido entre las secciones de la web. <a href={destino}>Ir a la portada</a>.</p>
+  </body>
+</html>

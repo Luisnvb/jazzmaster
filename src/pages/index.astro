@@ -1,9 +1,207 @@
 ---
+// Portada: el panel de práctica. Arriba, las páginas favoritas y las últimas que se
+// han abierto (guardadas en el navegador, lib/paginas-favoritas.ts); debajo, cada
+// sección con sus páginas (lib/secciones.ts), con las favoritas primero.
 import Base from '../layouts/Base.astro';
-import Mosaico from '../components/Mosaico.astro';
-import { SECCIONES } from '../lib/secciones.ts';
+import { PAGINAS, SECCIONES } from '../lib/secciones.ts';
+
+const datos = JSON.stringify(PAGINAS).replace(/</g, '\\u003c');
 ---
 
 <Base titulo="Inicio" encabezado="Trastero251">
-  <Mosaico secciones={SECCIONES} />
+  <section class="hoy" aria-labelledby="titulo-hoy">
+    <h2 id="titulo-hoy">Para hoy</h2>
+    <div class="bloque" data-bloque-favoritas hidden>
+      <h3>Favoritas</h3>
+      <ul class="tarjetas" data-favoritas></ul>
+    </div>
+    <div class="bloque" data-bloque-recientes hidden>
+      <h3>Últimas que has abierto</h3>
+      <ul class="recientes" data-recientes></ul>
+    </div>
+    <p class="suave pista" data-sin-nada>
+      Marca con ☆ (junto al título de cada página) las que uses a diario: saldrán aquí y las primeras en el menú de su
+      sección. Aquí verás también las últimas páginas que hayas abierto.
+    </p>
+  </section>
+
+  <section aria-labelledby="titulo-secciones">
+    <h2 id="titulo-secciones">Secciones</h2>
+    <ul class="secciones">
+      {
+        SECCIONES.map((s, i) => (
+          <li class="seccion">
+            <a class="cabeza" href={s.href}>
+              <span class="kicker">{String(i + 1).padStart(2, '0')}</span>
+              <span class="nombre">{s.nombre}</span>
+              <span class="lema">{s.lema}</span>
+            </a>
+            <ul class="paginas" data-lista-paginas>
+              {s.partes.map((p) => (
+                <li data-pagina={p.href}>
+                  <a href={p.href} title={p.lema}>
+                    {p.nombre}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <script type="application/json" id="datos-paginas" set:html={datos} />
 </Base>
+
+<script>
+  import { esc } from '../lib/almacen.ts';
+  import { paginasFavoritas, recientes } from '../lib/paginas-favoritas.ts';
+  import type { Pagina } from '../lib/secciones.ts';
+
+  const paginas: Pagina[] = JSON.parse(document.getElementById('datos-paginas')!.textContent!);
+  const porHref = new Map(paginas.map((p) => [p.href, p]));
+  const $ = (s: string) => document.querySelector<HTMLElement>(s)!;
+
+  function pintar() {
+    const f = paginasFavoritas();
+    const favoritas = paginas.filter((p) => f.tiene(p.href));
+    const ultimas = recientes()
+      .map((h) => porHref.get(h))
+      .filter((p): p is Pagina => p !== undefined)
+      .slice(0, 6);
+    $('[data-bloque-favoritas]').hidden = favoritas.length === 0;
+    $('[data-favoritas]').innerHTML = favoritas
+      .map((p) => `<li><a href="${esc(p.href)}"><span class="nombre">${esc(p.nombre)}</span><span class="lema">${esc(p.lema)}</span></a></li>`)
+      .join('');
+    $('[data-bloque-recientes]').hidden = ultimas.length === 0;
+    $('[data-recientes]').innerHTML = ultimas.map((p) => `<li><a class="boton" href="${esc(p.href)}">${esc(p.nombre)}</a></li>`).join('');
+    $('[data-sin-nada]').hidden = favoritas.length > 0;
+  }
+  pintar();
+</script>
+
+<style>
+  section {
+    margin-bottom: 2.25rem;
+  }
+  h2 {
+    margin: 0 0 0.9rem;
+  }
+  h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--texto-suave);
+  }
+  .bloque {
+    margin-bottom: 1.25rem;
+  }
+  .bloque[hidden] {
+    display: none;
+  }
+  .pista {
+    max-width: 48rem;
+    margin: 0;
+  }
+
+  /* Favoritas: tarjetas como las de las secciones. */
+  .tarjetas,
+  .recientes,
+  .secciones,
+  .paginas {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: 0.75rem;
+  }
+  .tarjetas :global(a) {
+    display: grid;
+    gap: 0.4rem;
+    height: 100%;
+    padding: 0.9rem 1rem;
+    color: var(--texto);
+    text-decoration: none;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-top: 0.25rem solid var(--acento);
+    border-radius: var(--radio);
+  }
+  .tarjetas :global(a:hover) {
+    border-color: var(--acento);
+  }
+  .tarjetas :global(.nombre) {
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+  .tarjetas :global(.lema) {
+    font-size: 0.92rem;
+    color: var(--texto-suave);
+  }
+  .recientes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .recientes :global(a) {
+    text-decoration: none;
+  }
+
+  /* Secciones: cabecera grande y la lista de sus páginas. */
+  .secciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+  .seccion {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .cabeza {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem 1rem 0.75rem;
+    color: var(--texto);
+    text-decoration: none;
+    border-bottom: 1px solid var(--borde);
+  }
+  .cabeza:hover {
+    color: var(--acento);
+  }
+  .kicker {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .nombre {
+    font-weight: 700;
+    font-size: clamp(1.4rem, 1.7vw, 2rem);
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  .lema {
+    color: var(--texto-suave);
+  }
+  .paginas {
+    padding: 0.5rem 0;
+  }
+  .paginas a {
+    display: block;
+    padding: 0.35rem 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--texto-suave);
+    text-decoration: none;
+  }
+  .paginas a:hover {
+    color: var(--acento);
+    background: var(--fondo);
+  }
+</style>

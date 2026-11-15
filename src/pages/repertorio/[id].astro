@@ -5,7 +5,7 @@ import FichaCancion from '../../components/FichaCancion.astro';
 import type { Cancion, Improvisacion } from '../../lib/cancion.ts';
 import { validarCmb } from '../../lib/cmb.ts';
 import { notasDeFormula, parseNota, pitchClass } from '../../lib/teoria.ts';
-import { SECCIONES } from '../../lib/secciones.ts';
+import { PAGINAS } from '../../lib/secciones.ts';
 import { ruta } from '../../lib/rutas.ts';
 
 export async function getStaticPaths() {
@@ -32,13 +32,12 @@ const tonicaDe = (acorde: string) => acorde.match(/^[A-G][b#]?/)?.[0] ?? 'C';
 let improvisacion: Improvisacion | null = null;
 if (data.improvisacion) {
   const { enfoque, tramos, estrategias, ejercicios, estudio } = data.improvisacion;
-  const paginasEstudio = SECCIONES.find((s) => s.nombre === 'Estudio')?.partes ?? [];
   improvisacion = {
     enfoque: enfoque ?? null,
     estrategias,
     ejercicios,
     estudio: estudio.map((pagina) => {
-      const p = paginasEstudio.find((s) => s.href === ruta(`estudio/${pagina}`));
+      const p = PAGINAS.find((s) => s.href === ruta(`estudio/${pagina}`));
       if (!p) throw new Error(`src/content/repertorio/${entrada.id}.md: no hay página de Estudio "${pagina}".`);
       return { nombre: p.nombre, href: p.href, lema: p.lema };
     }),

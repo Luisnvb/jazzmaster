@@ -1,22 +1,25 @@
 ---
-// Mosaico de accesos grandes (portada y secciones múltiples).
-import type { Seccion } from '../lib/secciones.ts';
+// Mosaico de accesos grandes (portada de la web y de cada sección).
+import type { Pagina } from '../lib/secciones.ts';
 
 interface Props {
-  secciones: Seccion[];
-  /** Número de la primera tarjeta (para seguir la cuenta entre grupos). */
-  desde?: number;
+  secciones: Pagina[];
+  /**
+   * Tarjetas numeradas (01, 02…). Sin número, son páginas que se reordenan con las
+   * favoritas primero (lib/paginas-favoritas.ts), marcadas con una estrella.
+   */
+  numerar?: boolean;
 }
 
-const { secciones, desde = 1 } = Astro.props;
+const { secciones, numerar = true } = Astro.props;
 ---
 
-<ul class="portada">
+<ul class="portada" data-lista-paginas={numerar ? undefined : ''}>
   {
     secciones.map((s, i) => (
-      <li>
+      <li data-pagina={numerar ? undefined : s.href}>
         <a href={s.href}>
-          <span class="kicker">{String(i + desde).padStart(2, '0')}</span>
+          <span class="kicker">{numerar ? String(i + 1).padStart(2, '0') : ''}</span>
           <span class="nombre">{s.nombre}</span>
           <span class="lema">{s.lema}</span>
         </a>
@@ -74,13 +77,22 @@ const { secciones, desde = 1 } = Astro.props;
       font-size: 0.95rem;
     }
   }
+  /* Favorita: la estrella en el hueco del número (no antes del nombre, como en los menús). */
+  .portada :global(.favorita) > a::before {
+    content: none;
+  }
+  .portada :global(.favorita) .kicker::before {
+    content: '★ Favorita';
+    color: var(--acento);
+  }
   .portada a:hover {
     background: var(--acento);
     border-color: var(--acento);
     color: var(--sobre-acento);
   }
   .portada a:hover .kicker,
-  .portada a:hover .lema {
+  .portada a:hover .lema,
+  .portada a:hover .kicker::before {
     color: var(--sobre-acento);
   }
 </style>

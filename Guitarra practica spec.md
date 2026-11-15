@@ -24,14 +24,17 @@ Una web personal que reúna en un solo sitio el material de práctica. Se consul
 
 ## 3. Estructura de la web
 
-- **Portada:** solo da acceso a las secciones. Sin resumen ni panel de "hoy".
-- **Repertorio**
-- **Acordes**
-- **Escalas**
-- **Patrones**
-- **Teoría** (sección múltiple): **Intervalos** y **Progresiones**. Para añadir más páginas, se suman a sus `partes` en `src/lib/secciones.ts`.
+Reorganizada el 2026-11-15 (ver §10 sexies): seis secciones ordenadas por su peso en la rutina de práctica, cada una con su portada (`/secciones/<id>/`) y sus páginas. Las direcciones de las páginas no cambian: la sección solo decide dónde salen en el menú (`src/lib/secciones.ts`).
 
-Navegación persistente entre secciones en una cabecera fija arriba.
+- **Portada:** panel de práctica: páginas favoritas, últimas abiertas y cada sección con sus páginas.
+- **Rutina:** Rutina de práctica, Mástil por capas, Ritmo.
+- **Repertorio:** Repertorio, Aprender un standard, Formas de los standards, Transcripción.
+- **Acordes:** Voicings (`/acordes/`), Tríadas, Shell voicings, Drop 2, Drop 3, Cuartas, Ciclos de Goodrick, Comping, Chord melody.
+- **Improvisación:** Diccionario de escalas (`/escalas/`), Escalas en el mástil, Arpegios, Modos, Patrones, Notas guía, Aproximaciones, Lenguaje bebop, Pentatónicas, Pares de tríadas, Disminuida y tonos enteros, Motivos, Fuera y dentro.
+- **Armonía:** Progresiones, Armonía funcional, Blues, Rearmonización, Tensiones, Acordes slash, Cambios de Coltrane.
+- **Oído y técnica:** Intervalos (con su entrenador), Oído armónico, Lectura a primera vista, Digitación y posiciones, Técnica de púa.
+
+Navegación persistente en una cabecera fija arriba: un menú desplegable por sección, con las páginas favoritas primero. Cada página lleva una ☆ junto al título para marcarla como favorita (guardado en el navegador).
 
 ---
 
@@ -313,11 +316,12 @@ Ideas para que la web sirva de rutina diaria y no solo de consulta. Marcar `[x]`
 - [x] **Estudio · Mástil por capas:** texto en `src/data/estudio/capas.md` y ejemplo (`lib/capas.ts`), en el grupo Rutina; inspirado en *Guitar Burpees* de Noel Johnston. Un acorde (raíz y diez cualidades) en una de las cinco formas CAGED (zona de 6 trastes) o en todo el mástil, y siete capas sobre el mismo dibujo: raíz, tríadas cerradas, arpegio, tríadas abiertas, pentatónica, escala (con alternativas por cualidad) y el acorde de la forma (`acordeCaged`: la forma mayor con la 3, la 5 y la 7 de la cualidad). Las capas anteriores quedan atenuadas; las tríadas, unidas por una línea y filtrables por grupo de cuerdas; flechas del teclado, sorteo, grado o nota y audio de cada capa.
 - [x] **Tríadas abiertas en 6-5-3, 5-4-2 y 4-3-1** (la cuerda saltada entre las dos voces de arriba), en Tríadas y en Mástil por capas.
 - [x] **Acompañamiento mientras practicas:** componente `Acompanamiento.astro` y `lib/acompanamiento.ts`, en Mástil por capas, Escalas y Arpegios (Estudio). El acorde de la página en bucle de dos compases, en cuatro estilos (pedal, acorde, swing con bajo a dos y charlestón, bossa), con sonido propio y clic en 2 y 4 opcional. Mientras suena sigue al acorde, al estilo, al sonido y al tempo que se elijan (cambia en la vuelta siguiente; `conectarAcompanamiento` en `lib/cliente.ts`).
+- [x] **Nueva estructura (2026-11-15):** las partes de Estudio y las secciones de consulta (Repertorio, Intervalos, Escalas, Acordes, Patrones, Progresiones) se reparten en seis secciones por su peso en la rutina: Rutina, Repertorio, Acordes, Improvisación, Armonía y Oído y técnica (§3). Se mantienen todas las direcciones; `/estudio/` lleva a la portada. Cada sección tiene portada (`/secciones/<id>/`). **Páginas favoritas:** ☆ junto al título de cada página; las favoritas salen las primeras en el menú y la portada de su sección (`lib/paginas-favoritas.ts`). **Portada como panel de práctica:** favoritas, últimas páginas abiertas y cada sección con sus páginas. El menú de cada sección es una lista simple (el panel de grupos de Estudio desaparece) y ya no hay barra de partes bajo la cabecera.
 - [x] **Enlaces entre secciones:** `lib/enlaces.ts`. El menú de cada acorde del Repertorio lleva también a Mástil por capas y a Arpegios con ese acorde (el 7alt, con la escala alterada); Mástil por capas enlaza a Arpegio, Tríadas, Voicings y Escalas del acorde elegido. Mástil por capas lee `?tonica=&cualidad=&forma=&escala=` y Arpegios `?tonica=&cualidad=`.
 
 **Pendiente** (por orden de prioridad)
 
-- [ ] **«Hoy toca»:** una portada que monte la sesión del día a partir de la fecha: raíz, cualidad y forma para Mástil por capas, un ejercicio de oído y una canción del Repertorio. Las raíces rotan por el ciclo de cuartas (todas las tonalidades en 12 días, y todas las formas en 60), sin tener que decidir nada al sentarse.
+- [ ] **«Hoy toca»:** en el panel de la portada, un bloque que monte la sesión del día a partir de la fecha: raíz, cualidad y forma para Mástil por capas, un ejercicio de oído y una canción del Repertorio. Las raíces rotan por el ciclo de cuartas (todas las tonalidades en 12 días, y todas las formas en 60), sin tener que decidir nada al sentarse.
 - [ ] **Temporizador por bloques:** la «sesión tipo» de la Rutina (5 min de calentamiento, 15 de un ejercicio, 20 de una canción…) con cuenta atrás, aviso sonoro al cambiar de bloque y enlace a la página de cada bloque.
 - [ ] **Diario de práctica:** botón «hecho» en cada ejercicio que anota fecha, tempo alcanzado y una nota opcional; historial, racha de días y evolución del tempo por ejercicio. Guardado en el navegador y exportable, como Acordes y Repertorio.
 - [ ] **Modo examen en Mástil por capas:** el mástil sin notas y una pregunta («todas las b3 de la zona», «la tríada en 4-3-2»); se pulsa en el mástil y corrige al momento (como en Lectura a primera vista).
