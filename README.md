@@ -1,4 +1,4 @@
-# Práctica de guitarra
+# Trastero251
 
 Web personal de práctica: repertorio, acordes, escalas, patrones, intervalos (con entrenador de oído), progresiones y estudio (rutinas y apuntes).
 Estática, pensada para un monitor de escritorio y con modo sin conexión. La especificación está en `Guitarra practica spec.md`.

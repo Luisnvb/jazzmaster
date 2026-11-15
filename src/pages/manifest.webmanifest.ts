@@ -4,8 +4,8 @@ import { archivo, BASE } from '../lib/rutas.ts';
 
 export function GET() {
   const manifiesto = {
-    name: 'Práctica de guitarra',
-    short_name: 'Práctica',
+    name: 'Trastero251',
+    short_name: 'Trastero251',
     description: 'Intervalos, escalas, acordes y repertorio para practicar guitarra.',
     lang: 'es',
     start_url: BASE,
