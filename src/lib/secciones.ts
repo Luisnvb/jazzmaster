@@ -63,6 +63,8 @@ export const SECCIONES: Seccion[] = [
       // Oído y lectura
       { grupo: 'Oído y lectura', nombre: 'Transcripción', href: ruta('estudio/transcripcion'), lema: 'Sacar solos y acompañamientos de las grabaciones, paso a paso' },
       { grupo: 'Oído y lectura', nombre: 'Lectura a primera vista', href: ruta('estudio/lectura'), lema: 'Una nota en el pentagrama: encuéntrala en el mástil, en su octava' },
+      // Repertorio y forma
+      { grupo: 'Repertorio y forma', nombre: 'Formas de los standards', href: ruta('estudio/formas'), lema: 'AABA, ABAC, blues y rhythm changes, con temas del Repertorio' },
     ],
   },
 ];

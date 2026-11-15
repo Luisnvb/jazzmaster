@@ -301,7 +301,7 @@ Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, pági
 
 **Repertorio y forma** (grupo nuevo)
 
-- [ ] **Formas de los standards:** AABA, ABAC, blues, rhythm changes. Ejemplo: cada forma con un tema del Repertorio.
+- [x] **Formas de los standards:** texto en `src/data/estudio/formas.md` y mapa de formas (`lib/estructuras.ts`), primera página del grupo nuevo «Repertorio y forma»: AABA, ABAC, blues, rhythm changes y otras formas. Cada ejemplo con sus secciones (letra, compases y papel) en una franja proporcional y el cifrado de cuatro en cuatro. Del Repertorio: Days of Wine and Roses (ABAC), Turnaround y Footprints (blues), Cantaloupe Island (16), E.S.P. (AA′) y Stella by Starlight (forma libre), con los acordes sacados del cifrado y pasados a grados (`compasesDeCifrado`), así que se transportan; al elegirlos se pasa a su tonalidad original. Sin tema AABA ni rhythm changes en el Repertorio: un modelo AABA y los rhythm changes de `progresiones.yaml`. Audio de la forma con metrónomo opcional, coros seguidos contados, «Ocultar acordes» y la sección y el compás que suenan («Coro 2 · A2 · compás 3 de 8»).
 - [ ] **Aprender un standard:** melodía, forma, notas guía, shells e improvisación, en ese orden. Solo texto, sin herramienta: es la Rutina aplicada a una canción.
 
 ## 11. Fuera de alcance
