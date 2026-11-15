@@ -63,6 +63,8 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   <button type="button" class="boton" data-audio="acorde" aria-pressed="false">Escuchar</button>
   <a data-menu-voicings href={ruta('acordes')}>Voicings</a>
   <a data-menu-escalas href={ruta('escalas')}>Escalas</a>
+  <a data-menu-capas href={ruta('estudio/capas')} data-base={ruta('estudio/capas')}>Mástil por capas</a>
+  <a data-menu-arpegio href={ruta('estudio/arpegios')} data-base={ruta('estudio/arpegios')}>Arpegio</a>
 </div>
 
 <script type="application/json" id="datos-ficha" set:html={datos} />

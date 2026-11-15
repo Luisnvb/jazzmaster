@@ -5,6 +5,7 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import SelectorTonica from '../../components/SelectorTonica.astro';
 import Tempo from '../../components/Tempo.astro';
+import Acompanamiento from '../../components/Acompanamiento.astro';
 import { Content, getHeadings } from '../../data/estudio/escalas.md';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
 import { porOrden } from '../../lib/orden.ts';
@@ -79,6 +80,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
       <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
       <button type="button" data-detener>■ Detener</button>
     </div>
+    <Acompanamiento clave="estudio-escalas" />
   </section>
 
   <nav class="indice" aria-label="En esta página">
@@ -95,7 +97,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
   import { eventosArpegio, mastilSVG, notasFormula, ordenadas, recorrido, secuenciaZona, type NotaMastil, type Zona, posicionValida } from '../../lib/arpegios.ts';
-  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
+  import { conectarAcompanamiento, conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { parseNota, pitchClass } from '../../lib/teoria.ts';
 
   interface Escala {
@@ -157,6 +159,8 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
           ? { tipo: 'dos-cuerdas', cuerda: op.dosCuerdas }
           : { tipo: 'todo' };
   const notas = () => notasFormula(tonica, escala().formula, escala().acorde);
+  // De fondo, el acorde de la escala (el de su tipo en grupos.yaml).
+  const acomp = conectarAcompanamiento(() => ({ raiz: tonica, formula: escala().acorde }), tempo);
 
   function pintar() {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) b.setAttribute('aria-pressed', String(b.dataset.zona === op.zona));
@@ -166,6 +170,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
     caja.innerHTML = mastilSVG(notas(), zona());
     mostrarZona(caja);
     guardarJSON(CLAVE, op);
+    acomp.actualizar();
   }
 
   for (const [k, sel] of Object.entries(selects)) {
@@ -189,6 +194,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
   const CELULAS: Record<string, number[]> = { terceras: [0, 2], 'grupos-3': [0, 1, 2], 'grupos-4': [0, 1, 2, 3] };
 
   conectarAudio((boton) => {
+    if (boton.dataset.audio === 'acompanar') return acomp.reproduccion();
     const n = notas();
     const z = zona();
     const lista: NotaMastil[] = op.recorrido === 'grados' ? recorrido(n, z) : secuenciaZona(n, z, CELULAS[op.recorrido]);

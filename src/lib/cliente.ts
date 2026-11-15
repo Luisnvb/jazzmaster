@@ -1,7 +1,8 @@
 // Comportamiento en el navegador compartido por varias secciones.
 import { normalizar } from './cifrado.ts';
 import { parseNota, pitchClass } from './teoria.ts';
-import { detener, tocar, type Instrumento } from './audio.ts';
+import { detener, INSTRUMENTOS, SOSTENIDOS, tocar, type Instrumento } from './audio.ts';
+import { estiloValido, secuenciaAcompanamiento } from './acompanamiento.ts';
 import type { Evento } from './secuencias.ts';
 
 function leer(clave: string): string | null {
@@ -263,4 +264,77 @@ export function mostrarZona(caja: HTMLElement) {
   const der = Math.max(...acotadas.map((r) => r.right)) - base;
   // Centrada si cabe; si no (zona y eco juntos), desde su borde izquierdo.
   caja.scrollLeft = der - izq <= caja.clientWidth ? (izq + der - caja.clientWidth) / 2 : izq - 8;
+}
+
+// --- Acompañamiento ---------------------------------------------------------------
+
+export interface Acompanamiento {
+  /** Para el `construir` de conectarAudio: la reproducción del botón «Acompañar». */
+  reproduccion: () => Reproduccion;
+  /** Avisa de que ha cambiado el acorde: si está sonando, la vuelta siguiente ya es el nuevo. */
+  actualizar: () => void;
+}
+
+/**
+ * Conecta el componente Acompanamiento de la página. `acorde` da el acorde que debe
+ * sonar (raíz y fórmula) y `tempo` el tempo de la página. Mientras suena, cambiar
+ * de acorde, de estilo, de sonido o de tempo se oye en la vuelta siguiente del bucle.
+ */
+export function conectarAcompanamiento(
+  acorde: () => { raiz: string; formula: readonly string[] },
+  tempo: () => number,
+): Acompanamiento {
+  const caja = document.querySelector<HTMLElement>('[data-acompanamiento]');
+  const clave = `acompanamiento:${caja?.dataset.clave ?? ''}`;
+  const estilo = caja?.querySelector<HTMLSelectElement>('[data-acomp-estilo]');
+  const sonido = caja?.querySelector<HTMLSelectElement>('[data-acomp-instrumento]');
+  const clic = caja?.querySelector<HTMLInputElement>('[data-acomp-metronomo]');
+  let guardado: { estilo?: string; instrumento?: string; metronomo?: boolean } = {};
+  try {
+    guardado = JSON.parse(leer(clave) ?? '{}') ?? {};
+  } catch {
+    // Opciones guardadas ilegibles: se empieza con las de siempre.
+  }
+  if (estilo) estilo.value = estiloValido(guardado.estilo);
+  if (sonido) sonido.value = INSTRUMENTOS.some((i) => i.id === guardado.instrumento) ? guardado.instrumento! : 'piano';
+  if (clic) clic.checked = guardado.metronomo === true;
+
+  let activa: Reproduccion | null = null;
+  const instrumento = () => (sonido?.value ?? 'piano') as Instrumento;
+  const calcular = () => {
+    const { raiz, formula } = acorde();
+    return secuenciaAcompanamiento(raiz, formula, estiloValido(estilo?.value), tempo(), {
+      metronomo: clic?.checked,
+      sostenido: SOSTENIDOS.includes(instrumento()),
+    });
+  };
+  const actualizar = () => {
+    if (!activa) return;
+    const { eventos, duracion } = calcular();
+    Object.assign(activa, { eventos, duracion, instrumento: instrumento() });
+  };
+  const alCambiarOpcion = () => {
+    guardar(clave, JSON.stringify({ estilo: estilo?.value, instrumento: sonido?.value, metronomo: clic?.checked }));
+    actualizar();
+  };
+  for (const el of [estilo, sonido, clic]) el?.addEventListener('change', alCambiarOpcion);
+  document.querySelector('[data-tempo]')?.addEventListener('input', actualizar);
+
+  return {
+    reproduccion: () => {
+      const { eventos, duracion } = calcular();
+      const r: Reproduccion = {
+        eventos,
+        duracion,
+        instrumento: instrumento(),
+        bucle: () => true,
+        alTerminar: () => {
+          if (activa === r) activa = null;
+        },
+      };
+      activa = r;
+      return r;
+    },
+    actualizar,
+  };
 }

@@ -304,6 +304,28 @@ Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, pági
 - [x] **Formas de los standards:** texto en `src/data/estudio/formas.md` y mapa de formas (`lib/estructuras.ts`), primera página del grupo nuevo «Repertorio y forma»: AABA, ABAC, blues, rhythm changes y otras formas. Cada ejemplo con sus secciones (letra, compases y papel) en una franja proporcional y el cifrado de cuatro en cuatro. Del Repertorio: Days of Wine and Roses (ABAC), Turnaround y Footprints (blues), Cantaloupe Island (16), E.S.P. (AA′) y Stella by Starlight (forma libre), con los acordes sacados del cifrado y pasados a grados (`compasesDeCifrado`), así que se transportan; al elegirlos se pasa a su tonalidad original. Sin tema AABA ni rhythm changes en el Repertorio: un modelo AABA y los rhythm changes de `progresiones.yaml`. Audio de la forma con metrónomo opcional, coros seguidos contados, «Ocultar acordes» y la sección y el compás que suenan («Coro 2 · A2 · compás 3 de 8»).
 - [x] **Aprender un standard:** texto en `src/data/estudio/aprender-standard.md` (página solo de texto, en «Repertorio y forma»): escuchar antes de empezar y los cinco pasos en orden (melodía, forma, notas guía, shells e improvisación), cada uno con su «lo sabes cuando…», con Days of Wine and Roses de ejemplo y enlaces a las páginas de Estudio de cada paso. Un plan de varios días, errores frecuentes y una lista de comprobación.
 
+## 10 sexies. Práctica diaria (2026-11-15)
+
+Ideas para que la web sirva de rutina diaria y no solo de consulta. Marcar `[x]` al terminar.
+
+**Hecho**
+
+- [x] **Estudio · Mástil por capas:** texto en `src/data/estudio/capas.md` y ejemplo (`lib/capas.ts`), en el grupo Rutina; inspirado en *Guitar Burpees* de Noel Johnston. Un acorde (raíz y diez cualidades) en una de las cinco formas CAGED (zona de 6 trastes) o en todo el mástil, y siete capas sobre el mismo dibujo: raíz, tríadas cerradas, arpegio, tríadas abiertas, pentatónica, escala (con alternativas por cualidad) y el acorde de la forma (`acordeCaged`: la forma mayor con la 3, la 5 y la 7 de la cualidad). Las capas anteriores quedan atenuadas; las tríadas, unidas por una línea y filtrables por grupo de cuerdas; flechas del teclado, sorteo, grado o nota y audio de cada capa.
+- [x] **Tríadas abiertas en 6-5-3, 5-4-2 y 4-3-1** (la cuerda saltada entre las dos voces de arriba), en Tríadas y en Mástil por capas.
+- [x] **Acompañamiento mientras practicas:** componente `Acompanamiento.astro` y `lib/acompanamiento.ts`, en Mástil por capas, Escalas y Arpegios (Estudio). El acorde de la página en bucle de dos compases, en cuatro estilos (pedal, acorde, swing con bajo a dos y charlestón, bossa), con sonido propio y clic en 2 y 4 opcional. Mientras suena sigue al acorde, al estilo, al sonido y al tempo que se elijan (cambia en la vuelta siguiente; `conectarAcompanamiento` en `lib/cliente.ts`).
+- [x] **Enlaces entre secciones:** `lib/enlaces.ts`. El menú de cada acorde del Repertorio lleva también a Mástil por capas y a Arpegios con ese acorde (el 7alt, con la escala alterada); Mástil por capas enlaza a Arpegio, Tríadas, Voicings y Escalas del acorde elegido. Mástil por capas lee `?tonica=&cualidad=&forma=&escala=` y Arpegios `?tonica=&cualidad=`.
+
+**Pendiente** (por orden de prioridad)
+
+- [ ] **«Hoy toca»:** una portada que monte la sesión del día a partir de la fecha: raíz, cualidad y forma para Mástil por capas, un ejercicio de oído y una canción del Repertorio. Las raíces rotan por el ciclo de cuartas (todas las tonalidades en 12 días, y todas las formas en 60), sin tener que decidir nada al sentarse.
+- [ ] **Temporizador por bloques:** la «sesión tipo» de la Rutina (5 min de calentamiento, 15 de un ejercicio, 20 de una canción…) con cuenta atrás, aviso sonoro al cambiar de bloque y enlace a la página de cada bloque.
+- [ ] **Diario de práctica:** botón «hecho» en cada ejercicio que anota fecha, tempo alcanzado y una nota opcional; historial, racha de días y evolución del tempo por ejercicio. Guardado en el navegador y exportable, como Acordes y Repertorio.
+- [ ] **Modo examen en Mástil por capas:** el mástil sin notas y una pregunta («todas las b3 de la zona», «la tríada en 4-3-2»); se pulsa en el mástil y corrige al momento (como en Lectura a primera vista).
+- [ ] **Repaso espaciado:** al acabar una combinación (p. ej. Bb7, forma de G) se marca fácil, regular o difícil, y el sorteo trae antes las difíciles y las que llevan más tiempo sin tocarse.
+- [ ] **Grabarse y escucharse:** grabar con el micrófono (MediaRecorder) y reproducir al momento, en Transcripción y al improvisar sobre el acompañamiento. Sin servidor: la grabación se queda en el navegador o se descarga.
+- [ ] **Progreso entre dispositivos:** exportar e importar de una vez todo lo guardado en el navegador (voicings, canciones, diario, favoritos, opciones), o sincronizarlo, para no perderlo al cambiar de ordenador o de móvil.
+- [ ] **Más acompañamiento:** llevarlo a Modos, Pentatónicas en jazz y Pares de tríadas; vamps de dos acordes (ii–V, I–IV) y un estilo de walking bass.
+
 ## 11. Fuera de alcance
 - Reproducción de grabaciones de las canciones.
 - [x] **Progresiones clásicas e inversiones (2026-11-14):** cadencias, Pachelbel, andaluza, Folía, Romanesca, Monte y Fonte; tríadas ° y sus4; inversiones con barra y la nota del acorde en el bajo (I/3, I/5, V7/7), que se ven como C/E y suenan con esa nota en el bajo.

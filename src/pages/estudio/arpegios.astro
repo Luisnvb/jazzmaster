@@ -4,6 +4,7 @@
 import Base from '../../layouts/Base.astro';
 import SelectorTonica from '../../components/SelectorTonica.astro';
 import Tempo from '../../components/Tempo.astro';
+import Acompanamiento from '../../components/Acompanamiento.astro';
 import { Content, getHeadings } from '../../data/estudio/arpegios.md';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
 
@@ -66,6 +67,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
       <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
       <button type="button" data-detener>■ Detener</button>
     </div>
+    <Acompanamiento clave="arpegios" />
   </section>
 
   <nav class="indice" aria-label="En esta página">
@@ -80,7 +82,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
 <script>
   import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
   import { eventosArpegio, mastilSVG, notasArpegio, recorrido, type Zona, posicionValida } from '../../lib/arpegios.ts';
-  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
+  import { conectarAcompanamiento, conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
   import { parseAcordeGrado, simboloEn } from '../../lib/progresiones.ts';
 
   interface Opciones {
@@ -100,6 +102,9 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
 
   const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const selCualidad = $<HTMLSelectElement>('[data-cualidad]');
+  // Un enlace (Repertorio, Mástil por capas) puede traer el acorde: ?cualidad=Im7.
+  const pedida = new URLSearchParams(location.search).get('cualidad');
+  if (pedida && [...selCualidad.options].some((o) => o.value === pedida)) op.cualidad = pedida;
   const selDesde = $<HTMLSelectElement>('[data-desde]');
   const selCuerda = $<HTMLSelectElement>('[data-cuerda]');
   const selDos = $<HTMLSelectElement>('[data-dos-cuerdas]');
@@ -119,6 +124,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
           ? { tipo: 'dos-cuerdas', cuerda: op.dosCuerdas }
           : { tipo: 'todo' };
   const acorde = () => parseAcordeGrado(op.cualidad);
+  const acomp = conectarAcompanamiento(() => ({ raiz: tonica, formula: acorde().formula }), tempo);
 
   function pintar() {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) b.setAttribute('aria-pressed', String(b.dataset.zona === op.zona));
@@ -133,6 +139,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
     caja.innerHTML = mastilSVG(notasArpegio(tonica, a), zona());
     mostrarZona(caja);
     guardarJSON(CLAVE, op);
+    acomp.actualizar();
   }
 
   selCualidad.addEventListener('change', () => ((op.cualidad = selCualidad.value), pintar()));
@@ -149,6 +156,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
   });
 
   conectarAudio((boton) => {
+    if (boton.dataset.audio === 'acompanar') return acomp.reproduccion();
     const notas = recorrido(notasArpegio(tonica, acorde()), zona(), op.desdeGrado);
     // Tocando todo el mástil, en negras (son muchas notas); en una zona, en corcheas.
     const { eventos, duracion } = eventosArpegio(notas, tempo(), op.zona === 'todo');

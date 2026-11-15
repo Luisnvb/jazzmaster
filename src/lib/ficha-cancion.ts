@@ -31,6 +31,7 @@ import { diagramaSVG } from './diagrama.ts';
 import { editorTrastes } from './editor-trastes.ts';
 import { catalogoFormas, gradoSuperior, gradosDeTrastes, notasSuperiores, trastesDeGrados, type Forma, type GradosCuerdas } from './formas.ts';
 import { ruta } from './rutas.ts';
+import { DESDE_GRUPO, enlaceArpegios, enlaceCapas } from './enlaces.ts';
 
 interface Datos {
   cancion: Cancion | null;
@@ -817,6 +818,20 @@ export function iniciarFicha() {
     voicingsEnlace.hidden = !gruposConVoicings.has(grupo);
     escalas.href = destino('escalas');
     escalas.textContent = `Escalas para ${datos.grupos[grupo]} en ${tonica}`;
+    // Mástil por capas y Arpegios, con el acorde ya elegido (lib/enlaces.ts).
+    const equivalente = DESDE_GRUPO[grupo];
+    const capas = menu.querySelector<HTMLAnchorElement>('[data-menu-capas]')!;
+    const arpegio = menu.querySelector<HTMLAnchorElement>('[data-menu-arpegio]')!;
+    capas.hidden = !equivalente;
+    arpegio.hidden = !equivalente?.arpegio;
+    if (equivalente) {
+      capas.href = enlaceCapas(capas.dataset.base!, tonica, equivalente.capas);
+      capas.textContent = `Mástil por capas: ${datos.grupos[grupo]} en ${tonica}`;
+    }
+    if (equivalente?.arpegio) {
+      arpegio.href = enlaceArpegios(arpegio.dataset.base!, tonica, equivalente.arpegio);
+      arpegio.textContent = `Arpegio ${datos.grupos[grupo]} en ${tonica}`;
+    }
   }
 
   conectarAudio((boton) => {

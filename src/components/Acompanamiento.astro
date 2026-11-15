@@ -1,0 +1,59 @@
+---
+// Acompañamiento para practicar encima (lib/acompanamiento.ts): estilo, sonido propio
+// (distinto del de la página) y clic en 2 y 4. La página lo conecta con
+// conectarAcompanamiento (lib/cliente.ts), que le dice qué acorde suena.
+import { INSTRUMENTOS } from '../lib/audio.ts';
+import { ESTILOS_ACOMPANAMIENTO } from '../lib/acompanamiento.ts';
+
+interface Props {
+  /** Clave con la que se recuerdan las opciones (una por sección). */
+  clave: string;
+}
+const { clave } = Astro.props;
+---
+
+<div class="acompanamiento" data-acompanamiento data-clave={clave} role="group" aria-label="Acompañamiento">
+  <span class="etiqueta">Acompañamiento</span>
+  <select data-acomp-estilo aria-label="Estilo">
+    {ESTILOS_ACOMPANAMIENTO.map((e) => <option value={e.id} title={e.descripcion}>{e.nombre}</option>)}
+  </select>
+  <select data-acomp-instrumento aria-label="Sonido del acompañamiento">
+    {INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}
+  </select>
+  <label class="casilla"><input type="checkbox" data-acomp-metronomo /> Clic en 2 y 4</label>
+  <span class="botones-audio">
+    <button type="button" data-audio="acompanar" aria-pressed="false" title="El acorde en bucle para tocar encima; sigue al acorde y al tempo que elijas">
+      ▶ Acompañar
+    </button>
+  </span>
+</div>
+
+<style>
+  .acompanamiento {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0.75rem 0 0;
+    padding: 0.6rem 0.75rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .etiqueta {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  select {
+    width: auto;
+    margin: 0;
+  }
+  .botones-audio {
+    margin: 0;
+  }
+  .casilla {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+</style>

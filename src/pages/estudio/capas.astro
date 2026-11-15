@@ -4,9 +4,19 @@
 import Base from '../../layouts/Base.astro';
 import SelectorTonica from '../../components/SelectorTonica.astro';
 import Tempo from '../../components/Tempo.astro';
+import Acompanamiento from '../../components/Acompanamiento.astro';
 import { Content, getHeadings } from '../../data/estudio/capas.md';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
 import { CUALIDADES_CAPAS, FORMAS_CAGED } from '../../lib/capas.ts';
+import { ruta } from '../../lib/rutas.ts';
+
+// Páginas a las que se enlaza con el acorde elegido (el script completa la dirección).
+const PAGINAS = {
+  arpegios: ruta('estudio/arpegios'),
+  triadas: ruta('estudio/triadas'),
+  acordes: ruta('acordes'),
+  escalas: ruta('escalas'),
+};
 
 const indice = getHeadings().filter((h) => h.depth === 2);
 ---
@@ -33,6 +43,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     </div>
 
     <p class="titulo-capas" data-titulo></p>
+    <p class="enlaces" data-enlaces data-paginas={JSON.stringify(PAGINAS)}></p>
 
     <ol class="capas" data-capas aria-label="Capas"></ol>
 
@@ -58,6 +69,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
       <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
       <button type="button" data-detener>■ Detener</button>
     </div>
+    <Acompanamiento clave="capas" />
     <p class="suave leyenda">
       Tablatura: la 1ª cuerda arriba. La zona sombreada es la forma CAGED (con «Todo el mástil», no hay zona). La raíz, en color; en la pentatónica y la escala, las
       notas que no son del acorde van huecas. Las flechas del teclado pasan de capa.
@@ -86,7 +98,9 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     zonaCaged,
     type FormaCapas,
   } from '../../lib/capas.ts';
-  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
+  import { conectarAcompanamiento, conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
+  import { parseAcordeGrado } from '../../lib/progresiones.ts';
+  import { DESDE_CUALIDAD, enlaceArpegios, enlaceGrupo, leerDestinoCapas } from '../../lib/enlaces.ts';
 
   interface Opciones {
     cualidad: string;
@@ -99,6 +113,11 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   }
   const CLAVE = 'capas:opciones';
   const op: Opciones = { cualidad: 'mayor', forma: 'E', capa: 0, acumular: true, notas: false, escalas: {}, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  // Un enlace (desde el Repertorio, por ejemplo) puede traer cualidad, forma y escala.
+  const pedido = leerDestinoCapas(location.search);
+  if (pedido.cualidad) [op.cualidad, op.capa] = [pedido.cualidad, 0];
+  if (pedido.forma) op.forma = pedido.forma;
+  if (pedido.escala) op.escalas = { ...op.escalas, [op.cualidad]: cualidadCapas(op.cualidad).escalas.findIndex((e) => e.id === pedido.escala) };
   if (op.forma !== 'todo' && !FORMAS_CAGED.some((f) => f.letra === op.forma)) op.forma = 'E';
   let raiz = 'C';
   /** Voicing destacado en la capa actual (tríadas): undefined = todos. No se guarda. */
@@ -113,6 +132,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   const cualidad = () => cualidadCapas(op.cualidad);
   const escala = () => op.escalas[op.cualidad] ?? 0;
   const actuales = () => capas(raiz, cualidad(), op.forma, escala());
+  const acomp = conectarAcompanamiento(() => ({ raiz, formula: parseAcordeGrado(cualidad().romano).formula }), tempo);
 
   function pintar(centrar = false) {
     const c = cualidad();
@@ -128,6 +148,20 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     }
     $('[data-titulo]').innerHTML =
       `<strong>${esc(simboloCapas(raiz, c))}</strong> · ` + (op.forma === 'todo' ? 'todo el mástil' : `forma de ${op.forma} · trastes ${z.desde}–${z.hasta}`);
+
+    const otras = DESDE_CUALIDAD[c.id];
+    const paginas = JSON.parse($('[data-enlaces]').dataset.paginas!) as Record<string, string>;
+    const sufijo = simboloCapas(raiz, c);
+    $('[data-enlaces]').innerHTML =
+      '<span class="suave">Con este acorde:</span> ' +
+      [
+        otras.arpegio && `<a href="${esc(enlaceArpegios(paginas.arpegios, raiz, otras.arpegio))}">Arpegio</a>`,
+        otras.triada && `<a href="${esc(`${paginas.triadas}?tonica=${encodeURIComponent(raiz)}`)}">Tríadas</a>`,
+        `<a href="${esc(enlaceGrupo(paginas.acordes, raiz, otras.grupo))}">Voicings</a>`,
+        `<a href="${esc(enlaceGrupo(paginas.escalas, raiz, otras.grupo))}">Escalas para ${esc(sufijo)}</a>`,
+      ]
+        .filter(Boolean)
+        .join(' · ');
 
     lista.innerHTML = todas
       .map(
@@ -162,6 +196,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     caja.innerHTML = mastilCapasSVG(todas, op.capa, z, op.acumular, op.notas ? 'nota' : 'grado', voicing);
     if (centrar) mostrarZona(caja);
     guardarJSON(CLAVE, op);
+    acomp.actualizar();
   }
 
   const azar = <T,>(xs: readonly T[]) => xs[Math.floor(Math.random() * xs.length)];
@@ -209,6 +244,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   });
 
   conectarAudio((boton) => {
+    if (boton.dataset.audio === 'acompanar') return acomp.reproduccion();
     const capa = actuales()[op.capa];
     const { eventos, pasos, duracion } = eventosCapa(capa, tempo(), voicing);
     let marcado = -1;
@@ -266,8 +302,12 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     padding: 0;
   }
   .titulo-capas {
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.25rem;
     font-size: 1.1rem;
+  }
+  .enlaces {
+    margin: 0 0 0.6rem;
+    font-size: 0.9rem;
   }
 
   /* Las capas, como fichas numeradas: las ya vistas, marcadas; la actual, rellena. */
