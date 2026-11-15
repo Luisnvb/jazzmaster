@@ -81,6 +81,23 @@
   descripcion: 'Dominantes por quintas, dos compases cada uno.'
   compases: ['III7', 'III7', 'VI7', 'VI7', 'II7', 'II7', 'V7', 'V7']
 
+- id: coltrane-ciclo
+  nombre: 'Ciclo de terceras mayores (Coltrane)'
+  descripcion: 'Tres tonalidades a distancia de 3ª mayor (I, bVI, III), cada una con su dominante.'
+  compases: ['Imaj7 bIII7', 'bVImaj7 VII7', 'IIImaj7 V7', 'Imaj7']
+
+- id: coltrane-ii-v
+  nombre: 'ii–V–I con cambios de Coltrane'
+  descripcion: 'El ii–V–I de siempre, con el ciclo de terceras entre el IIm7 y el I (como en Countdown).'
+  compases: ['IIm7 bIII7', 'bVImaj7 VII7', 'IIImaj7 V7', 'Imaj7']
+
+- id: giant-steps
+  nombre: 'Giant Steps'
+  descripcion: 'Los 16 compases de John Coltrane (1959), con la tónica en el primer acorde (el original empieza en B).'
+  compases:
+    ['Imaj7 bIII7', 'bVImaj7 VII7', 'IIImaj7', 'bVIIm7 bIII7', 'bVImaj7 VII7', 'IIImaj7 V7', 'Imaj7', '#IVm7 VII7',
+     'IIImaj7', 'bVIIm7 bIII7', 'bVImaj7', 'IIm7 V7', 'Imaj7', '#IVm7 VII7', 'IIImaj7', 'IIm7 V7']
+
 # --- Música clásica (tríadas y cadencias) ---
 
 - id: cadencia-perfecta

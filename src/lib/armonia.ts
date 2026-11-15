@@ -55,7 +55,10 @@ const TABLAS: Record<Modo, Tabla> = {
     1: { dom: D('subV7', 'Sustituto tritonal del V7: comparte su 3 y su 7.'), maj: SD('bII', 'Napolitano, prestado del frigio.') },
     2: { m: SD('IIm', 'Subdominante: prepara el V.'), semi: SD('IIø', 'Subdominante menor (intercambio modal): prepara un V7b9.') },
     3: { maj: T('bIII', 'Prestado del modo menor (intercambio modal).'), dim: D('bIII°7', 'Disminuido de paso entre IIm y IIIm.') },
-    4: { m: T('IIIm', 'Sustituto de la tónica: comparte tres notas con Imaj7.') },
+    4: {
+      m: T('IIIm', 'Sustituto de la tónica: comparte tres notas con Imaj7.'),
+      maj: T('III', 'Tónica de otro centro a una 3ª mayor: el ciclo de terceras de los cambios de Coltrane.'),
+    },
     5: { maj: SD('IV', 'Subdominante: se aleja del reposo sin tensión.'), m: SD('IVm', 'Subdominante menor (intercambio modal): sonido melancólico.'), dom: SD('IV7', 'Subdominante con b7, típico del blues.') },
     6: { dim: D('#IV°7', 'Disminuido de paso entre IV y I/5 (o V).'), semi: T('#IVø', 'Sustituto de la tónica en la cadena #IVø–VII7–IIIm.') },
     7: { dom: D('V7', 'Dominante: la tensión que pide volver al I (tritono entre su 3 y su 7).'), maj: D('V', 'Dominante (tríada).'), m: SD('Vm7', 'IIm7 del IV: prepara un I7 → IV.') },

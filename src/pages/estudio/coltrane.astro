@@ -1,0 +1,326 @@
+---
+// Cambios de Coltrane (sección Estudio). El texto está en src/data/estudio/coltrane.md;
+// aquí va la progresión con su centro tonal, notas guía y shells (lib/coltrane.ts).
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/coltrane.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+// Las progresiones de Coltrane y, para comparar, el ii–V–I normal.
+const IDS = ['coltrane-ciclo', 'coltrane-ii-v', 'giant-steps', 'ii-v-i-mayor'];
+const progresiones = (await getCollection('progresiones'))
+  .filter((p) => IDS.includes(p.id))
+  .sort((a, b) => IDS.indexOf(a.id) - IDS.indexOf(b.id))
+  .map(({ id, data }) => ({ id, nombre: data.nombre, descripcion: data.descripcion, pulsos: data.pulsos, compases: data.compases }));
+const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
+---
+
+<Base titulo="Cambios de Coltrane">
+  <SelectorTonica clave="coltrane">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="coltrane" inicial={90} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label="Ejemplo">
+    <div class="opciones">
+      <label class="campo">Progresión <select data-progresion>{progresiones.map((p) => <option value={p.id}>{p.nombre}</option>)}</select></label>
+      <label class="casilla"><input type="checkbox" data-bajo /> Bajo con las notas guía</label>
+    </div>
+    <p class="descripcion suave" data-descripcion></p>
+    <div class="cuerpo">
+      <div class="ciclo-caja" data-ciclo></div>
+      <ol class="acordes" data-acordes></ol>
+    </div>
+    <p class="suave leyenda">En cada acorde: a qué tonalidad pertenece, sus notas guía (la 3 y la 7, con lo que se mueve cada una desde el acorde anterior) y un shell voicing (raíz, 3 y 7) elegido para mover la mano lo mínimo. En el ciclo de quintas, los centros de la progresión.</p>
+    <div class="botones-audio">
+      <button type="button" data-audio="shells" aria-pressed="false">▶ Shells</button>
+      <button type="button" data-audio="guia" aria-pressed="false">▶ Notas guía</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title="Shells sin parar hasta pulsar Detener">∞ Bucle</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+
+  <script type="application/json" id="datos-coltrane" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { centros, centrosDistintos, cicloSVG, guiaSencilla, salto, simboloSencillo } from '../../lib/coltrane.ts';
+  import { diagramaSVG } from '../../lib/diagrama.ts';
+  import { eventosGuia, textoPaso } from '../../lib/notas-guia.ts';
+  import { analizarProgresion, type Progresion } from '../../lib/progresiones.ts';
+  import { eventosShells, shellsProgresion } from '../../lib/shells.ts';
+
+  const progresiones: (Progresion & { descripcion?: string })[] = JSON.parse(document.getElementById('datos-coltrane')!.textContent!);
+  interface Opciones {
+    progresion: string;
+    bajo: boolean;
+  }
+  const CLAVE = 'coltrane:opciones';
+  const op: Opciones = { progresion: 'coltrane-ciclo', bajo: true, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  if (!progresiones.some((p) => p.id === op.progresion)) op.progresion = progresiones[0].id;
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('coltrane:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selProgresion = $<HTMLSelectElement>('[data-progresion]');
+  const casillaBajo = $<HTMLInputElement>('[data-bajo]');
+  const descripcion = $('[data-descripcion]');
+  const ciclo = $('[data-ciclo]');
+  const lista = $('[data-acordes]');
+  selProgresion.value = op.progresion;
+  casillaBajo.checked = op.bajo;
+
+  const progresion = () => progresiones.find((p) => p.id === op.progresion)!;
+  const compases = () => analizarProgresion(progresion().compases);
+
+  function pintar() {
+    const p = progresion();
+    const cs = compases();
+    const acordes = cs.flat();
+    const centro = centros(tonica, cs);
+    const distintos = centrosDistintos(centro);
+    const guia = guiaSencilla(tonica, cs);
+    const shells = shellsProgresion(tonica, cs);
+    descripcion.textContent = p.descripcion ?? '';
+    ciclo.innerHTML = cicloSVG(distintos);
+    // Índice del primer acorde de cada compás, para marcar las barras.
+    const inicioCompas = new Set<number>();
+    let k = 0;
+    for (const c of cs) {
+      inicioCompas.add(k);
+      k += c.length;
+    }
+    // En cada Imaj7 que cambia de centro, cuánto se ha movido desde el centro anterior (el último Imaj7).
+    let anterior: number | null = null;
+    const saltos = centro.map((c) => {
+      if (c.papel !== 'Imaj7') return '';
+      const texto = anterior !== null && anterior !== c.pc ? salto(anterior, c.pc) : '';
+      anterior = c.pc;
+      return texto;
+    });
+    lista.innerHTML = acordes
+      .map((a, i) => {
+        const c = centro[i];
+        const cambio = saltos[i] ? `<span class="cambio">${esc(saltos[i])}</span>` : '';
+        const voces = [...guia[i].voces]
+          .reverse()
+          .map((v) => `<span class="voz"><strong>${esc(v.nota)}</strong> <small>${esc(v.grado)}</small> <small class="suave">${esc(textoPaso(v.paso))}</small></span>`)
+          .join('');
+        return `<li class="acorde-c ${inicioCompas.has(i) ? 'inicio-compas' : ''} ${c.papel === 'Imaj7' ? 'es-centro' : ''}" data-i="${i}" data-pc="${c.pc}">
+          <span class="simbolo">${esc(simboloSencillo(tonica, a))}</span>
+          <span class="papel">${esc(c.papel)} de <strong>${esc(c.nombre)}</strong> ${cambio}</span>
+          <span class="voces">${voces}</span>
+          ${diagramaSVG({ trastes: shells[i].trastes, grados: shells[i].grados })}
+        </li>`;
+      })
+      .join('');
+    guardarJSON(CLAVE, op);
+  }
+
+  selProgresion.addEventListener('change', () => ((op.progresion = selProgresion.value), pintar()));
+  casillaBajo.addEventListener('change', () => ((op.bajo = casillaBajo.checked), guardarJSON(CLAVE, op)));
+
+  conectarAudio((boton) => {
+    const cs = compases();
+    const pulsos = progresion().pulsos ?? 4;
+    const sostenido = SOSTENIDOS.includes(instrumento());
+    const centro = centros(tonica, cs);
+    const distintos = centrosDistintos(centro);
+    const { eventos, tramos, duracion } =
+      boton.dataset.audio === 'guia'
+        ? eventosGuia(cs, guiaSencilla(tonica, cs), tempo(), pulsos, { bajo: op.bajo, sostenido })
+        : eventosShells(cs, shellsProgresion(tonica, cs), tempo(), pulsos, sostenido);
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      lista.querySelector('.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) lista.querySelector(`[data-i="${k}"]`)?.classList.add('sonando-ahora');
+      ciclo.innerHTML = cicloSVG(distintos, k >= 0 ? centro[k].pc : null);
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => marcar(tramos.findIndex((x) => t >= x.inicio && t < x.fin)),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .descripcion {
+    margin: 0 0 0.75rem;
+  }
+  .cuerpo {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+  @media (max-width: 48rem) {
+    .cuerpo {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .ciclo-caja {
+    position: sticky;
+    top: calc(var(--cabecera-alto, 4rem) + 5rem);
+    max-width: 15rem;
+    margin: 0 auto;
+  }
+  @media (max-width: 48rem) {
+    .ciclo-caja {
+      position: static;
+      max-width: 12rem;
+    }
+  }
+  .ciclo-caja :global(.ciclo) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .ciclo-caja :global(.aro) {
+    fill: none;
+    stroke: var(--borde);
+    stroke-width: 1.5;
+  }
+  .ciclo-caja :global(.triangulo) {
+    fill: var(--acento-suave); /* COLOR: triángulo de los centros tonales */
+    stroke: var(--acento);
+    stroke-width: 2;
+  }
+  .ciclo-caja :global(.tono circle) {
+    fill: var(--fondo);
+    stroke: var(--borde);
+    stroke-width: 1.5;
+  }
+  .ciclo-caja :global(.tono text) {
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--texto-suave);
+  }
+  .ciclo-caja :global(.tono.centro circle) {
+    fill: var(--fondo);
+    stroke: var(--acento);
+    stroke-width: 2.5;
+  }
+  .ciclo-caja :global(.tono.centro text) {
+    fill: var(--texto);
+  }
+  .ciclo-caja :global(.tono.activo circle) {
+    fill: var(--acento); /* COLOR: centro tonal que suena */
+    stroke: var(--acento);
+  }
+  .ciclo-caja :global(.tono.activo text) {
+    fill: var(--sobre-acento);
+  }
+  .acordes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.45rem;
+  }
+  @media (max-width: 40rem) {
+    .acordes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .acordes :global(.acorde-c) {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.45rem 0.55rem;
+    text-align: center;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  /* Primer acorde de cada compás: raya a la izquierda, como una barra de compás. */
+  .acordes :global(.acorde-c.inicio-compas) {
+    border-left: 3px solid var(--texto-suave);
+  }
+  .acordes :global(.acorde-c.es-centro) {
+    border-top: 0.25rem solid var(--acento);
+  }
+  .acordes :global(.acorde-c.sonando-ahora) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+  }
+  .acordes :global(.simbolo) {
+    font-weight: 800;
+    font-size: 1.15rem;
+  }
+  .acordes :global(.papel) {
+    font-size: 0.8rem;
+  }
+  .acordes :global(.cambio) {
+    display: block;
+    color: var(--acento);
+    font-weight: 700;
+  }
+  .acordes :global(.voces) {
+    display: grid;
+    gap: 0.05rem;
+    font-size: 0.85rem;
+  }
+  .acordes :global(.diagrama) {
+    width: 100%;
+    max-width: 7.5rem;
+  }
+  .leyenda {
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+  }
+</style>

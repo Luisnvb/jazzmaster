@@ -35,6 +35,7 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Armonía', nombre: 'Blues', href: ruta('estudio/blues'), lema: 'Básico, de jazz, Bird blues y menor, compás a compás' },
       { grupo: 'Armonía', nombre: 'Tensiones y avoid notes', href: ruta('estudio/tensiones'), lema: 'Las 12 notas sobre un acorde: cuáles suenan y cuáles chocan' },
       { grupo: 'Armonía', nombre: 'Acordes slash', href: ruta('estudio/slash'), lema: 'Tríadas sobre otro bajo y estructuras superiores: qué acorde sale' },
+      { grupo: 'Armonía', nombre: 'Cambios de Coltrane', href: ruta('estudio/coltrane'), lema: 'Giant Steps y el ciclo de terceras mayores, con notas guía y shells' },
       // Improvisación
       { grupo: 'Improvisación', nombre: 'Notas guía', href: ruta('estudio/notas-guia'), lema: 'La 3 y la 7: dos líneas que dibujan la armonía' },
       { grupo: 'Improvisación', nombre: 'Aproximaciones cromáticas', href: ruta('estudio/aproximaciones'), lema: 'Llegar a las notas del acorde por medio tono y con encierros' },
