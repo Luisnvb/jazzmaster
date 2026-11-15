@@ -1,0 +1,17 @@
+---
+// Aprender un standard (sección Estudio). Solo texto: está en src/data/estudio/aprender-standard.md.
+import Base from '../../layouts/Base.astro';
+import { Content, getHeadings } from '../../data/estudio/aprender-standard.md';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Aprender un standard">
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
