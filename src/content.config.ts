@@ -119,6 +119,36 @@ const patrones = defineCollection({
   }),
 });
 
+// Ayudas para improvisar sobre una canción del repertorio. Cada escala se escribe
+// como "<id de escalas.yaml>" (en la tónica del acorde del tramo) o "<nota> <id>"
+// para tocarla desde otra nota (p. ej. "A pentatonica-menor" sobre Dm7).
+const escalaImpro = z.string().refine(
+  (s) => {
+    const partes = s.trim().split(/\s+/);
+    return partes.length === 1 || (partes.length === 2 && esValido(parseNota)(partes[0]));
+  },
+  { message: 'Escala no válida: "dorico" o "Bb pentatonica-menor".' },
+);
+
+const improvisacion = z.object({
+  enfoque: z.string().nullish(),
+  tramos: z
+    .array(
+      z.object({
+        compases: z.string(),
+        acorde: z.string(),
+        escalas: z.array(escalaImpro).default([]),
+        guia: z.string().nullish(),
+        consejo: z.string().nullish(),
+      }),
+    )
+    .default([]),
+  estrategias: z.array(z.object({ titulo: z.string(), texto: z.string() })).default([]),
+  ejercicios: z.array(z.string()).default([]),
+  /** Páginas de Estudio relacionadas, por su ruta: "notas-guia", "modos"… */
+  estudio: z.array(z.string()).default([]),
+});
+
 const repertorio = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: 'src/content/repertorio' }),
   schema: z.object({
@@ -134,6 +164,7 @@ const repertorio = defineCollection({
       .object({ grabacion: z.url().optional(), partitura: z.url().optional() })
       .default({}),
     notas: z.string().nullish(),
+    improvisacion: improvisacion.nullish(),
   }),
 });
 

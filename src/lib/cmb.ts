@@ -55,6 +55,8 @@ export interface ExtraPractica {
   letra?: string;
   notas?: string | null;
   enlaces?: { grabacion?: string; partitura?: string };
+  /** Ayudas para improvisar (ver Improvisacion en cancion.ts). */
+  improvisacion?: import('./cancion.ts').Improvisacion | null;
 }
 
 export interface Cmb {

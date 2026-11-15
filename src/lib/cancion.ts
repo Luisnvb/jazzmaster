@@ -20,6 +20,33 @@ export interface Cancion {
   notas: string | null;
   letra: string;
   cifrado: Cmb | null;
+  /** Ayudas para improvisar (solo se escriben en el .md; en el navegador se ven, no se editan). */
+  improvisacion?: Improvisacion | null;
+}
+
+/** Escala sugerida para un tramo, ya resuelta (nombre, notas y grupo de arpegio para el enlace). */
+export interface EscalaImpro {
+  tonica: string;
+  nombre: string;
+  grupo: string;
+  notas: string[];
+}
+
+export interface TramoImpro {
+  compases: string;
+  acorde: string;
+  escalas: EscalaImpro[];
+  guia: string | null;
+  consejo: string | null;
+}
+
+export interface Improvisacion {
+  enfoque: string | null;
+  tramos: TramoImpro[];
+  estrategias: { titulo: string; texto: string }[];
+  ejercicios: string[];
+  /** Páginas de Estudio relacionadas. */
+  estudio?: { nombre: string; href: string; lema: string }[];
 }
 
 export function cancionVacia(id: string, titulo = 'Canción nueva'): Cancion {
@@ -58,6 +85,7 @@ export function cancionACmb(c: Cancion, base: Cmb): Cmb {
     letra: c.letra,
     notas: c.notas,
     enlaces: c.enlaces,
+    ...(c.improvisacion ? { improvisacion: c.improvisacion } : {}),
   };
   return cmb;
 }
@@ -85,6 +113,7 @@ export function cmbACancion(datos: unknown, id: string, anterior?: Cancion): Can
     letra: extra.letra ?? previa.letra,
     notas: extra.notas !== undefined ? extra.notas : previa.notas,
     enlaces: extra.enlaces ?? previa.enlaces,
+    improvisacion: extra.improvisacion ?? previa.improvisacion ?? null,
     cifrado: cifrado as Cmb,
   };
 }

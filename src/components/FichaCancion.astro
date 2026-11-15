@@ -55,6 +55,7 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   </div>
   <aside class="ficha-lateral" data-resto></aside>
 </div>
+<section class="impro" data-improvisacion hidden></section>
 <div class="ficha-abajo" data-ficha-abajo></div>
 
 <div id="menu-acorde" class="menu-acorde" popover>
@@ -492,5 +493,122 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   }
   .notas {
     white-space: pre-line;
+  }
+
+  /* Improvisación */
+  .impro {
+    max-width: 80rem;
+    margin: 3rem auto 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--borde);
+  }
+  .impro h3 {
+    margin: 2rem 0 0.75rem;
+    font-size: 1.1rem;
+  }
+  .impro-enfoque {
+    max-width: 48rem;
+    margin: 0 0 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+  .impro-tramos,
+  .impro-estrategias {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .impro-tramo,
+  .impro-estrategia {
+    padding: 0.9rem 1rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .impro-tramo {
+    border-top: 0.3rem solid var(--acento);
+  }
+  .impro-cabeza {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .impro-acorde {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  .impro-compases {
+    flex: none;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+  }
+  .impro-escalas {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .impro-escalas a {
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .impro-escalas a:hover {
+    text-decoration: underline;
+  }
+  .impro-notas {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--texto-suave);
+    letter-spacing: 0.02em;
+  }
+  .impro-guia {
+    margin: 0.75rem 0 0;
+    font-size: 0.92rem;
+  }
+  .impro-guia span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--texto-suave);
+    margin-right: 0.35rem;
+  }
+  .impro-consejo {
+    margin: 0.6rem 0 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  .impro-estrategia h4 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+  }
+  .impro-estrategia p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+  .impro-ejercicios {
+    max-width: 48rem;
+    padding-left: 1.4rem;
+    line-height: 1.55;
+  }
+  .impro-ejercicios li {
+    margin-bottom: 0.5rem;
+  }
+  .impro-estudio {
+    padding-left: 1.25rem;
+  }
+  .impro-estudio li {
+    margin-bottom: 0.4rem;
+  }
+  .impro-estudio a {
+    font-weight: 700;
   }
 </style>

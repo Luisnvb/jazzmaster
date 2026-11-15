@@ -78,6 +78,7 @@ export function iniciarFicha() {
   const panel = $('[data-panel]');
   const resto = $('[data-resto]');
   const fichaAbajo = $('[data-ficha-abajo]');
+  const zonaImpro = $('[data-improvisacion]');
 
   // --- Controles de audio del cifrado -------------------------------------------
   // Sonido y metrónomo se recuerdan en este navegador; el tempo elegido vale para
@@ -257,6 +258,59 @@ export function iniciarFicha() {
     resto.parentElement!.classList.toggle('sin-letra', cancion.instrumental || parrafos.length === 0);
   }
 
+  /** Texto escapado con **negrita** permitida. */
+  const conNegrita = (t: string) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  /** Ayudas para improvisar. No se editan en el navegador: si la copia guardada no las trae, valen las del repositorio. */
+  function pintarImprovisacion() {
+    const impro = cancion.improvisacion ?? base?.improvisacion ?? null;
+    zonaImpro.hidden = !impro;
+    if (!impro) return;
+    const enlaceEscala = (e: { tonica: string; grupo: string }) =>
+      `${ruta('escalas')}?tonica=${encodeURIComponent(e.tonica)}#grupo-${e.grupo}`;
+    const tramos = impro.tramos
+      .map(
+        (t) => `<li class="impro-tramo">
+          <div class="impro-cabeza"><span class="impro-acorde">${esc(t.acorde)}</span><span class="impro-compases">${esc(t.compases)}</span></div>
+          ${
+            t.escalas.length
+              ? `<ul class="impro-escalas">${t.escalas
+                  .map(
+                    (e) =>
+                      `<li><a href="${esc(enlaceEscala(e))}">${esc(e.tonica)} ${esc(e.nombre.toLowerCase())}</a><span class="impro-notas">${e.notas.map(esc).join(' ')}</span></li>`,
+                  )
+                  .join('')}</ul>`
+              : ''
+          }
+          ${t.guia ? `<p class="impro-guia"><span>Notas guía</span>${conNegrita(t.guia)}</p>` : ''}
+          ${t.consejo ? `<p class="impro-consejo">${conNegrita(t.consejo)}</p>` : ''}
+        </li>`,
+      )
+      .join('');
+    zonaImpro.innerHTML = `<h2>Improvisación</h2>
+      ${impro.enfoque ? `<p class="impro-enfoque">${conNegrita(impro.enfoque)}</p>` : ''}
+      ${tramos ? `<h3>Acorde a acorde</h3><ul class="impro-tramos">${tramos}</ul>` : ''}
+      ${
+        impro.estrategias.length
+          ? `<h3>Estrategias</h3><ul class="impro-estrategias">${impro.estrategias
+              .map((e) => `<li class="impro-estrategia"><h4>${esc(e.titulo)}</h4><p>${conNegrita(e.texto)}</p></li>`)
+              .join('')}</ul>`
+          : ''
+      }
+      ${
+        impro.ejercicios.length
+          ? `<h3>Para practicar</h3><ol class="impro-ejercicios">${impro.ejercicios.map((x) => `<li>${conNegrita(x)}</li>`).join('')}</ol>`
+          : ''
+      }
+      ${
+        impro.estudio?.length
+          ? `<h3>Para profundizar</h3><ul class="impro-estudio">${impro.estudio
+              .map((p) => `<li><a href="${esc(p.href)}">${esc(p.nombre)}</a> <span class="suave">${esc(p.lema)}</span></li>`)
+              .join('')}</ul>`
+          : ''
+      }`;
+  }
+
   function pintarPanel() {
     const celda = celdaSel();
     const compas = compasSel();
@@ -427,6 +481,7 @@ export function iniciarFicha() {
     pintarCifrado();
     pintarPanel();
     pintarResto();
+    pintarImprovisacion();
   }
 
   // --- Ficha (formulario) -------------------------------------------------------

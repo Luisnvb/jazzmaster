@@ -2,8 +2,11 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import FichaCancion from '../../components/FichaCancion.astro';
-import type { Cancion } from '../../lib/cancion.ts';
+import type { Cancion, Improvisacion } from '../../lib/cancion.ts';
 import { validarCmb } from '../../lib/cmb.ts';
+import { notasDeFormula, parseNota, pitchClass } from '../../lib/teoria.ts';
+import { SECCIONES } from '../../lib/secciones.ts';
+import { ruta } from '../../lib/rutas.ts';
 
 export async function getStaticPaths() {
   const canciones = await getCollection('repertorio');
@@ -16,6 +19,47 @@ export async function getStaticPaths() {
 
 const { cancion: entrada, cifrado } = Astro.props;
 const { data } = entrada;
+
+// Ayudas de improvisación: las escalas se resuelven aquí (nombre y notas) desde escalas.yaml.
+const escalas = new Map((await getCollection('escalas')).map((e) => [e.id, e.data]));
+// Grafía sencilla por clase de altura: natural si la hay, si no bemol.
+const SENCILLA = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+/** Nota de una escala alterada o disminuida tal como se lee al improvisar: F## → G, B# → C, A# (#9) → Bb. */
+const grafiaSencilla = (nota: string, grado: string) =>
+  /##|bb|^(B#|E#|Cb|Fb)$/.test(nota) || grado.includes('#') ? SENCILLA[pitchClass(parseNota(nota))] : nota;
+/** Tónica de un símbolo de acorde: "Dbmaj7" → "Db", "F#m7" → "F#". */
+const tonicaDe = (acorde: string) => acorde.match(/^[A-G][b#]?/)?.[0] ?? 'C';
+let improvisacion: Improvisacion | null = null;
+if (data.improvisacion) {
+  const { enfoque, tramos, estrategias, ejercicios, estudio } = data.improvisacion;
+  const paginasEstudio = SECCIONES.find((s) => s.nombre === 'Estudio')?.partes ?? [];
+  improvisacion = {
+    enfoque: enfoque ?? null,
+    estrategias,
+    ejercicios,
+    estudio: estudio.map((pagina) => {
+      const p = paginasEstudio.find((s) => s.href === ruta(`estudio/${pagina}`));
+      if (!p) throw new Error(`src/content/repertorio/${entrada.id}.md: no hay página de Estudio "${pagina}".`);
+      return { nombre: p.nombre, href: p.href, lema: p.lema };
+    }),
+    tramos: tramos.map((t) => ({
+      compases: t.compases,
+      acorde: t.acorde,
+      guia: t.guia ?? null,
+      consejo: t.consejo ?? null,
+      escalas: t.escalas.map((texto) => {
+        const partes = texto.trim().split(/\s+/);
+        const [tonica, idEscala] = partes.length === 2 ? partes : [tonicaDe(t.acorde), partes[0]];
+        const escala = escalas.get(idEscala);
+        if (!escala) throw new Error(`src/content/repertorio/${entrada.id}.md: la escala "${idEscala}" no existe en src/data/escalas.yaml.`);
+        let notas = notasDeFormula(tonica, escala.formula);
+        // Alterada, disminuidas y tonos enteros: grafía sencilla, que es como se leen al improvisar.
+        if (['alt7', 'dim7'].includes(escala.grupo.id)) notas = notas.map((n, i) => grafiaSencilla(n, escala.formula[i]));
+        return { tonica, nombre: escala.nombre, grupo: escala.grupo.id, notas };
+      }),
+    })),
+  };
+}
 
 // El .cmb.json se comprueba entero al compilar: si está mal, la compilación falla y dice dónde.
 let cmb = null;
@@ -41,6 +85,7 @@ const cancion: Cancion = {
   notas: data.notas ?? null,
   letra: entrada.body?.trim() ?? '',
   cifrado: cmb,
+  improvisacion,
 };
 ---
 
