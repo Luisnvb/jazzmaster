@@ -17,11 +17,6 @@ const Titulo = conH1 ? 'h1' : 'p';
 
 // Con barra final para comparar igual "/acordes" y "/acordes/" con ruta('acordes').
 const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
-// Sección múltiple en la que estamos (para la barra de sus partes).
-const multiple = SECCIONES.find((s) => s.partes && esActual(s, actual));
-// Sus grupos y el de la página actual: la barra muestra los grupos y abre ese.
-const gruposMultiple = multiple ? agrupar(multiple.partes!) : [];
-const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, actual)));
 ---
 
 <!doctype html>
@@ -101,34 +96,6 @@ const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, 
         </label>
       </div>
     </header>
-    {
-      multiple && (
-        <nav class="partes" aria-label={multiple.nombre}>
-          <div class="cabecera-dentro">
-            <a class="partes-titulo" href={multiple.href}>{multiple.nombre}</a>
-            {gruposMultiple.map((g) =>
-              g.nombre && gruposMultiple.length > 1 ? (
-                <span class:list={['partes-grupo', { abierto: g === grupoActual }]}>
-                  <a class="partes-grupo-nombre" href={`${multiple.href}#${g.id}`}>{g.nombre}</a>
-                  {g === grupoActual &&
-                    g.partes.map((p) => (
-                      <a href={p.href} aria-current={esActual(p, actual) ? 'page' : undefined}>
-                        {p.nombre}
-                      </a>
-                    ))}
-                </span>
-              ) : (
-                g.partes.map((p) => (
-                  <a href={p.href} aria-current={esActual(p, actual) ? 'page' : undefined}>
-                    {p.nombre}
-                  </a>
-                ))
-              ),
-            )}
-          </div>
-        </nav>
-      )
-    }
     <main>
       <slot />
     </main>
@@ -259,14 +226,26 @@ const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, 
     padding: 0;
     list-style: none;
   }
-  /* Con grupos, una columna por grupo. */
+  /* Con grupos: un panel a todo lo ancho bajo la cabecera, una columna por grupo (las
+     que quepan; el resto pasa a otra fila) y desplazable si no cabe en la pantalla. */
   .desplegable.con-grupos {
-    /* Es ancho: se abre hacia la izquierda para no salirse de la pantalla. */
-    left: auto;
-    right: -1rem;
-    grid-template-columns: repeat(4, minmax(12rem, auto));
-    gap: 0 0.5rem;
-    padding: 0.75rem 0.5rem;
+    position: fixed;
+    top: var(--cabecera-alto);
+    left: 0;
+    right: 0;
+    max-height: calc(100vh - var(--cabecera-alto));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+    align-content: start;
+    gap: 1rem 0.5rem;
+    padding: 1rem max(var(--margen), calc((100vw - var(--ancho)) / 2 + var(--margen)));
+    border-left: 0;
+    border-right: 0;
+  }
+  .desplegable.con-grupos a {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
   }
   .multiple:hover .desplegable.con-grupos,
   .multiple:focus-within .desplegable.con-grupos {
@@ -280,20 +259,6 @@ const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, 
     color: var(--texto);
   }
 
-  /* Partes de la sección múltiple actual */
-  .partes {
-    background: var(--superficie);
-    border-bottom: 1px solid var(--borde);
-  }
-  /* Con muchas partes, los enlaces pasan a una segunda fila en lugar de partirse. */
-  .partes .cabecera-dentro {
-    height: auto;
-    min-height: 2.5rem;
-    flex-wrap: wrap;
-    gap: 0.35rem 1.6rem;
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
-  }
   .nav-movil {
     display: none;
   }
@@ -307,8 +272,7 @@ const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, 
       min-width: 0;
       font-size: 1.15rem;
     }
-    nav[aria-label='Secciones'],
-    .partes {
+    nav[aria-label='Secciones'] {
       display: none;
     }
     .nav-movil {
@@ -339,41 +303,5 @@ const grupoActual = gruposMultiple.find((g) => g.partes.some((p) => esActual(p, 
     .titulo-seccion {
       font-size: 1.05rem;
     }
-  }
-  .partes a {
-    white-space: nowrap;
-    font-family: var(--fuente);
-    font-size: 0.88rem;
-    font-weight: 700;
-    letter-spacing: 0;
-    color: var(--texto-suave);
-    text-decoration: none;
-  }
-  .partes a:hover,
-  .partes a[aria-current='page'] {
-    color: var(--acento);
-  }
-  .partes .partes-titulo {
-    color: var(--texto);
-  }
-  /* Grupos: solo el de la página actual muestra sus páginas. */
-  .partes-grupo {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem 1.1rem;
-  }
-  .partes-grupo.abierto {
-    padding: 0.1rem 0.75rem;
-    background: var(--superficie-2);
-    border-radius: var(--radio);
-  }
-  .partes .partes-grupo-nombre {
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .partes .abierto .partes-grupo-nombre {
-    color: var(--texto);
   }
 </style>
