@@ -289,7 +289,7 @@ Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, pági
 
 **Mano izquierda y técnica** (grupo nuevo)
 
-- [ ] **Chord melody:** melodía arriba y acorde debajo. Ejemplo: eliges nota de melodía y acorde, y busca formas que la tengan arriba.
+- [x] **Chord melody:** texto en `src/data/estudio/chord-melody.md` y buscador (`lib/chordmelody.ts`), primera página del grupo nuevo «Mano izquierda y técnica». Eliges el acorde (raíz y una de nueve calidades) y la nota de melodía (las del acorde y sus tensiones, o cualquier otra), y busca todas las formas con esa nota en la voz más aguda (1ª, 2ª o 3ª cuerda): debajo, la 3 y la 7 siempre, notas distintas, apertura de 4 trastes como mucho y una cuerda saltada como máximo; opción de tensiones debajo y de solo 3 notas. Dice si la melodía es nota del acorde, tensión o choca; cada forma suena al pulsarla (acorde y luego la melodía sola) y «Todas seguidas» las recorre. De paso, los títulos de la portada de Estudio se parten con guion si no caben («Rearmoniza-ción»).
 - [ ] **Comping:** combinar ritmos, voicings y registro como acompañante. Ejemplo: un backing con variaciones a partir de las páginas de Ritmo y Drop 2.
 - [ ] **Digitación y posiciones:** las 12 posiciones, el sistema de tres notas por cuerda y cómo cambiar de posición. Ejemplo: comparador de digitaciones de una escala.
 - [ ] **Técnica de púa:** alternada, sweep y economy picking. Ejemplo: patrones con metrónomo y subida progresiva de tempo.

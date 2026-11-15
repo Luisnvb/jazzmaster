@@ -55,6 +55,8 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Acordes', nombre: 'Drop 2', href: ruta('estudio/drop2'), lema: 'Cuatro notas en cuatro cuerdas: inversiones y encadenamientos' },
       { grupo: 'Acordes', nombre: 'Drop 3', href: ruta('estudio/drop3'), lema: 'Bajo separado y tres voces arriba, con una cuerda saltada' },
       { grupo: 'Acordes', nombre: 'Cuartas', href: ruta('estudio/cuartas'), lema: 'Acordes por cuartas al estilo McCoy Tyner sobre un vamp modal' },
+      // Mano izquierda y técnica
+      { grupo: 'Mano izquierda y técnica', nombre: 'Chord melody', href: ruta('estudio/chord-melody'), lema: 'Melodía arriba y acorde debajo: formas con la nota que quieras en la voz aguda' },
     ],
   },
 ];
