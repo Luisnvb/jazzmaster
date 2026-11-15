@@ -23,7 +23,7 @@ function aUrl(base, rutaRelativa) {
 }
 
 const codigoSW = (version, base, urls) => `// Generado al compilar por integraciones/service-worker.mjs. No editar.
-const CACHE = 'practica-${version}';
+const CACHE = 'trastero-251-${version}';
 const BASE = ${JSON.stringify(base)};
 const ARCHIVOS = ${JSON.stringify(urls)};
 
@@ -34,9 +34,10 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
+  // Borra las versiones anteriores, también las de cuando la web se llamaba practica-guitarra.
   e.waitUntil(
     caches.keys()
-      .then((claves) => Promise.all(claves.filter((k) => k.startsWith('practica-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then((claves) => Promise.all(claves.filter((k) => (k.startsWith('trastero-251-') || k.startsWith('practica-')) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
