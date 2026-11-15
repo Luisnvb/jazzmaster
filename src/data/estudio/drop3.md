@@ -20,19 +20,19 @@ Cada acorde tiene cuatro inversiones según la nota del bajo. Cmaj7 en 6-4-3-2 (
 
 | Inversión | Bajo | Trastes | Notas | Arriba |
 |---|---|---|---|---|
-| 2ª inversión | 5 | 3 x 2 4 1 x | G E B C | 1 |
-| 3ª inversión | 7 | 7 x 5 5 5 x | B G C E | 3 |
-| Fundamental | 1 | 8 x 9 9 8 x | C B E G | 5 |
-| 1ª inversión | 3 | 12 x 10 12 12 x | E C G B | 7 |
+| 2ª inversión | 5 | `3 x 2 4 1 x` | G E B C | 1 |
+| 3ª inversión | 7 | `7 x 5 5 5 x` | B G C E | 3 |
+| Fundamental | 1 | `8 x 9 9 8 x` | C B E G | 5 |
+| 1ª inversión | 3 | `12 x 10 12 12 x` | E C G B | 7 |
 
 Cmaj7 en 5-3-2-1:
 
 | Inversión | Bajo | Trastes | Notas | Arriba |
 |---|---|---|---|---|
-| Fundamental | 1 | x 3 x 4 5 3 | C B E G | 5 |
-| 1ª inversión | 3 | x 7 x 5 8 7 | E C G B | 7 |
-| 2ª inversión | 5 | x 10 x 9 12 8 | G E B C | 1 |
-| 3ª inversión | 7 | x 14 x 12 13 12 | B G C E | 3 |
+| Fundamental | 1 | `x 3 x 4 5 3` | C B E G | 5 |
+| 1ª inversión | 3 | `x 7 x 5 8 7` | E C G B | 7 |
+| 2ª inversión | 5 | `x 10 x 9 12 8` | G E B C | 1 |
+| 3ª inversión | 7 | `x 14 x 12 13 12` | B G C E | 3 |
 
 - Las más usadas son las **fundamentales** (raíz en el bajo) en los dos grupos: con ellas se toca casi cualquier standard.
 - Como en drop 2, las formas valen para todas las cualidades cambiando una o dos notas: en C7 la B baja a Bb; en Cm7, además, la E baja a Eb.
@@ -44,7 +44,7 @@ Cmaj7 en 5-3-2-1:
 
 | | Dm7 | G7 | Cmaj7 |
 |---|---|---|---|
-| Trastes | x 5 x 5 6 5 | 3 x 3 4 3 x | x 3 x 4 5 3 |
+| Trastes | `x 5 x 5 6 5` | `3 x 3 4 3 x` | `x 3 x 4 5 3` |
 | Notas | D C F A | G F B D | C B E G |
 
 El bajo hace D → G → C y, por dentro, las notas guía hacen lo de siempre: C (7 de Dm7) baja a B (3 de G7) y F (3 de Dm7) se queda como 7 de G7; luego B se queda como 7 de Cmaj7 y F baja a E. Es el mismo movimiento que los [shell voicings](../shells/) con una nota más arriba.

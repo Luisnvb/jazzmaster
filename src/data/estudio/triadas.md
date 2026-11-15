@@ -20,8 +20,8 @@ Do mayor en las cuerdas agudas (trastes de la 6ª a la 1ª; x = no suena):
 
 | Cuerdas | Fundamental (C E G) | 1ª inversión (E G C) | 2ª inversión (G C E) |
 |---|---|---|---|
-| 3-2-1 | x x x 5 5 3 | x x x 9 8 8 | x x x 12 13 12 |
-| 4-3-2 | x x 10 9 8 x | x x 14 12 13 x | x x 5 5 5 x |
+| 3-2-1 | `x x x 5 5 3` | `x x x 9 8 8` | `x x x 12 13 12` |
+| 4-3-2 | `x x 10 9 8 x` | `x x 14 12 13 x` | `x x 5 5 5 x` |
 
 - **En vertical**, sin mover la mano, en una zona de cinco trastes hay una inversión en cada grupo de cuerdas.
 - **En horizontal**, en un grupo de cuerdas, las tres inversiones suben por el mástil y vuelven a empezar a la octava. La nota de arriba recorre la tríada: 5, 1, 3, 5…
@@ -40,8 +40,8 @@ Do mayor abierto:
 
 | Cuerdas | Fundamental (C G E) | 1ª inversión (E C G) | 2ª inversión (G E C) |
 |---|---|---|---|
-| 4-2-1 | x x 10 x 8 12 | x x 2 x 1 3 | x x 5 x 5 8 |
-| 6-4-3 | 8 x 5 9 x x | 12 x 10 12 x x | 3 x 2 5 x x |
+| 4-2-1 | `x x 10 x 8 12` | `x x 2 x 1 3` | `x x 5 x 5 8` |
+| 6-4-3 | `8 x 5 9 x x` | `12 x 10 12 x x` | `3 x 2 5 x x` |
 
 Es la misma idea que los [drop 2](../drop2/) y [drop 3](../drop3/) de cuatro notas: separar las voces moviendo una de ellas una octava.
 

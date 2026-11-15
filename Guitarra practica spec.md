@@ -262,13 +262,13 @@ Se hacen en este orden. Marcar `[x]` al terminar.
 
 Revisión a 390 px de ancho (marco en Chrome, no en un teléfono real). Ya revisadas y arregladas: portada, Repertorio (lista y las 14 fichas, con y sin diagramas, reproducción y panel de edición), Acordes, Patrones, Intervalos y su entrenador, Progresiones, y en Estudio: Escalas, Arpegios, Pares de tríadas, Disminuida y tonos enteros y Oído armónico. Quedan:
 
-- [ ] **Escalas (diccionario, `/escalas/`):** la sección principal; no se ha revisado (sí Estudio › Escalas).
-- [ ] **Estudio, páginas sin revisar:** Rutina de práctica, Ritmo, Armonía funcional, Rearmonización, Blues, Tensiones y avoid notes, Notas guía, Aproximaciones cromáticas, Modos, Ciclos de Goodrick, Tríadas, Shell voicings, Drop 2 y Drop 3. Mirar sobre todo tablas anchas, diagramas y barras de opciones.
-- [ ] **Repertorio · canción nueva e importar** (`/repertorio/local/`, «+ Canción nueva», «Importar .cmb.json»): no se han probado en el móvil.
-- [ ] **Diálogos sin probar:** «+ Nuevo voicing», «Importar» y «Exportar YAML» en Acordes; «+ Nueva progresión» en Progresiones (solo se probó «Editar»).
-- [ ] **Escritorio tras los cambios globales:** comprobar en el monitor de 27" que siguen bien los diagramas de acorde (más margen a la izquierda del número de traste, `lib/diagrama.ts`), la cabecera (`layouts/Base.astro`) y los botones de audio (más estrechos solo por debajo de 40rem, `global.css`).
+- [x] **Escalas (diccionario, `/escalas/`):** revisada (2026-11-15), también con tónica F# y las escalas de 8 notas; sin cambios.
+- [x] **Estudio, páginas sin revisar:** revisadas las catorce (2026-11-15), con los casos extremos (Ritmo en semicorcheas y 4 compases; Armonía y Rearmonización con el Bird blues). Ninguna desborda la página; Blues y Tensiones ya tenían tablas deslizables. Arreglado: en Tríadas, Shell voicings, Drop 2 y Drop 3 los trastes y las notas de las tablas se partían en varias líneas; ahora los trastes van como código (`` `x x 10 9 8 x` ``) y las tablas que los llevan no parten celdas (`.texto-estudio table:has(td code)`, se deslizan en horizontal).
+- [x] **Repertorio · canción nueva e importar:** probadas en el móvil (2026-11-15): canción nueva, formulario, «Crear cifrado», panel de edición e importación de un .cmb.json; sin cambios.
+- [x] **Diálogos sin probar:** probados en el móvil (2026-11-15): «+ Nuevo voicing» y «+ Nueva progresión» caben enteros, con los botones al alcance; exportar e importar el YAML de Acordes funciona (son descarga y selector de archivos nativos, sin diálogo propio).
+- [x] **Escritorio tras los cambios globales:** revisado a 2560 px (marco escalado, 2026-11-15): diagramas, cabecera y botones de audio bien. Arreglado: en las fichas con letra, la sección de improvisación se alinea con el cifrado en lugar de centrarse.
 - [ ] **Teléfono real:** repasar al menos portada, Repertorio y un entrenador en un móvil de verdad (sonido, pantalla encendida mientras suena, desplegables nativos).
-- [ ] **Decisiones abiertas:** limitar la altura del panel de edición de Repertorio al 65 % de la pantalla (ahora 80 %), para ver más cifrado en pantallas bajas; en ese panel, el desplegable de calidad muestra «Semidisminui…» en el móvil.
+- [x] **Decisiones abiertas** (2026-11-15): el panel de edición de Repertorio mide como mucho el 65 % de la pantalla en el móvil y en pantallas de menos de 50rem de alto (80 % en el resto); la raíz ocupa un ancho fijo pequeño y la calidad el resto, así que «Semidisminuido» se lee entero.
 
 ## 11. Fuera de alcance
 - Visualizador de escalas en el mástil.

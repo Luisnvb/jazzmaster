@@ -20,19 +20,19 @@ Cmaj7 en cuerdas 4-3-2-1 (trastes de la 4ª a la 1ª):
 
 | Inversión | Bajo | Trastes | Notas | Arriba |
 |---|---|---|---|---|
-| 1ª inversión | 3 | 2 4 1 3 | E B C G | 5 |
-| 2ª inversión | 5 | 5 5 5 7 | G C E B | 7 |
-| 3ª inversión | 7 | 9 9 8 8 | B E G C | 1 |
-| Fundamental | 1 | 10 12 12 12 | C G B E | 3 |
+| 1ª inversión | 3 | `2 4 1 3` | E B C G | 5 |
+| 2ª inversión | 5 | `5 5 5 7` | G C E B | 7 |
+| 3ª inversión | 7 | `9 9 8 8` | B E G C | 1 |
+| Fundamental | 1 | `10 12 12 12` | C G B E | 3 |
 
 Cmaj7 en cuerdas 5-4-3-2 (trastes de la 5ª a la 2ª):
 
 | Inversión | Bajo | Trastes | Notas | Arriba |
 |---|---|---|---|---|
-| Fundamental | 1 | 3 5 4 5 | C G B E | 3 |
-| 1ª inversión | 3 | 7 9 5 8 | E B C G | 5 |
-| 2ª inversión | 5 | 10 10 9 12 | G C E B | 7 |
-| 3ª inversión | 7 | 14 14 12 13 | B E G C | 1 |
+| Fundamental | 1 | `3 5 4 5` | C G B E | 3 |
+| 1ª inversión | 3 | `7 9 5 8` | E B C G | 5 |
+| 2ª inversión | 5 | `10 10 9 12` | G C E B | 7 |
+| 3ª inversión | 7 | `14 14 12 13` | B E G C | 1 |
 
 Dos cosas a notar:
 
@@ -45,7 +45,7 @@ En una progresión no hace falta saltar por el mástil: en cada cambio se elige 
 
 | | Dm7 | G7 | Cmaj7 |
 |---|---|---|---|
-| Trastes (4ª→1ª) | 7 7 6 8 | 5 7 6 7 | 5 5 5 7 |
+| Trastes (4ª→1ª) | `7 7 6 8` | `5 7 6 7` | `5 5 5 7` |
 | Notas | A D F C | G D F B | G C E B |
 
 La voz aguda hace C → B → B (la 7 de Dm7 baja a la 3 de G7, que se queda como 7 de Cmaj7) y la mano se queda entre los trastes 5 y 8. El ejemplo de arriba hace esto con cualquier progresión y en cualquier grupo de cuerdas.

@@ -395,6 +395,19 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
   .panel .fila > label {
     flex: 1 1 7rem;
   }
+  /* La raíz cabe en poco («F#»); la calidad necesita sitio para «Semidisminuido». */
+  .panel .fila > label:has([data-campo='raiz']) {
+    flex: 0 1 5.5rem;
+  }
+  .panel .fila > label:has([data-campo='tipo']) {
+    flex: 1 1 11rem;
+  }
+  /* En el móvil y en pantallas bajas, el panel deja ver más cifrado por encima. */
+  @media (max-width: 40rem), (max-height: 50rem) {
+    .panel {
+      max-height: 65dvh;
+    }
+  }
   .panel .paso {
     display: flex;
     align-items: center;
@@ -501,6 +514,10 @@ const datos = JSON.stringify({ cancion, grupos, voicings }).replace(/</g, '\\u00
     margin: 3rem auto 0;
     padding-top: 1rem;
     border-top: 1px solid var(--borde);
+  }
+  /* Con letra, el cifrado ocupa todo el ancho: la sección se alinea con él en vez de centrarse. */
+  .ficha-cuerpo:not(.sin-letra) ~ .impro {
+    max-width: none;
   }
   .impro h3 {
     margin: 2rem 0 0.75rem;

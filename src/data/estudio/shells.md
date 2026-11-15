@@ -10,10 +10,10 @@ Con la raíz en la 6ª o en la 5ª cuerda, y la 3 o la 7 justo encima del bajo:
 
 | Raíz en | Orden | Cuerdas | Cmaj7 | C7 | Cm7 |
 |---|---|---|---|---|---|
-| 6ª | 1 · 7 · 3 | 6-4-3 | 8 x 9 9 x x | 8 x 8 9 x x | 8 x 8 8 x x |
-| 6ª | 1 · 3 · 7 | 6-5-4 | 8 7 9 x x x | 8 7 8 x x x | 8 6 8 x x x |
-| 5ª | 1 · 3 · 7 | 5-4-3 | x 3 2 4 x x | x 3 2 3 x x | x 3 1 3 x x |
-| 5ª | 1 · 7 · 3 | 5-3-2 | x 3 x 4 5 x | x 3 x 3 5 x | x 3 x 3 4 x |
+| 6ª | 1 · 7 · 3 | 6-4-3 | `8 x 9 9 x x` | `8 x 8 9 x x` | `8 x 8 8 x x` |
+| 6ª | 1 · 3 · 7 | 6-5-4 | `8 7 9 x x x` | `8 7 8 x x x` | `8 6 8 x x x` |
+| 5ª | 1 · 3 · 7 | 5-4-3 | `x 3 2 4 x x` | `x 3 2 3 x x` | `x 3 1 3 x x` |
+| 5ª | 1 · 7 · 3 | 5-3-2 | `x 3 x 4 5 x` | `x 3 x 3 5 x` | `x 3 x 3 4 x` |
 
 (Trastes de la 6ª a la 1ª cuerda; x = no suena.)
 
