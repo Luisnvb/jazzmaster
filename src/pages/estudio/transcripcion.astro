@@ -1,0 +1,17 @@
+---
+// Transcripción (sección Estudio). Solo texto: está en src/data/estudio/transcripcion.md.
+import Base from '../../layouts/Base.astro';
+import { Content, getHeadings } from '../../data/estudio/transcripcion.md';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Transcripción">
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>

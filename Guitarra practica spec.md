@@ -296,7 +296,7 @@ Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, pági
 
 **Oído y lectura** (grupo nuevo)
 
-- [ ] **Transcripción:** método para sacar solos y acompañamientos de grabaciones. Solo texto, sin herramienta.
+- [x] **Transcripción:** texto en `src/data/estudio/transcripcion.md` (página solo de texto), primera del grupo nuevo «Oído y lectura»: qué transcribir, herramientas (bajar la velocidad, bucles, octava, ecualizar, afinar al disco), el método paso a paso (escuchar, cantar, frase a frase, intervalos, ritmo aparte, tocar con el disco, digitación del original), las pistas que da la armonía, cómo sacar acompañamientos (bajo, forma, voz de arriba, cualidad, voicing, ritmo), qué hacer después, errores frecuentes y plan de práctica, con enlaces a las páginas de Estudio relacionadas.
 - [ ] **Lectura a primera vista:** notas en el mástil desde el pentagrama. Ejemplo: leer una nota y tocarla.
 
 **Repertorio y forma** (grupo nuevo)

@@ -60,6 +60,8 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Mano izquierda y técnica', nombre: 'Comping', href: ruta('estudio/comping'), lema: 'Acompañar: ritmo, voicing y registro, fijos o variando por compases' },
       { grupo: 'Mano izquierda y técnica', nombre: 'Digitación y posiciones', href: ruta('estudio/digitacion'), lema: 'Las 12 posiciones, tres notas por cuerda y cómo cambiar de sitio la mano' },
       { grupo: 'Mano izquierda y técnica', nombre: 'Técnica de púa', href: ruta('estudio/pua'), lema: 'Alternada, economy y sweep, con metrónomo y subida progresiva de tempo' },
+      // Oído y lectura
+      { grupo: 'Oído y lectura', nombre: 'Transcripción', href: ruta('estudio/transcripcion'), lema: 'Sacar solos y acompañamientos de las grabaciones, paso a paso' },
     ],
   },
 ];
