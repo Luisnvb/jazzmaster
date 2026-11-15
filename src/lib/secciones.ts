@@ -58,6 +58,7 @@ export const SECCIONES: Seccion[] = [
       // Mano izquierda y técnica
       { grupo: 'Mano izquierda y técnica', nombre: 'Chord melody', href: ruta('estudio/chord-melody'), lema: 'Melodía arriba y acorde debajo: formas con la nota que quieras en la voz aguda' },
       { grupo: 'Mano izquierda y técnica', nombre: 'Comping', href: ruta('estudio/comping'), lema: 'Acompañar: ritmo, voicing y registro, fijos o variando por compases' },
+      { grupo: 'Mano izquierda y técnica', nombre: 'Digitación y posiciones', href: ruta('estudio/digitacion'), lema: 'Las 12 posiciones, tres notas por cuerda y cómo cambiar de sitio la mano' },
     ],
   },
 ];

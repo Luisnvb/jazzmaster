@@ -22,6 +22,12 @@ export interface NotaMastil {
   nota: string;
   /** En una escala: si la nota es también del acorde (se dibuja destacada). */
   delAcorde?: boolean;
+  /** Texto en el círculo en lugar del grado (p. ej. el dedo). */
+  rotulo?: string;
+  /** Si se dibuja atenuada; sin definir, lo decide la zona. */
+  atenuada?: boolean;
+  /** Clase CSS extra. */
+  clase?: string;
 }
 
 /**
@@ -61,7 +67,8 @@ export type Zona =
   | { tipo: 'todo' }
   | { tipo: 'posicion'; desde: number }
   | { tipo: 'cuerda'; cuerda: number }
-  | { tipo: 'dos-cuerdas'; cuerda: number };
+  | { tipo: 'dos-cuerdas'; cuerda: number }
+  | { tipo: 'trastes'; desde: number; hasta: number };
 
 /** Si una nota cae en la zona. Una posición son 5 trastes (desde … desde + 4; en el 1, también las cuerdas al aire). */
 export function enZona(n: NotaMastil, z: Zona): boolean {
@@ -74,6 +81,8 @@ export function enZona(n: NotaMastil, z: Zona): boolean {
       return n.cuerda === z.cuerda;
     case 'dos-cuerdas':
       return n.cuerda === z.cuerda || n.cuerda === z.cuerda + 1;
+    case 'trastes':
+      return n.traste >= z.desde && n.traste <= z.hasta;
   }
 }
 
@@ -149,14 +158,15 @@ const MARCAS = [3, 5, 7, 9, 15];
  * Con una zona de posición, `ecos` son otras posiciones (traste inicial) que se
  * dibujan solo con el contorno: dónde se repite el mismo dibujo en una escala simétrica.
  */
-export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'todo' }, ecos: readonly number[] = []): string {
-  const ancho = MARGEN_IZQ + ANCHO_TRASTE * (TRASTES + 0.5);
+export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'todo' }, ecos: readonly number[] = [], trastes = TRASTES): string {
+  const TRASTES_SVG = trastes;
+  const ancho = MARGEN_IZQ + ANCHO_TRASTE * (TRASTES_SVG + 0.5);
   const alto = MARGEN_SUP + SEP_CUERDA * 5 + MARGEN_INF;
   const yCuerda = (c: number) => MARGEN_SUP + SEP_CUERDA * (5 - c);
   const xTraste = (t: number) => MARGEN_IZQ + ANCHO_TRASTE * t; // línea del traste t
   const xNota = (t: number) => (t === 0 ? MARGEN_IZQ - 16 : xTraste(t) - ANCHO_TRASTE / 2);
   const partes: string[] = [];
-  const ecosValidos = ecos.filter((d) => d >= 1 && d + 4 <= TRASTES);
+  const ecosValidos = ecos.filter((d) => d >= 1 && d + 4 <= TRASTES_SVG);
 
   // Zona resaltada.
   if (zona.tipo === 'posicion') {
@@ -166,33 +176,38 @@ export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'to
       const xe = d === 1 ? MARGEN_IZQ - 30 : xTraste(d - 1);
       partes.push(`<rect class="eco" x="${xe}" y="${MARGEN_SUP - 14}" width="${xTraste(d + 4) - xe}" height="${SEP_CUERDA * 5 + 28}" rx="6"/>`);
     }
+  } else if (zona.tipo === 'trastes') {
+    const x0 = zona.desde <= 1 ? MARGEN_IZQ - 30 : xTraste(zona.desde - 1);
+    partes.push(`<rect class="zona" x="${x0}" y="${MARGEN_SUP - 12}" width="${xTraste(zona.hasta) - x0}" height="${SEP_CUERDA * 5 + 24}" rx="6"/>`);
   } else if (zona.tipo === 'cuerda' || zona.tipo === 'dos-cuerdas') {
     const arriba = zona.tipo === 'cuerda' ? zona.cuerda : zona.cuerda + 1;
     const y0 = yCuerda(arriba) - 12;
     const y1 = yCuerda(zona.cuerda) + 12;
-    partes.push(`<rect class="zona" x="${MARGEN_IZQ - 30}" y="${y0}" width="${xTraste(TRASTES) - MARGEN_IZQ + 30}" height="${y1 - y0}" rx="6"/>`);
+    partes.push(`<rect class="zona" x="${MARGEN_IZQ - 30}" y="${y0}" width="${xTraste(TRASTES_SVG) - MARGEN_IZQ + 30}" height="${y1 - y0}" rx="6"/>`);
   }
   // Marcas de traste, trastes, cejuela y cuerdas.
-  for (const m of MARCAS) partes.push(`<circle class="marca" cx="${xTraste(m) - ANCHO_TRASTE / 2}" cy="${alto - 10}" r="3.5"/>`);
+  for (const m of MARCAS.filter((x) => x <= TRASTES_SVG)) partes.push(`<circle class="marca" cx="${xTraste(m) - ANCHO_TRASTE / 2}" cy="${alto - 10}" r="3.5"/>`);
   partes.push(
     `<circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 - 6}" cy="${alto - 10}" r="3.5"/><circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 + 6}" cy="${alto - 10}" r="3.5"/>`,
   );
-  for (let t = 1; t <= TRASTES; t++) {
+  for (let t = 1; t <= TRASTES_SVG; t++) {
     partes.push(`<line class="traste" x1="${xTraste(t)}" y1="${yCuerda(5)}" x2="${xTraste(t)}" y2="${yCuerda(0)}"/>`);
   }
   partes.push(`<rect class="cejuela" x="${MARGEN_IZQ - 3}" y="${yCuerda(5) - 1}" width="5" height="${SEP_CUERDA * 5 + 2}"/>`);
-  for (let c = 0; c < 6; c++) partes.push(`<line class="cuerda" x1="${MARGEN_IZQ}" y1="${yCuerda(c)}" x2="${xTraste(TRASTES)}" y2="${yCuerda(c)}"/>`);
+  for (let c = 0; c < 6; c++) partes.push(`<line class="cuerda" x1="${MARGEN_IZQ}" y1="${yCuerda(c)}" x2="${xTraste(TRASTES_SVG)}" y2="${yCuerda(c)}"/>`);
   // Notas.
   for (const n of notas) {
     const enEco = zona.tipo === 'posicion' && ecosValidos.some((d) => enZona(n, { tipo: 'posicion', desde: d }));
-    const fuera = enZona(n, zona) ? '' : enEco ? ' en-eco' : ' fuera';
+    const fuera = n.atenuada === false ? '' : n.atenuada || !enZona(n, zona) ? (enEco ? ' en-eco' : ' fuera') : '';
+    const extra = n.clase ? ` ${n.clase}` : '';
+    const rotulo = n.rotulo ?? n.grado;
     const raiz = n.grado === '1' ? ' raiz' : '';
     const deEscala = n.delAcorde === false ? ' de-escala' : '';
     const x = xNota(n.traste);
     const y = yCuerda(n.cuerda);
     partes.push(
-      `<g class="nota${raiz}${deEscala}${fuera}" data-midi="${n.midi}" data-cuerda="${n.cuerda}"><circle cx="${x}" cy="${y}" r="${RADIO}"/>` +
-        `<text class="grado${n.grado.length > 2 ? ' largo' : ''}" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${n.grado}</text></g>`,
+      `<g class="nota${raiz}${deEscala}${fuera}${extra}" data-midi="${n.midi}" data-cuerda="${n.cuerda}"><circle cx="${x}" cy="${y}" r="${RADIO}"/>` +
+        `<text class="grado${rotulo.length > 2 ? ' largo' : ''}" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${rotulo}</text></g>`,
     );
   }
   return `<svg class="mastil" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="Mástil con las notas del arpegio" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
