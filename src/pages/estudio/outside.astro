@@ -1,0 +1,317 @@
+---
+// Fuera y dentro (sección Estudio). El texto está en src/data/estudio/outside.md;
+// aquí va la comparación de una frase dentro y con salida (lib/outside.ts).
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/outside.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { ACORDES_OUT, CELULAS, TECNICAS } from '../../lib/outside.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Fuera y dentro">
+  <SelectorTonica clave="outside">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="outside" inicial={110} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label="Ejemplo">
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label="Acorde del vamp">
+        <span class="etiqueta">Vamp</span>
+        {ACORDES_OUT.map((a) => <button type="button" class="boton" data-acorde={a.id} aria-pressed="false" title={a.nombre}><span data-tonica-texto>C</span>{a.simbolo}</button>)}
+      </div>
+      <label class="campo">Frase
+        <select data-celula>{CELULAS.map((c) => <option value={c.id}>{c.nombre}</option>)}</select>
+      </label>
+      <label class="casilla"><input type="checkbox" data-swing /> Swing</label>
+      <label class="casilla"><input type="checkbox" data-con-acorde /> Con acorde de fondo</label>
+    </div>
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label="Técnica para salir">
+        <span class="etiqueta">Salir</span>
+        {TECNICAS.map((t) => <button type="button" class="boton" data-tecnica={t.id} aria-pressed="false">{t.nombre}</button>)}
+      </div>
+    </div>
+    <p class="descripcion" data-descripcion></p>
+
+    <div class="frase" data-frase="0">
+      <div class="cabeza-frase"><h3>Todo dentro</h3><button type="button" class="boton" data-audio="original" aria-pressed="false">▶ Tocar</button></div>
+      <ol class="compases" data-compases></ol>
+    </div>
+    <div class="frase" data-frase="1">
+      <div class="cabeza-frase"><h3>Con salida en el compás 2</h3><button type="button" class="boton" data-audio="salida" aria-pressed="false">▶ Tocar</button></div>
+      <ol class="compases" data-compases></ol>
+    </div>
+    <p class="suave leyenda"><span class="muestra">dentro</span> <span class="muestra fuera">fuera de la escala</span>. Encima de cada compás, la tonalidad en la que se piensa. El acorde de fondo no cambia.</p>
+    <div class="botones-audio">
+      <button type="button" data-audio="ambas" aria-pressed="false">▶ Las dos seguidas</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title="La frase con salida, sin parar hasta pulsar Detener">∞ Bucle (con salida)</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { ACORDES_OUT, CELULAS, TECNICAS, frasesOutside, secuenciaOutside, type CompasOut } from '../../lib/outside.ts';
+
+  interface Opciones {
+    acorde: string;
+    celula: string;
+    tecnica: string;
+    swing: boolean;
+    fondo: boolean;
+  }
+  const CLAVE = 'outside:opciones';
+  const op: Opciones = { acorde: 'm7', celula: 'pentatonica', tecnica: 'arriba', swing: true, fondo: true, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  if (!ACORDES_OUT.some((a) => a.id === op.acorde)) op.acorde = 'm7';
+  if (!CELULAS.some((c) => c.id === op.celula)) op.celula = 'pentatonica';
+  if (!TECNICAS.some((t) => t.id === op.tecnica)) op.tecnica = 'arriba';
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('outside:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selCelula = $<HTMLSelectElement>('[data-celula]');
+  const casillaSwing = $<HTMLInputElement>('[data-swing]');
+  const casillaFondo = $<HTMLInputElement>('[data-con-acorde]');
+  const descripcion = $('[data-descripcion]');
+  const filas = [...document.querySelectorAll<HTMLElement>('[data-frase]')];
+  selCelula.value = op.celula;
+  casillaSwing.checked = op.swing;
+  casillaFondo.checked = op.fondo;
+
+  const acorde = () => ACORDES_OUT.find((a) => a.id === op.acorde)!;
+  const tecnica = () => TECNICAS.find((t) => t.id === op.tecnica)!;
+  const frases = () => frasesOutside(tonica, acorde(), op.celula, tecnica());
+
+  const htmlCompases = (compases: CompasOut[]) =>
+    compases
+      .map(
+        (c, i) => `<li class="compas-out ${c.fuera ? 'fuera' : ''}" data-compas="${i}">
+          <span class="piensa">${i + 1} · ${c.fuera ? 'fuera: ' : ''}${esc(c.piensa)}</span>
+          <span class="notas-out">${c.notas
+            .map((n, k) => `<span class="nota-out ${n.dentro ? '' : 'fuera'} ${n.dur > 1 ? 'larga' : ''}" data-k="${k}">${esc(n.nota)}</span>`)
+            .join('')}</span>
+        </li>`,
+      )
+      .join('');
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-acorde]')) b.setAttribute('aria-pressed', String(b.dataset.acorde === op.acorde));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tecnica]')) b.setAttribute('aria-pressed', String(b.dataset.tecnica === op.tecnica));
+    descripcion.innerHTML = `<strong>${esc(tecnica().nombre)}:</strong> ${esc(tecnica().descripcion)}`;
+    const { original, salida } = frases();
+    filas[0].querySelector('[data-compases]')!.innerHTML = htmlCompases(original);
+    filas[1].querySelector('[data-compases]')!.innerHTML = htmlCompases(salida);
+    guardarJSON(CLAVE, op);
+  }
+
+  selCelula.addEventListener('change', () => ((op.celula = selCelula.value), pintar()));
+  casillaSwing.addEventListener('change', () => ((op.swing = casillaSwing.checked), guardarJSON(CLAVE, op)));
+  casillaFondo.addEventListener('change', () => ((op.fondo = casillaFondo.checked), guardarJSON(CLAVE, op)));
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+    const ba = el.closest<HTMLButtonElement>('button[data-acorde]');
+    if (ba) return ((op.acorde = ba.dataset.acorde!), pintar());
+    const bt = el.closest<HTMLButtonElement>('button[data-tecnica]');
+    if (bt) return ((op.tecnica = bt.dataset.tecnica!), pintar());
+  });
+
+  conectarAudio((boton) => {
+    const { original, salida } = frases();
+    const modo = boton.dataset.audio!;
+    // Qué filas suenan, en orden: 0 = todo dentro, 1 = con salida.
+    const orden = modo === 'original' ? [0] : modo === 'ambas' ? [0, 1] : [1];
+    const { eventos, tiempos, duracion } = secuenciaOutside(
+      orden.map((f) => (f === 0 ? original : salida)),
+      tonica,
+      acorde(),
+      tempo(),
+      { swing: op.swing ? 0.62 : 0.5, fondo: op.fondo, sostenido: SOSTENIDOS.includes(instrumento()) },
+    );
+    let marcadas: Element[] = [];
+    const marcar = (t: number | null) => {
+      const x = t === null ? undefined : tiempos.find((y) => t >= y.inicio && t < y.fin);
+      for (const el of marcadas) el.classList.remove('sonando-ahora');
+      marcadas = [];
+      if (!x) return;
+      const fila = filas[orden[x.frase]];
+      const compas = fila.querySelector(`[data-compas="${x.compas}"]`);
+      const nota = compas?.querySelector(`[data-k="${x.k}"]`);
+      marcadas = [fila, compas, nota].filter((y): y is Element => !!y);
+      for (const el of marcadas) el.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => modo === 'bucle',
+      alProgresar: (t) => marcar(t),
+      alTerminar: () => marcar(null),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    for (const el of document.querySelectorAll('[data-tonica-texto]')) el.textContent = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .descripcion {
+    margin: 0 0 0.9rem;
+    max-width: 52rem;
+  }
+  .frase {
+    margin-bottom: 0.75rem;
+    padding: 0.6rem 0.75rem 0.75rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .frase:global(.sonando-ahora) {
+    border-color: var(--acento);
+    box-shadow: 0 0 0 1px var(--acento);
+  }
+  .cabeza-frase {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .cabeza-frase h3 {
+    margin: 0;
+    font-size: 1.02rem;
+  }
+  .compases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  @media (max-width: 64rem) {
+    .compases {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 40rem) {
+    .compases {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .compases :global(.compas-out) {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.4rem 0.45rem 0.5rem;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .compases :global(.compas-out.fuera) {
+    background: var(--acento-suave); /* COLOR: compás tocado fuera */
+    border-color: var(--acento);
+  }
+  .compases :global(.compas-out.sonando-ahora) {
+    box-shadow: 0 0 0 2px var(--acento);
+  }
+  .compases :global(.piensa) {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .compases :global(.notas-out) {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.15rem;
+  }
+  .compases :global(.nota-out),
+  .muestra {
+    padding: 0.15rem 0;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .muestra {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+  }
+  /* La nota larga del final ocupa las cuatro últimas corcheas. */
+  .compases :global(.nota-out.larga) {
+    grid-column: span 4;
+  }
+  .compases :global(.nota-out.fuera),
+  .muestra.fuera {
+    color: var(--sobre-acento);
+    background: var(--acento); /* COLOR: nota fuera de la escala */
+    border-color: var(--acento);
+  }
+  .compases :global(.nota-out.sonando-ahora) {
+    outline: 2px solid var(--texto);
+    outline-offset: 1px;
+  }
+  .leyenda {
+    margin: 0.2rem 0 0.6rem;
+    font-size: 0.85rem;
+    line-height: 1.9;
+  }
+</style>
