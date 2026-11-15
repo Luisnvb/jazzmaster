@@ -27,6 +27,7 @@ export const SECCIONES: Seccion[] = [
     partes: [
       // Rutina
       { grupo: 'Rutina', nombre: 'Rutina de práctica', href: ruta('estudio/rutina'), lema: 'Una nota y una cualidad; repertorio en una posición' },
+      { grupo: 'Rutina', nombre: 'Mástil por capas', href: ruta('estudio/capas'), lema: 'Raíz, tríadas, arpegio, pentatónica, escala y acorde en una zona CAGED' },
       { grupo: 'Rutina', nombre: 'Ritmo', href: ruta('estudio/ritmo'), lema: 'Pulso, subdivisiones, swing y patrones de acompañamiento' },
       // Armonía
       { grupo: 'Armonía', nombre: 'Armonía funcional', href: ruta('estudio/armonia'), lema: 'Tónica, subdominante y dominante; analizar progresiones' },
