@@ -1,0 +1,271 @@
+---
+// Acordes slash y estructuras superiores (sección Estudio). El texto está en
+// src/data/estudio/slash.md; aquí va el combinador tríada + bajo (lib/slash.ts).
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/slash.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { BASES, TRIADAS } from '../../lib/slash.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo="Acordes slash">
+  <SelectorTonica clave="slash" etiqueta="Bajo">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="slash" inicial={80} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label="Combinador">
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label="Debajo">
+        <span class="etiqueta">Debajo</span>
+        {BASES.map((b) => <button type="button" class="boton" data-base={b.id} aria-pressed="false" title={b.nombre}>{b.id === 'bajo' ? <>Solo <span data-tonica-texto>C</span></> : <><span data-tonica-texto>C</span>{b.sufijo}</>}</button>)}
+      </div>
+    </div>
+    <div class="opciones">
+      <label class="campo">Tríada sobre <select data-intervalo></select></label>
+      <div class="grupo-botones" role="group" aria-label="Tipo de tríada">
+        {TRIADAS.map((t) => <button type="button" class="boton" data-tipo={t.id} aria-pressed="false">{t.nombre}</button>)}
+      </div>
+    </div>
+
+    <div class="resultado" data-resultado></div>
+    <div class="botones-audio">
+      <button type="button" data-audio="base" aria-pressed="false">▶ Base sola</button>
+      <button type="button" data-audio="todo" aria-pressed="false">▶ Con la tríada</button>
+      <button type="button" data-audio="arpegio" aria-pressed="false">▶ Arpegiado</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+
+    <h3 class="titulo-utiles">Combinaciones útiles <span class="suave" data-utiles-sobre></span></h3>
+    <ul class="utiles" data-utiles></ul>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { BASES, INTERVALOS, TRIADAS, UTILES, combinar, raizTriada, secuenciaSlash, type Combinacion, type IdBase, type TipoTriada } from '../../lib/slash.ts';
+  import { formatNota } from '../../lib/teoria.ts';
+
+  interface Opciones {
+    base: IdBase;
+    intervalo: string;
+    tipo: TipoTriada;
+  }
+  const CLAVE = 'slash:opciones';
+  const op: Opciones = { base: 'bajo', intervalo: '2', tipo: 'mayor', ...leerJSON<Partial<Opciones>>(CLAVE) };
+  if (!BASES.some((b) => b.id === op.base)) op.base = 'bajo';
+  if (!INTERVALOS.includes(op.intervalo)) op.intervalo = '2';
+  if (!TRIADAS.some((t) => t.id === op.tipo)) op.tipo = 'mayor';
+  let bajo = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('slash:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selIntervalo = $<HTMLSelectElement>('[data-intervalo]');
+  const resultado = $('[data-resultado]');
+  const utiles = $('[data-utiles]');
+  const utilesSobre = $('[data-utiles-sobre]');
+
+  const combinacion = (): Combinacion => ({ bajo, ...op });
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-base]')) b.setAttribute('aria-pressed', String(b.dataset.base === op.base));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tipo]')) b.setAttribute('aria-pressed', String(b.dataset.tipo === op.tipo));
+    selIntervalo.innerHTML = INTERVALOS.map((i) => `<option value="${i}">${esc(formatNota(raizTriada(bajo, i)))} (${i})</option>`).join('');
+    selIntervalo.value = op.intervalo;
+    const r = combinar(combinacion());
+    const chips = r.analisis.grados
+      .map(({ grado }) => {
+        const deTriada = r.deTriada.includes(grado) && !(r.deBase.includes(grado) && op.base !== 'bajo');
+        return `<span class="grado-chip ${deTriada ? 'triada' : 'base'}">${esc(grado)}</span>`;
+      })
+      .join('');
+    resultado.innerHTML = `
+      <div class="escrito">${esc(r.escrito)}</div>
+      <div class="suena">${
+        r.inversion
+          ? `Es una <strong>inversión</strong>: el bajo es una nota de la tríada.`
+          : `Suena a <strong class="simbolo">${esc(r.analisis.simbolo)}</strong>${r.analisis.sinTercera ? ' <span class="suave">(sin 3ª)</span>' : ''}`
+      }</div>
+      <div class="detalle"><span class="suave">Tríada ${esc(r.triada)}:</span> ${esc(r.notasTriada.join(' '))}</div>
+      <div class="chips" aria-label="Grados sobre el bajo">${chips}</div>`;
+    const base = BASES.find((b) => b.id === op.base)!;
+    utilesSobre.textContent = op.base === 'bajo' ? `sobre ${bajo}` : `sobre ${bajo}${base.sufijo}`;
+    utiles.innerHTML = UTILES[op.base]
+      .map((u) => {
+        const x = combinar({ bajo, base: op.base, intervalo: u.intervalo, tipo: u.tipo });
+        const activa = u.intervalo === op.intervalo && u.tipo === op.tipo;
+        return `<li><button type="button" class="util" data-util-intervalo="${u.intervalo}" data-util-tipo="${u.tipo}" aria-pressed="${activa}">
+          <span><strong>${esc(x.escrito)}</strong> → <strong>${esc(x.analisis.simbolo)}</strong></span>
+          <span class="suave">${esc(u.sonido)}</span>
+        </button></li>`;
+      })
+      .join('');
+    guardarJSON(CLAVE, op);
+  }
+
+  selIntervalo.addEventListener('change', () => ((op.intervalo = selIntervalo.value), pintar()));
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+    const bb = el.closest<HTMLButtonElement>('button[data-base]');
+    if (bb) return ((op.base = bb.dataset.base as IdBase), pintar());
+    const bt = el.closest<HTMLButtonElement>('button[data-tipo]');
+    if (bt) return ((op.tipo = bt.dataset.tipo as TipoTriada), pintar());
+    const bu = el.closest<HTMLButtonElement>('button[data-util-intervalo]');
+    if (bu) {
+      op.intervalo = bu.dataset.utilIntervalo!;
+      op.tipo = bu.dataset.utilTipo as TipoTriada;
+      pintar();
+      $<HTMLButtonElement>('[data-audio="todo"]').click();
+    }
+  });
+
+  conectarAudio((boton) => {
+    const modo = boton.dataset.audio as 'base' | 'todo' | 'arpegio';
+    const { eventos, duracion } = secuenciaSlash(combinacion(), tempo(), modo, SOSTENIDOS.includes(instrumento()));
+    return { eventos, instrumento: instrumento(), duracion };
+  });
+
+  conectarTonica((t) => {
+    bajo = t;
+    for (const el of document.querySelectorAll('[data-tonica-texto]')) el.textContent = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .resultado {
+    display: grid;
+    gap: 0.4rem;
+    max-width: 40rem;
+    margin: 0 0 0.75rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-top: 0.3rem solid var(--acento);
+    border-radius: var(--radio);
+  }
+  .resultado :global(.escrito) {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .resultado :global(.suena) {
+    font-size: 1.1rem;
+  }
+  .resultado :global(.simbolo) {
+    font-size: 1.3rem;
+  }
+  .resultado :global(.chips) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.2rem;
+  }
+  .resultado :global(.grado-chip) {
+    min-width: 2.2rem;
+    padding: 0.1rem 0.45rem;
+    text-align: center;
+    font-weight: 700;
+    border-radius: var(--radio);
+  }
+  /* Grados que pone la tríada (relleno) y los del bajo o la base (borde). */
+  .resultado :global(.grado-chip.triada) {
+    color: var(--sobre-acento);
+    background: var(--acento); /* COLOR: grado aportado por la tríada */
+    border: 1px solid var(--acento);
+  }
+  .resultado :global(.grado-chip.base) {
+    background: var(--fondo);
+    border: 1px solid var(--texto-suave);
+  }
+  .titulo-utiles {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 1.05rem;
+  }
+  .utiles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 0.4rem;
+  }
+  .utiles :global(.util) {
+    display: grid;
+    gap: 0.2rem;
+    width: 100%;
+    height: 100%;
+    padding: 0.55rem 0.75rem;
+    text-align: left;
+    font: inherit;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    cursor: pointer;
+  }
+  .utiles :global(.util:hover),
+  .utiles :global(.util[aria-pressed='true']) {
+    border-color: var(--acento);
+  }
+  .utiles :global(.util[aria-pressed='true']) {
+    box-shadow: 0 0 0 1px var(--acento);
+    background: var(--acento-suave);
+  }
+  .utiles :global(.util .suave) {
+    font-size: 0.85rem;
+  }
+</style>

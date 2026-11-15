@@ -284,7 +284,7 @@ Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, pági
 **Armonía y acordes**
 
 - [x] **Cuartas (quartal voicings):** texto en `src/data/estudio/cuartas.md` y ejemplo (`lib/cuartas.ts`), en el grupo Acordes: sobre un vamp dórico (m7), mixolidio sus (7sus4) o lidio (maj7#11), los voicings por cuartas de la escala (3 o 4 notas, o la estructura So What: tres cuartas justas y una 3ª mayor) en el grupo de cuerdas elegido, en escalera por el mástil, con diagramas rotulados con el grado sobre el acorde y el tipo de cada intervalo; opción de solo cuartas justas. Audio con la raíz como pedal: la escalera o «Vecinos» (el elegido y el de encima, como el «amén» de So What); al pulsar un voicing, suena.
-- [ ] **Acordes slash y estructuras superiores:** tríadas sobre bajos que no son la raíz. Ejemplo: combinador tríada + bajo que da nombre y sonido.
+- [x] **Acordes slash y estructuras superiores:** texto en `src/data/estudio/slash.md` y combinador (`lib/slash.ts`), en el grupo Armonía: una tríada (raíz como intervalo sobre el bajo; mayor, menor, disminuida, aumentada o sus4) sobre el bajo solo o sobre un acorde base (7, maj7 o m7, con raíz, 3 y 7). Un nombrador de acordes (`nombrarAcorde`) da el cifrado que suena (D/C → C6/9(#11) sin 3ª; Ab sobre C7 → C7(#9,b13)) o avisa de que es una inversión; los grados sobre el bajo distinguen los que pone la tríada. Audio de la base sola, con la tríada y arpegiado, y una lista de combinaciones útiles para cada base que se cargan y suenan al pulsarlas.
 - [ ] **Coltrane changes:** Giant Steps y el ciclo de terceras mayores. Ejemplo: progresión con notas guía y shells.
 
 **Mano izquierda y técnica** (grupo nuevo)
