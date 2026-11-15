@@ -283,7 +283,7 @@ Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, pági
 
 **Armonía y acordes**
 
-- [ ] **Cuartas (quartal voicings):** acordes por cuartas al estilo McCoy Tyner y sus usos modales. Ejemplo: las formas en el mástil sobre un vamp.
+- [x] **Cuartas (quartal voicings):** texto en `src/data/estudio/cuartas.md` y ejemplo (`lib/cuartas.ts`), en el grupo Acordes: sobre un vamp dórico (m7), mixolidio sus (7sus4) o lidio (maj7#11), los voicings por cuartas de la escala (3 o 4 notas, o la estructura So What: tres cuartas justas y una 3ª mayor) en el grupo de cuerdas elegido, en escalera por el mástil, con diagramas rotulados con el grado sobre el acorde y el tipo de cada intervalo; opción de solo cuartas justas. Audio con la raíz como pedal: la escalera o «Vecinos» (el elegido y el de encima, como el «amén» de So What); al pulsar un voicing, suena.
 - [ ] **Acordes slash y estructuras superiores:** tríadas sobre bajos que no son la raíz. Ejemplo: combinador tríada + bajo que da nombre y sonido.
 - [ ] **Coltrane changes:** Giant Steps y el ciclo de terceras mayores. Ejemplo: progresión con notas guía y shells.
 
