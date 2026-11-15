@@ -57,6 +57,7 @@ export const SECCIONES: Seccion[] = [
       { grupo: 'Acordes', nombre: 'Cuartas', href: ruta('estudio/cuartas'), lema: 'Acordes por cuartas al estilo McCoy Tyner sobre un vamp modal' },
       // Mano izquierda y técnica
       { grupo: 'Mano izquierda y técnica', nombre: 'Chord melody', href: ruta('estudio/chord-melody'), lema: 'Melodía arriba y acorde debajo: formas con la nota que quieras en la voz aguda' },
+      { grupo: 'Mano izquierda y técnica', nombre: 'Comping', href: ruta('estudio/comping'), lema: 'Acompañar: ritmo, voicing y registro, fijos o variando por compases' },
     ],
   },
 ];
