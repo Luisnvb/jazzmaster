@@ -37,6 +37,7 @@ export const SECCIONES: Seccion[] = [
       // Improvisación
       { grupo: 'Improvisación', nombre: 'Notas guía', href: ruta('estudio/notas-guia'), lema: 'La 3 y la 7: dos líneas que dibujan la armonía' },
       { grupo: 'Improvisación', nombre: 'Aproximaciones cromáticas', href: ruta('estudio/aproximaciones'), lema: 'Llegar a las notas del acorde por medio tono y con encierros' },
+      { grupo: 'Improvisación', nombre: 'Lenguaje bebop', href: ruta('estudio/bebop'), lema: 'Escala bebop, encierros y frases tipo: notas del acorde en los tiempos' },
       { grupo: 'Improvisación', nombre: 'Escalas', href: ruta('estudio/escalas'), lema: 'Practicarlas en el mástil, con las notas del acorde marcadas' },
       { grupo: 'Improvisación', nombre: 'Modos', href: ruta('estudio/modos'), lema: 'Paralelos y relativos, con su nota característica' },
       { grupo: 'Improvisación', nombre: 'Arpegios', href: ruta('estudio/arpegios'), lema: 'Cada grado del acorde en todo el mástil' },

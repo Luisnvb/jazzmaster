@@ -270,6 +270,40 @@ Revisión a 390 px de ancho (marco en Chrome, no en un teléfono real). Ya revis
 - [x] **Teléfono real:** probado en un móvil de verdad (2026-11-15), todo bien.
 - [x] **Decisiones abiertas** (2026-11-15): el panel de edición de Repertorio mide como mucho el 65 % de la pantalla en el móvil y en pantallas de menos de 50rem de alto (80 % en el resto); la raíz ocupa un ancho fijo pequeño y la calidad el resto, así que «Semidisminuido» se lee entero.
 
+## 10 quinquies. Nuevos temas de Estudio (pendientes, 2026-11-15)
+
+Se hacen en este orden. Cada página: texto en `src/data/estudio/<id>.md`, página en `src/pages/estudio/`, lógica en `src/lib/` con sus tests y entrada en las `partes` de Estudio (`lib/secciones.ts`), en el grupo indicado (los dos últimos grupos son nuevos). Marcar `[x]` al terminar.
+
+**Improvisación**
+
+- [x] **Lenguaje bebop:** texto en `src/data/estudio/bebop.md` y generador de líneas (`lib/bebop.ts`) sobre cualquier progresión de la web: escalas bebop (dominante, mayor, menor, menor melódica, locria y disminuida, según el acorde), con cuatro recursos: escala bebop, frase tipo «de la 3 a la 9» (b9 en el dominante que resuelve), encierros encadenados y una mezcla de los tres. Las notas del acorde caen en los tiempos (en todos con la escala y la frase tipo; en el 1 y el 3 con los encierros), lo comprueban los tests. Corcheas con swing opcional, acorde de fondo, la nota que suena marcada y «↻ Otra línea».
+- [ ] **Motivos y desarrollo:** repetir, transponer, invertir y desplazar una idea corta. Ejemplo: editor de un motivo de 3–4 notas con sus transformaciones sonando.
+- [ ] **Pentatónicas en jazz:** qué pentatónica tocar sobre cada acorde para sacar tensiones. Ejemplo: tabla por acorde con el mapa del mástil.
+- [ ] **Fuera y dentro (outside):** desplazar una frase medio tono y volver. Ejemplo: frase original y desplazada, para comparar.
+
+**Armonía y acordes**
+
+- [ ] **Cuartas (quartal voicings):** acordes por cuartas al estilo McCoy Tyner y sus usos modales. Ejemplo: las formas en el mástil sobre un vamp.
+- [ ] **Acordes slash y estructuras superiores:** tríadas sobre bajos que no son la raíz. Ejemplo: combinador tríada + bajo que da nombre y sonido.
+- [ ] **Coltrane changes:** Giant Steps y el ciclo de terceras mayores. Ejemplo: progresión con notas guía y shells.
+
+**Mano izquierda y técnica** (grupo nuevo)
+
+- [ ] **Chord melody:** melodía arriba y acorde debajo. Ejemplo: eliges nota de melodía y acorde, y busca formas que la tengan arriba.
+- [ ] **Comping:** combinar ritmos, voicings y registro como acompañante. Ejemplo: un backing con variaciones a partir de las páginas de Ritmo y Drop 2.
+- [ ] **Digitación y posiciones:** las 12 posiciones, el sistema de tres notas por cuerda y cómo cambiar de posición. Ejemplo: comparador de digitaciones de una escala.
+- [ ] **Técnica de púa:** alternada, sweep y economy picking. Ejemplo: patrones con metrónomo y subida progresiva de tempo.
+
+**Oído y lectura** (grupo nuevo)
+
+- [ ] **Transcripción:** método para sacar solos y acompañamientos de grabaciones. Solo texto, sin herramienta.
+- [ ] **Lectura a primera vista:** notas en el mástil desde el pentagrama. Ejemplo: leer una nota y tocarla.
+
+**Repertorio y forma** (grupo nuevo)
+
+- [ ] **Formas de los standards:** AABA, ABAC, blues, rhythm changes. Ejemplo: cada forma con un tema del Repertorio.
+- [ ] **Aprender un standard:** melodía, forma, notas guía, shells e improvisación, en ese orden. Solo texto, sin herramienta: es la Rutina aplicada a una canción.
+
 ## 11. Fuera de alcance
 - Visualizador de escalas en el mástil.
 - Estado de aprendizaje o seguimiento del repertorio.

@@ -1,0 +1,331 @@
+---
+// Lenguaje bebop (sección Estudio). El texto está en src/data/estudio/bebop.md;
+// aquí va el generador de líneas (lib/bebop.ts) con las progresiones de la web.
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import { Content, getHeadings } from '../../data/estudio/bebop.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { RECURSOS } from '../../lib/bebop.ts';
+import { porOrden } from '../../lib/orden.ts';
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+const progresiones = porOrden(await getCollection('progresiones')).map(({ id, data }) => ({
+  id,
+  nombre: data.nombre,
+  pulsos: data.pulsos,
+  compases: data.compases,
+}));
+const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
+---
+
+<Base titulo="Lenguaje bebop">
+  <SelectorTonica clave="bebop">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="bebop" inicial={100} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label="Ejemplo">
+    <div class="opciones">
+      <label class="campo">Progresión
+        <select data-progresion></select>
+      </label>
+      <div class="grupo-botones" role="group" aria-label="Recurso">
+        <span class="etiqueta">Recurso</span>
+        {RECURSOS.map((r) => <button type="button" class="boton" data-recurso={r.id} aria-pressed="false">{r.nombre}</button>)}
+      </div>
+      <button type="button" class="boton" data-otra title="Genera otra línea con el mismo recurso">↻ Otra línea</button>
+      <label class="casilla"><input type="checkbox" data-swing /> Swing</label>
+      <label class="casilla"><input type="checkbox" data-con-acorde /> Con acorde de fondo</label>
+    </div>
+    <p class="descripcion" data-descripcion></p>
+    <ol class="bloques" data-bloques></ol>
+    <p class="suave leyenda">
+      <span class="muestra acorde">nota del acorde</span> <span class="muestra tension">tensión</span>
+      <span class="muestra escala">de la escala</span> <span class="muestra cromatica">cromática</span>. Encima de cada nota, el pulso
+      del compás («y» es el contratiempo): las notas del acorde caen en los números.
+    </p>
+    <div class="botones-audio">
+      <button type="button" data-audio="una" aria-pressed="false">▶ Tocar</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label="En esta página">
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+
+  <script type="application/json" id="datos-bebop" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { RECURSOS, lineaBebop, secuenciaBebop, type BloqueLinea, type Recurso } from '../../lib/bebop.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { analizarProgresion, aplicarCambiosProgresiones, type CambiosProgresiones, type Progresion } from '../../lib/progresiones.ts';
+
+  // Las progresiones de la sección Progresiones, con lo editado en este navegador.
+  const base: Progresion[] = JSON.parse(document.getElementById('datos-bebop')!.textContent!);
+  const progresiones = aplicarCambiosProgresiones(base, leerJSON<CambiosProgresiones>('progresiones:cambios') ?? {}).filter((p) => {
+    try {
+      analizarProgresion(p.compases);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
+  interface Opciones {
+    progresion: string;
+    recurso: Recurso;
+    semilla: number;
+    swing: boolean;
+    acorde: boolean;
+  }
+  const CLAVE = 'bebop:opciones';
+  const op: Opciones = { progresion: 'ii-v-i-mayor', recurso: 'arpegio', semilla: 1, swing: true, acorde: true, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  let tonica = 'C';
+  let bloques: BloqueLinea[] = [];
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('bebop:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selProgresion = $<HTMLSelectElement>('[data-progresion]');
+  const casillaSwing = $<HTMLInputElement>('[data-swing]');
+  const casillaAcorde = $<HTMLInputElement>('[data-con-acorde]');
+  const botonOtra = $<HTMLButtonElement>('[data-otra]');
+  const lista = $('[data-bloques]');
+  const descripcion = $('[data-descripcion]');
+  selProgresion.innerHTML = progresiones.map((p) => `<option value="${esc(p.id)}">${esc(p.nombre)}</option>`).join('');
+  if (!progresiones.some((p) => p.id === op.progresion)) op.progresion = progresiones[0]?.id ?? '';
+  if (!RECURSOS.some((r) => r.id === op.recurso)) op.recurso = 'arpegio';
+  selProgresion.value = op.progresion;
+  casillaSwing.checked = op.swing;
+  casillaAcorde.checked = op.acorde;
+
+  const progresion = () => progresiones.find((p) => p.id === op.progresion)!;
+  const pulsos = () => progresion().pulsos ?? 4;
+
+  /** Etiqueta del pulso de una corchea dentro del compás: 1, y, 2, y… */
+  const pulsoDe = (corchea: number) => {
+    const enCompas = corchea % (pulsos() * 2);
+    return enCompas % 2 ? 'y' : String(enCompas / 2 + 1);
+  };
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-recurso]')) b.setAttribute('aria-pressed', String(b.dataset.recurso === op.recurso));
+    const recurso = RECURSOS.find((r) => r.id === op.recurso)!;
+    descripcion.innerHTML = `<strong>${esc(recurso.nombre)}:</strong> ${esc(recurso.descripcion)}`;
+    const compases = analizarProgresion(progresion().compases);
+    bloques = lineaBebop(tonica, compases, pulsos(), op.recurso, op.semilla);
+    // «De la 3 a la 9» solo varía en los acordes repetidos; si no hay, no hay otra línea que generar.
+    const acordes = compases.flat();
+    botonOtra.disabled = op.recurso === 'arpegio' && !acordes.some((a, i) => i > 0 && acordes[i - 1].texto === a.texto);
+    lista.innerHTML = bloques
+      .map(
+        (b, i) => `<li class="bloque" data-bloque="${i}">
+          <div class="cabeza"><span class="simbolo">${esc(b.simbolo)}</span><span class="suave escala">${esc(b.escala.nombre)}</span></div>
+          <ol class="corcheas" style="--n: ${Math.min(8, b.notas.length)}">${b.notas
+            .map(
+              (n, k) => `<li class="corchea ${n.tipo}" data-pos="${k}">
+                <span class="pulso">${pulsoDe(b.inicio + k)}</span>
+                <span class="nota">${esc(n.nota)}</span>
+                <span class="grado">${n.grado ? esc(n.grado) : '·'}</span>
+              </li>`,
+            )
+            .join('')}</ol>
+        </li>`,
+      )
+      .join('');
+    guardarJSON(CLAVE, op);
+  }
+
+  selProgresion.addEventListener('change', () => ((op.progresion = selProgresion.value), pintar()));
+  casillaSwing.addEventListener('change', () => ((op.swing = casillaSwing.checked), guardarJSON(CLAVE, op)));
+  casillaAcorde.addEventListener('change', () => ((op.acorde = casillaAcorde.checked), guardarJSON(CLAVE, op)));
+  botonOtra.addEventListener('click', () => {
+    op.semilla = 1 + Math.floor(Math.random() * 1e6);
+    pintar();
+  });
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button[data-recurso]');
+    if (!b) return;
+    op.recurso = b.dataset.recurso as Recurso;
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const { eventos, notas, duracion } = secuenciaBebop(bloques, tonica, tempo(), {
+      swing: op.swing ? 0.62 : 0.5,
+      acorde: op.acorde,
+      sostenido: SOSTENIDOS.includes(instrumento()),
+    });
+    let marcada: HTMLElement | null = null;
+    const marcar = (el: HTMLElement | null) => {
+      if (el === marcada) return;
+      marcada?.classList.remove('sonando-ahora');
+      el?.classList.add('sonando-ahora');
+      marcada = el;
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => {
+        const n = notas.find((x) => t >= x.inicio && t < x.fin);
+        marcar(n ? lista.querySelector<HTMLElement>(`[data-bloque="${n.bloque}"] [data-pos="${n.pos}"]`) : null);
+      },
+      alTerminar: () => marcar(null),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .descripcion {
+    margin: 0 0 0.75rem;
+    max-width: 52rem;
+  }
+  .bloques {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 0.5rem;
+  }
+  .bloques :global(.bloque) {
+    padding: 0.6rem 0.75rem 0.7rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .bloques :global(.cabeza) {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+  }
+  .bloques :global(.simbolo) {
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .bloques :global(.escala) {
+    font-size: 0.78rem;
+  }
+  .bloques :global(.corcheas) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: 0.4rem 0.2rem;
+  }
+  .bloques :global(.corchea) {
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+  .bloques :global(.pulso) {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .bloques :global(.corchea .nota),
+  .muestra {
+    display: inline-block;
+    min-width: 2.1rem;
+    max-width: 100%;
+    padding: 0.2rem 0.15rem;
+    text-align: center;
+    font-weight: 700;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .muestra {
+    min-width: 0;
+    padding: 0.1rem 0.45rem;
+  }
+  .bloques :global(.grado) {
+    font-size: 0.72rem;
+    color: var(--texto-suave);
+  }
+  /* Tipos de nota: del acorde (relleno), tensión (borde de acento), de la escala (borde normal) y cromática (discontinuo). */
+  .bloques :global(.corchea.acorde .nota),
+  .muestra.acorde {
+    background: var(--acento); /* COLOR: nota del acorde en la línea bebop */
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  .bloques :global(.corchea.tension .nota),
+  .muestra.tension {
+    border: 2px solid var(--acento); /* COLOR: tensión en la línea bebop */
+  }
+  .bloques :global(.corchea.cromatica .nota),
+  .muestra.cromatica {
+    border: 2px dashed var(--texto-suave); /* COLOR: nota cromática en la línea bebop */
+  }
+  .bloques :global(.corchea.sonando-ahora .nota) {
+    box-shadow: 0 0 0 3px var(--acento-suave), 0 0 0 1px var(--acento);
+    transform: translateY(-2px);
+  }
+  .leyenda {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.9;
+  }
+</style>
