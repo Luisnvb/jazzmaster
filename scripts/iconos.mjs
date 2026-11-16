@@ -1,5 +1,7 @@
 // Iconos de la web (Trastero251): la puerta de un trastero con persiana, cuyas
 // lamas recuerdan a las cuerdas, y una placa con el 251 (y el ii–V–I).
+// El favicon y la guitarra junto al título salen del dibujo scripts/guitarra.png
+// (fondo transparente), recortado a la guitarra.
 // Uso: node scripts/iconos.mjs  → public/favicon.png y public/iconos/*.png
 import sharp from 'sharp';
 
@@ -52,7 +54,6 @@ function svg({ maskable = false } = {}) {
 }
 
 const salidas = [
-  { archivo: 'public/favicon.png', lado: 48 },
   { archivo: 'public/iconos/apple-touch-icon.png', lado: 180, maskable: true }, // iOS redondea las esquinas
   { archivo: 'public/iconos/icono-192.png', lado: 192 },
   { archivo: 'public/iconos/icono-512.png', lado: 512 },
@@ -66,3 +67,14 @@ for (const s of salidas) {
     .toFile(s.archivo);
   console.log(s.archivo, `${s.lado}×${s.lado}`);
 }
+
+// La guitarra, recortada a su contorno: favicon (cuadrado, centrada) y la de la cabecera.
+const guitarra = await sharp('scripts/guitarra.png').trim({ threshold: 20 }).toBuffer();
+await sharp(guitarra)
+  .resize(64, 64, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  .png({ compressionLevel: 9 })
+  .toFile('public/favicon.png');
+console.log('public/favicon.png', '64×64');
+// Cabecera: 2,4rem de alto en pantalla; el triple para pantallas de alta densidad.
+await sharp(guitarra).resize({ height: 120 }).png({ compressionLevel: 9 }).toFile('public/iconos/guitarra.png');
+console.log('public/iconos/guitarra.png', 'alto 120');

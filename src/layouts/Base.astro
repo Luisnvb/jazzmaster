@@ -41,6 +41,7 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     <header class="cabecera">
       <div class="cabecera-dentro">
         <div class="titulo-caja">
+          <img class="guitarra" src={archivo('iconos/guitarra.png')} alt="" width="43" height="120" />
           <Titulo class="titulo-seccion">{encabezado}</Titulo>
           {
             favoritable && (
@@ -169,6 +170,13 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     display: flex;
     align-items: center;
     gap: 0.35rem;
+  }
+  /* La guitarra de la web (la del favicon), delante del título. */
+  .guitarra {
+    flex: 0 0 auto;
+    width: auto;
+    height: 2.4rem;
+    margin-right: 0.2rem;
   }
   /* La estrella va junto al título, no en una esquina como en las tarjetas. */
   .favorito-pagina {
