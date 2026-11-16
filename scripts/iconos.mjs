@@ -38,4 +38,4 @@ await icono('public/iconos/icono-maskable-512.png', 512, true);
 // Favicon y cabecera: el mismo icono redondeado, con la guitarra un poco más grande
 // para que se lea en pequeño. La cabecera lo muestra a 2,4rem: el triple de píxeles.
 await icono('public/favicon.png', 64, false, 0.86);
-await icono('public/iconos/guitarra.png', 120, false, 0.86);
+await icono('public/iconos/guitarra.png', 120, false, 0.96); // casi de borde a borde
