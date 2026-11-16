@@ -240,7 +240,13 @@ function vozReceta(ctx: AudioContext, r: Receta, f: number, inicio: number, fina
 /** Programa una nota sintetizada; devuelve la voz y cuándo deja de sonar. */
 function vozSintetizada(ctx: AudioContext, e: Evento, inicio: number, instrumento: Instrumento): Voz {
   const ganancia = ctx.createGain();
-  ganancia.connect(salida!);
+  if (e.volumen != null && e.volumen !== 1) {
+    const volumen = ctx.createGain();
+    volumen.gain.value = e.volumen;
+    ganancia.connect(volumen).connect(salida!);
+  } else {
+    ganancia.connect(salida!);
+  }
   const g = ganancia.gain;
   const final = inicio + e.duracion;
   const fin = finSintetizada(e, inicio, instrumento);
@@ -351,9 +357,10 @@ export async function tocar(
     fuente.buffer = buffer;
     const ganancia = ctx.createGain();
     const final = inicio + Math.min(e.duracion, buffer.duration);
+    const volumen = VOLUMEN * (e.volumen ?? 1);
     ganancia.gain.setValueAtTime(0, inicio);
-    ganancia.gain.linearRampToValueAtTime(VOLUMEN, inicio + ATAQUE);
-    ganancia.gain.setValueAtTime(VOLUMEN, Math.max(inicio + ATAQUE, final - CAIDA));
+    ganancia.gain.linearRampToValueAtTime(volumen, inicio + ATAQUE);
+    ganancia.gain.setValueAtTime(volumen, Math.max(inicio + ATAQUE, final - CAIDA));
     ganancia.gain.linearRampToValueAtTime(0, final);
     fuente.connect(ganancia).connect(salida!);
     fuente.start(inicio);

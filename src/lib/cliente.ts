@@ -152,6 +152,11 @@ export interface Reproduccion {
   bucle?: () => boolean;
   /** Duración musical de una vuelta (necesaria para encadenar el bucle a tiempo). */
   duracion?: number;
+  /**
+   * Se llama antes de cada vuelta del bucle salvo la primera (un poco antes de que
+   * empiece): puede cambiar eventos, duración o alProgresar para la vuelta siguiente.
+   */
+  otraVuelta?: () => void;
 }
 
 /**
@@ -195,6 +200,7 @@ export function conectarAudio(construir: (boton: HTMLButtonElement) => Evento[] 
       const enBucle = () => r.duracion != null && r.bucle?.() === true;
       let vuelta = 0;
       do {
+        if (vuelta > 0) r.otraVuelta?.();
         await tocar(r.eventos, r.alProgresar, r.instrumento, {
           duracion: enBucle() ? r.duracion : undefined,
           encadenar: vuelta++ > 0,

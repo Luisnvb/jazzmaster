@@ -11,6 +11,8 @@ export interface Evento {
   duracion: number;
   /** Clic de metrónomo en vez de nota (fuerte = primera parte del compás). */
   clic?: 'fuerte' | 'debil';
+  /** Volumen relativo (1 = normal), p. ej. para dejar un acompañamiento por debajo de la melodía. */
+  volumen?: number;
 }
 
 /**

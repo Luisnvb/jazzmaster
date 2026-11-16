@@ -75,6 +75,7 @@ export const SECCIONES: Seccion[] = [
   seccion('oido-tecnica', 'Oído y técnica', 'Intervalos, oído armónico, lectura, digitación y púa', [
     pagina('Intervalos', 'intervalos', 'Fichas, audio y entrenador de oído'),
     pagina('Oído armónico', 'estudio/oido-armonico', 'Entrenador de cualidades, cadenas por grados y progresiones'),
+    pagina('Dictado melódico', 'estudio/dictado', 'Llamada y respuesta: repite en el compás siguiente la frase que acaba de sonar'),
     pagina('Lectura a primera vista', 'estudio/lectura', 'Una nota en el pentagrama: encuéntrala en el mástil, en su octava'),
     pagina('Digitación y posiciones', 'estudio/digitacion', 'Las 12 posiciones, tres notas por cuerda y cómo cambiar de sitio la mano'),
     pagina('Técnica de púa', 'estudio/pua', 'Alternada, economy y sweep, con metrónomo y subida progresiva de tempo'),
