@@ -69,7 +69,8 @@ export function iniciarFicha() {
     if (!tipo || v.trastes.includes(0)) continue;
     (personales[tipo] ??= []).push({ grados: v.grados.map((g) => g || null), personal: true, nombre: v.nombre });
   }
-  const gruposConVoicings = new Set(voicings.map((v) => v.grupo));
+  // El enlace va a Voicings, donde no salen los de cuerdas al aire (tienen su propia página).
+  const gruposConVoicings = new Set(voicings.filter((v) => !v.trastes.includes(0)).map((v) => v.grupo));
 
   const cabecera = $('[data-cabecera]');
   const barra = $('[data-barra]');

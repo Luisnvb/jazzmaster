@@ -61,5 +61,8 @@ test('cambiar de sitio dentro del grupo y reordenar por ids', async () => {
   ];
   assert.deepEqual(moverEnGrupo(lista, 'c', -1).map((v) => v.id), ['c', 'b', 'a']);
   assert.deepEqual(moverEnGrupo(lista, 'a', -1).map((v) => v.id), ['a', 'b', 'c']);
+  // Solo cuenta los vecinos visibles: 'a' salta a 'c' por encima de 'x', que no se ve.
+  const conOculto = [{ id: 'a', grupo: 'm7' }, { id: 'x', grupo: 'm7' }, { id: 'c', grupo: 'm7' }];
+  assert.deepEqual(moverEnGrupo(conOculto, 'a', 1, (v) => v.id !== 'x').map((v) => v.id), ['c', 'x', 'a']);
   assert.deepEqual(ordenarPorIds([...lista, { id: 'd', grupo: 'm7' }], ['c', 'b', 'a']).map((v) => v.id), ['c', 'b', 'a', 'd']);
 });

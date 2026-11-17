@@ -5,25 +5,31 @@ interface Props {
   /** Clave con la que se recuerda la elección (una por sección). */
   clave: string;
   etiqueta?: string;
+  /** false: sin los botones de tónica (solo la barra con los controles extra). */
+  conTonica?: boolean;
 }
 
-const { clave, etiqueta = 'Tónica' } = Astro.props;
+const { clave, etiqueta = 'Tónica', conTonica = true } = Astro.props;
 // Controles extra de la página (arpegio, sonido…) que van en la misma barra fija.
 const conExtra = Astro.slots.has('default');
 const inicial = 'C';
 ---
 
 <div class="selector" data-selector-tonica data-clave={clave} role="group" aria-label={etiqueta}>
-  <span class="etiqueta">{etiqueta}</span>
-  <div class="botones">
-    {
-      TONICAS.map((t) => (
-        <button type="button" data-tonica={t} aria-pressed={t === inicial ? 'true' : 'false'}>
-          {t}
-        </button>
-      ))
-    }
-  </div>
+  {
+    conTonica && (
+      <>
+        <span class="etiqueta">{etiqueta}</span>
+        <div class="botones">
+          {TONICAS.map((t) => (
+            <button type="button" data-tonica={t} aria-pressed={t === inicial ? 'true' : 'false'}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </>
+    )
+  }
   {
     conExtra && (
       <div class="extra">

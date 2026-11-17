@@ -39,6 +39,7 @@ export const SECCIONES: Seccion[] = [
   ]),
   seccion('acordes', 'Acordes', 'Voicings, tríadas, drops, comping y chord melody', [
     pagina('Voicings', 'acordes', 'Tu selección de voicings, con sus grados'),
+    pagina('Cuerdas al aire', 'acordes/al-aire', 'Voicings con cuerdas al aire: la resonancia que no da una forma cerrada'),
     pagina('Tríadas', 'estudio/triadas', 'Cerradas y abiertas en todos los grupos de cuerdas'),
     pagina('Shell voicings', 'estudio/shells', 'Raíz, 3 y 7: el acompañamiento básico del jazz'),
     pagina('Drop 2', 'estudio/drop2', 'Cuatro notas en cuatro cuerdas: inversiones y encadenamientos'),

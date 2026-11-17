@@ -166,13 +166,21 @@ export function ordenarPorIds<T extends { id: string }>(lista: readonly T[], ord
     .map((x) => x.v);
 }
 
-/** Cambia un voicing de sitio con su vecino del mismo grupo (-1 = antes, 1 = después). */
-export function moverEnGrupo<T extends { id: string; grupo: string }>(lista: readonly T[], id: string, direccion: -1 | 1): T[] {
+/**
+ * Cambia un voicing de sitio con su vecino del mismo grupo (-1 = antes, 1 = después).
+ * `visible` limita los vecinos a los que se ven en la página (Voicings o Cuerdas al aire).
+ */
+export function moverEnGrupo<T extends { id: string; grupo: string }>(
+  lista: readonly T[],
+  id: string,
+  direccion: -1 | 1,
+  visible: (v: T) => boolean = () => true,
+): T[] {
   const res = [...lista];
   const i = res.findIndex((v) => v.id === id);
   if (i === -1) return res;
   let j = i + direccion;
-  while (j >= 0 && j < res.length && res[j].grupo !== res[i].grupo) j += direccion;
+  while (j >= 0 && j < res.length && (res[j].grupo !== res[i].grupo || !visible(res[j]))) j += direccion;
   if (j < 0 || j >= res.length) return res;
   [res[i], res[j]] = [res[j], res[i]];
   return res;
