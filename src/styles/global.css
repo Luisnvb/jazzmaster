@@ -248,6 +248,8 @@ label.casilla input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: va
 @media (max-width: 40rem) {
   .botones-audio { gap: 0.4rem; }
   .botones-audio button { padding: 0 0.7rem; }
+  .boton { padding: 0 0.7rem; font-size: 0.85rem; }
+  .botones-audio button, .boton { min-height: 2rem; }
 }
 [data-restaurar-eliminados] { margin: 0 0 1rem; }
 .herramientas [data-restaurar-eliminados] { margin: 0; }

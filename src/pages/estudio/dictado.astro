@@ -566,4 +566,29 @@ const AYUDAS = [
     font-size: 0.85rem;
     line-height: 1.9;
   }
+  /* Móvil: las opciones en dos columnas, con la etiqueta encima del selector. */
+  @media (max-width: 40rem) {
+    .opciones {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.35rem 0.75rem;
+    }
+    .campo {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.05rem;
+      font-size: 0.75rem;
+    }
+    .campo:has([data-contexto]) {
+      grid-column: 1 / -1;
+    }
+    .campo select {
+      width: 100%;
+      min-height: 2rem;
+      font-size: 0.9rem;
+    }
+    .descripcion {
+      font-size: 0.82rem;
+    }
+  }
 </style>

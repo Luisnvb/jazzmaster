@@ -119,6 +119,24 @@ const inicial = 'C';
   }
   /* Móvil: fija ocuparía media pantalla; se queda arriba y se desplaza con la página. */
   @media (max-width: 40rem) {
+    .etiqueta {
+      margin-bottom: 0.2rem;
+    }
+    .botones {
+      gap: 0.25rem;
+    }
+    button {
+      min-height: 1.9rem;
+      font-size: 0.88rem;
+    }
+    .extra {
+      gap: 0.3rem 1rem;
+      margin-top: 0.4rem;
+    }
+    .extra :global(select) {
+      min-width: 0;
+      min-height: 1.9rem;
+    }
     .selector {
       position: static;
     }
