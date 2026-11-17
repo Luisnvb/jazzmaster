@@ -166,6 +166,13 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   /** Notas que solo dicen de dónde sale el voicing ("De: …"): no se muestran en la ficha. */
   const esProcedencia = (notas: string) => /^De:/.test(notas.trim());
 
+  /**
+   * Nombre con la tónica delante (Cuerdas al aire, donde no se transporta): pegada si el
+   * nombre es un cifrado ("maj7" → "Emaj7", "m9/G" → "Em9/G"); si no, separada ("E · Drop 2").
+   */
+  const conTonica = (tonica: string, nombre: string) =>
+    /^(maj|m|add|sus|dim|aug|alt|[0-9b#+°ø/])/.test(nombre) && !/\s/.test(nombre) ? `${tonica}${nombre}` : `${tonica} · ${nombre}`;
+
   function tarjeta(v: Voicing): string {
     const t = tonicaDe(v);
     const tocados = v.grados.filter(Boolean);
@@ -177,7 +184,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         <div class="diagrama-caja">${diagramaSVG({ trastes: trastesEn(v), grados: v.grados })}</div>
         ${editando ? '' : botonFavorito(favs.tiene(v.id), v.nombre)}
         <div class="info">
-          <h3>${esc(v.nombre)} · bajo en ${cuerdaDelBajo(v.trastes)}ª</h3>
+          <h3>${esc(paginaAlAire ? conTonica(t, v.nombre) : v.nombre)} · bajo en ${cuerdaDelBajo(v.trastes)}ª</h3>
           <dl class="detalle">
             <dt>Grados</dt><dd>${esc(tocados.join(' '))}</dd>
             <dt>Notas</dt><dd>${esc(notas)}</dd>
