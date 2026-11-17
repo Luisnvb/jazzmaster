@@ -139,6 +139,9 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   const trastesEn = (v: Voicing): Traste[] => (conAlAire(v) ? v.trastes : transportar(v.trastes, v.tonica, tonicaActual));
   const tonicaDe = (v: Voicing) => (conAlAire(v) ? v.tonica : tonicaActual);
 
+  /** Notas que solo dicen de dónde sale el voicing ("De: …"): no se muestran en la ficha. */
+  const esProcedencia = (notas: string) => /^De:/.test(notas.trim());
+
   function tarjeta(v: Voicing): string {
     const t = tonicaDe(v);
     const tocados = v.grados.filter(Boolean);
@@ -150,14 +153,13 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         <div class="diagrama-caja">${diagramaSVG({ trastes: trastesEn(v), grados: v.grados })}</div>
         ${editando ? '' : botonFavorito(favs.tiene(v.id), v.nombre)}
         <div class="info">
-          <h3>${esc(t)}${esc(grupoPorId[v.grupo]?.simbolo ?? '')}</h3>
-          <p class="subtitulo suave">${esc(v.nombre)} · bajo en ${cuerdaDelBajo(v.trastes)}ª</p>
+          <h3>${esc(v.nombre)} · bajo en ${cuerdaDelBajo(v.trastes)}ª</h3>
           <dl class="detalle">
             <dt>Grados</dt><dd>${esc(tocados.join(' '))}</dd>
             <dt>Notas</dt><dd>${esc(notas)}</dd>
           </dl>
           ${conAlAire(v) ? '<p class="aviso suave">Con cuerdas al aire: no se transporta.</p>' : ''}
-          ${v.notas ? `<p class="comentario">${esc(v.notas)}</p>` : ''}
+          ${v.notas && !esProcedencia(v.notas) ? `<p class="comentario">${esc(v.notas)}</p>` : ''}
         </div>
         <div class="botones-audio">
           <button type="button" data-audio="rasgueo" aria-pressed="false">Rasgueo</button>
@@ -449,11 +451,6 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   }
   :global(.voicing h3) {
     margin: 0;
-    font-size: 1.4rem;
-  }
-  :global(.voicing .subtitulo) {
-    margin: 0 0 0.5rem;
-    font-size: 0.85rem;
   }
   :global(.voicing .detalle) {
     margin: 0.5rem 0 0;
@@ -495,11 +492,10 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   }
   :global(.voicing h3) {
     font-weight: 700;
-    font-size: 1.35rem;
+    font-size: 1.15rem;
     letter-spacing: -0.01em;
-    line-height: 1.1;
+    line-height: 1.2;
   }
-  :global(.voicing .subtitulo),
   :global(.voicing .detalle dt) {
     font-family: var(--fuente);
     font-size: 0.82rem;

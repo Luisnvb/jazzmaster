@@ -1,11 +1,13 @@
 /* Diseño de escritorio (monitor de 27") inspirado en The Verge, en versión clara,
-   con un único esquema de color fijo y una sola fuente (Inter).
+   con un único esquema de color fijo y una sola fuente (Inter); el título de la
+   cabecera va en Playfair Display cursiva.
    Fuente alojada en el propio sitio (fontsource) para que funcione sin conexión.
 
    COLORES: todos salen de las variables de :root de aquí abajo. Cambiando un valor
    cambia en toda la web (cada línea dice dónde se usa). Los pocos colores que no
    son variables llevan el comentario "COLOR:" para encontrarlos con una búsqueda. */
 @import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/playfair-display/wght-italic.css';
 
 :root {
   color-scheme: light;
@@ -26,6 +28,8 @@
   --velo: rgb(0 0 0 / 0.35); /* COLOR: oscurecido de fondo detrás de los diálogos */
 
   --fuente: 'Inter Variable', system-ui, 'Segoe UI', sans-serif;
+  /* Solo para el título de la cabecera. */
+  --fuente-titulo: 'Playfair Display Variable', Georgia, serif;
 
   --cabecera-alto: 3.5rem;
   --margen: clamp(1rem, 3vw, 4rem);
