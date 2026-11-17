@@ -44,23 +44,20 @@ const AYUDAS = [
           <optgroup label="Progresiones" data-grupo-progresiones></optgroup>
         </select>
       </label>
-      <div class="grupo-botones" role="group" aria-label="Lenguaje">
-        <span class="etiqueta">Lenguaje</span>
-        {ASPECTOS.map((a) => <button type="button" class="boton" data-aspecto={a.id} aria-pressed="false" title={a.descripcion}>{a.nombre}</button>)}
-      </div>
-      <div class="grupo-botones" role="group" aria-label="Dificultad">
-        <span class="etiqueta">Dificultad</span>
-        {DIFICULTADES.map((d) => <button type="button" class="boton" data-dificultad={d.id} aria-pressed="false" title={d.descripcion}>{d.nombre}</button>)}
-      </div>
+      <label class="campo">Lenguaje
+        <select data-aspecto>{ASPECTOS.map((a) => <option value={a.id} title={a.descripcion}>{a.nombre}</option>)}</select>
+      </label>
+      <label class="campo">Dificultad
+        <select data-dificultad>{DIFICULTADES.map((d) => <option value={d.id} title={d.descripcion}>{d.nombre}</option>)}</select>
+      </label>
       <label class="campo">Posición
         <select data-posicion>{POSICIONES.map((p) => <option value={p}>Traste {p}</option>)}</select>
       </label>
     </div>
     <div class="opciones">
-      <div class="grupo-botones" role="group" aria-label="Ayuda en el mástil">
-        <span class="etiqueta">Ayuda</span>
-        {AYUDAS.map(([id, nombre, desc]) => <button type="button" class="boton" data-ayuda={id} aria-pressed="false" title={desc}>{nombre}</button>)}
-      </div>
+      <label class="campo">Ayuda
+        <select data-ayuda>{AYUDAS.map(([id, nombre, desc]) => <option value={id} title={desc}>{nombre}</option>)}</select>
+      </label>
       <label class="campo">Rótulo
         <select data-rotulo>
           <option value="grado">Grado</option>
@@ -189,6 +186,9 @@ const AYUDAS = [
   const instrumento = conectarInstrumento('dictado:sonido');
   const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const selContexto = $<HTMLSelectElement>('[data-contexto]');
+  const selAspecto = $<HTMLSelectElement>('[data-aspecto]');
+  const selDificultad = $<HTMLSelectElement>('[data-dificultad]');
+  const selAyuda = $<HTMLSelectElement>('[data-ayuda]');
   const selPosicion = $<HTMLSelectElement>('[data-posicion]');
   const selRotulo = $<HTMLSelectElement>('[data-rotulo]');
   const selAcomp = $<HTMLSelectElement>('[data-acompanamiento]');
@@ -209,6 +209,9 @@ const AYUDAS = [
   const contextoValido = (id: string) => [...selContexto.options].some((o) => o.value === id);
   if (!contextoValido(op.contexto)) op.contexto = 'ii-v-i';
   selContexto.value = op.contexto;
+  selAspecto.value = op.aspecto;
+  selDificultad.value = op.dificultad;
+  selAyuda.value = op.ayuda;
   selPosicion.value = String(op.posicion);
   selRotulo.value = op.rotulo;
   selAcomp.value = op.acompanamiento;
@@ -303,9 +306,8 @@ const AYUDAS = [
   }
 
   function pintarOpciones() {
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-aspecto]')) b.setAttribute('aria-pressed', String(b.dataset.aspecto === op.aspecto));
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-dificultad]')) b.setAttribute('aria-pressed', String(b.dataset.dificultad === op.dificultad));
-    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-ayuda]')) b.setAttribute('aria-pressed', String(b.dataset.ayuda === op.ayuda));
+    // El título del selector explica la opción elegida (las de las opciones no siempre se ven).
+    for (const s of [selAspecto, selDificultad, selAyuda]) s.title = s.selectedOptions[0]?.title ?? '';
     const a = ASPECTOS.find((x) => x.id === op.aspecto)!;
     const c = contexto();
     descripcion.innerHTML = `<strong>${esc(c.nombre)}:</strong> ${esc(c.descripcion)} <strong>${esc(a.nombre)}:</strong> ${esc(a.descripcion)}`;
@@ -322,6 +324,13 @@ const AYUDAS = [
   }
 
   selContexto.addEventListener('change', () => ((op.contexto = selContexto.value), cambio(true)));
+  selAspecto.addEventListener('change', () => ((op.aspecto = selAspecto.value as Aspecto), cambio()));
+  selDificultad.addEventListener('change', () => ((op.dificultad = selDificultad.value as Dificultad), cambio()));
+  selAyuda.addEventListener('change', () => {
+    op.ayuda = selAyuda.value as Ayuda;
+    pintarOpciones();
+    if (!sonando) pintar(frase, 'parado');
+  });
   selPosicion.addEventListener('change', () => ((op.posicion = Number(selPosicion.value)), cambio()));
   selRotulo.addEventListener('change', () => {
     op.rotulo = selRotulo.value as Rotulo;
@@ -335,17 +344,7 @@ const AYUDAS = [
   document.addEventListener('click', (e) => {
     const b = (e.target as Element).closest<HTMLButtonElement>('button');
     if (!b) return;
-    if (b.dataset.aspecto) {
-      op.aspecto = b.dataset.aspecto as Aspecto;
-      cambio();
-    } else if (b.dataset.dificultad) {
-      op.dificultad = b.dataset.dificultad as Dificultad;
-      cambio();
-    } else if (b.dataset.ayuda) {
-      op.ayuda = b.dataset.ayuda as Ayuda;
-      pintarOpciones();
-      if (!sonando) pintar(frase, 'parado');
-    } else if (b.hasAttribute('data-otra')) {
+    if (b.hasAttribute('data-otra')) {
       cambio();
     } else if (b.hasAttribute('data-revelar')) {
       revelada = true;
@@ -421,18 +420,6 @@ const AYUDAS = [
     align-items: center;
     gap: 0.75rem 1.75rem;
     margin-bottom: 0.75rem;
-  }
-  .grupo-botones {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem;
-  }
-  .grupo-botones .etiqueta {
-    margin-right: 0.35rem;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--texto-suave);
   }
   .campo {
     display: flex;
