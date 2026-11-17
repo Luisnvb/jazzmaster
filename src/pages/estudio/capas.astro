@@ -274,21 +274,8 @@ const indice = getHeadings().filter((h) => h.depth === 2);
 </script>
 
 <style>
-  /* Compacta: del selector de raíz al acompañamiento, sin desplazar la página. */
-  :global(main) {
-    padding-top: 0.75rem;
-  }
-  :global(.selector[data-selector-tonica]) {
-    margin-bottom: 0.6rem;
-    padding-top: 0.4rem;
-    padding-bottom: 0.4rem;
-  }
   .ejemplo {
     margin: 0 0 1.5rem;
-  }
-  .ejemplo :global(.boton),
-  .ejemplo :global(.botones-audio button) {
-    min-height: 2.1rem;
   }
   .opciones {
     display: flex;
@@ -426,10 +413,6 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   }
   .ejemplo :global(.botones-audio) {
     margin-top: 0.5rem;
-  }
-  .ejemplo :global(.acompanamiento) {
-    margin-top: 0.5rem;
-    padding: 0.35rem 0.75rem;
   }
   .leyenda {
     margin: 0.5rem 0 0;

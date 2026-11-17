@@ -64,7 +64,7 @@ body {
 main {
   max-width: var(--ancho);
   margin: 0 auto;
-  padding: 1.5rem var(--margen) 4rem;
+  padding: 0.75rem var(--margen) 4rem;
 }
 
 a { color: var(--acento); text-underline-offset: 0.2em; }
@@ -105,7 +105,7 @@ code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-siz
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
-  padding: 0.85rem;
+  padding: 0.7rem;
   transition: border-color 0.15s;
 }
 .tarjeta:hover { border-color: var(--texto-suave); }
@@ -140,11 +140,11 @@ code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-siz
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: 0.6rem;
 }
 .botones-audio button,
 .boton {
-  min-height: 2.5rem;
+  min-height: 2.1rem;
   padding: 0 1.1rem;
   font-family: var(--fuente);
   font-size: 0.9rem;
@@ -184,8 +184,8 @@ label.bloque { display: block; margin: 0.75rem 0; }
 .campos label { display: grid; }
 input:not([type='checkbox']):not([type='range']), select, textarea {
   width: 100%;
-  min-height: 2.5rem;
-  padding: 0.35rem 0.6rem;
+  min-height: 2.1rem;
+  padding: 0.2rem 0.6rem;
   font: inherit;
   font-family: var(--fuente);
   font-size: 1rem;
