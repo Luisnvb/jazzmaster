@@ -326,8 +326,28 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
       max-width: 100%;
       text-overflow: ellipsis;
     }
+    /* El título largo («Entrenador de intervalos») pasa a dos líneas en vez de cortarse. */
     .titulo-seccion {
-      font-size: 1.35rem;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      font-size: 1.2rem;
+      line-height: 1.12;
+      white-space: normal;
+      overflow-wrap: break-word;
+      padding-block: 0.1em;
+    }
+    .guitarra {
+      width: 2rem;
+      height: 2rem;
+    }
+    .nav-movil {
+      max-width: 40%;
+    }
+    .nav-movil select {
+      min-height: 2.1rem;
+      font-size: 0.85rem;
     }
   }
 </style>
