@@ -1,4 +1,4 @@
-# Trastero251
+# JazzMaster
 
 Web personal de práctica, en seis secciones ordenadas por su peso en la rutina: Rutina, Repertorio, Acordes, Improvisación, Armonía y Oído y técnica. La portada es un panel con las páginas favoritas (☆ junto al título de cada página) y las últimas abiertas.
 Estática, pensada para un monitor de escritorio y con modo sin conexión. La especificación está en `Guitarra practica spec.md`.

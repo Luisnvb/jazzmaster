@@ -1,4 +1,4 @@
-// Iconos de la web (Trastero251): la guitarra del dibujo scripts/guitarra.png (fondo
+// Iconos de la web (JazzMaster): la guitarra del dibujo scripts/guitarra.png (fondo
 // transparente), recortada a su contorno.
 // Todos son la guitarra sobre el color de acento de la web: los de la app instalada,
 // el favicon y el que va delante del título en la cabecera.
@@ -35,7 +35,38 @@ await icono('public/iconos/icono-192.png', 192, false);
 await icono('public/iconos/icono-512.png', 512, false);
 await icono('public/iconos/icono-maskable-512.png', 512, true);
 
-// Favicon y cabecera: el mismo icono redondeado, con la guitarra un poco más grande
-// para que se lea en pequeño. La cabecera lo muestra a 2,4rem: el triple de píxeles.
-await icono('public/favicon.png', 64, false, 0.86);
-await icono('public/iconos/guitarra.png', 120, false, 0.96); // casi de borde a borde
+// Favicon y cabecera: la guitarra cortada por arriba (solo se ve el principio del
+// mástil, que se sale del icono) para que el cuerpo salga mucho más grande y se lea
+// en pequeño. La cabecera lo muestra a 2,4rem: el triple de píxeles.
+/**
+ * `visible`: fracción de la guitarra (desde abajo) que entra en el icono;
+ * `margen`: hueco bajo la guitarra, en fracción del lado.
+ */
+async function iconoRecortado(archivo, lado, visible = 0.6, margen = 0.05) {
+  const radio = Math.round(lado * 0.22);
+  const svg = (relleno) => Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${lado}" height="${lado}"><rect width="${lado}" height="${lado}" rx="${radio}" fill="${relleno}"/></svg>`,
+  );
+  const alto = Math.round((lado * (1 - margen)) / visible);
+  const dentro = Math.round(lado * (1 - margen)); // alto de guitarra que entra
+  const { data: corte, info } = await sharp(guitarra)
+    .resize({ height: alto })
+    .toBuffer({ resolveWithObject: true })
+    .then(({ data, info }) =>
+      sharp(data).extract({ left: 0, top: info.height - dentro, width: info.width, height: dentro }).toBuffer({ resolveWithObject: true }),
+    );
+  const ancho = info.width;
+  const compuesto = await sharp(svg(ACENTO))
+    .composite([{ input: corte, left: Math.round((lado - ancho) / 2), top: 0 }])
+    .png()
+    .toBuffer();
+  // La guitarra no debe salirse de las esquinas redondeadas.
+  await sharp(compuesto)
+    .composite([{ input: svg('#fff'), blend: 'dest-in' }])
+    .png({ compressionLevel: 9 })
+    .toFile(archivo);
+  console.log(archivo, `${lado}×${lado}`, '(recortado)');
+}
+
+await iconoRecortado('public/favicon.png', 64);
+await iconoRecortado('public/iconos/guitarra.png', 120);

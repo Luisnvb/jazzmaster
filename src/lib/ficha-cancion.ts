@@ -194,7 +194,7 @@ export function iniciarFicha() {
       ['Estilo', cancion.estilo],
     ].filter((p) => p[1]);
     const lista = ficha.map(([n, v]) => `<div><dt>${n}</dt><dd>${esc(v)}</dd></div>`).join('');
-    document.title = `${cancion.titulo} · Trastero251`;
+    document.title = `${cancion.titulo} · JazzMaster`;
     cabecera.innerHTML = `
       <h1>${esc(cancion.titulo)}</h1>
       <p class="autor suave">${esc(cancion.autor)}${cancion.instrumental ? ' · Instrumental' : ''}</p>
