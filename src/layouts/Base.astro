@@ -191,11 +191,12 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: var(--fuente-titulo);
-    font-style: italic;
-    font-weight: 700;
-    font-size: 1.45rem;
+    font-weight: 400;
+    font-size: 1.75rem;
     letter-spacing: 0;
-    line-height: 1.2;
+    /* Holgura para que los trazos de la caligrafía no se corten con overflow: hidden. */
+    line-height: 1.4;
+    padding-right: 0.3em;
     white-space: nowrap;
     color: var(--texto);
   }
@@ -295,7 +296,7 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
       flex: 1 1 auto;
     }
     .titulo-seccion {
-      font-size: 1.15rem;
+      font-size: 1.5rem;
     }
     nav[aria-label='Secciones'] {
       display: none;
@@ -326,7 +327,7 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
       text-overflow: ellipsis;
     }
     .titulo-seccion {
-      font-size: 1.05rem;
+      font-size: 1.35rem;
     }
   }
 </style>
