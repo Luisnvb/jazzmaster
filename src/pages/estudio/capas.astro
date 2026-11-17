@@ -42,8 +42,10 @@ const indice = getHeadings().filter((h) => h.depth === 2);
       <button type="button" class="boton" data-sortear title="Raíz, cualidad y forma al azar; vuelve a la primera capa">🎲 Sortear</button>
     </div>
 
-    <p class="titulo-capas" data-titulo></p>
-    <p class="enlaces" data-enlaces data-paginas={JSON.stringify(PAGINAS)}></p>
+    <div class="cabecera-capas">
+      <p class="titulo-capas" data-titulo></p>
+      <p class="enlaces" data-enlaces data-paginas={JSON.stringify(PAGINAS)}></p>
+    </div>
 
     <ol class="capas" data-capas aria-label="Capas"></ol>
 
@@ -272,15 +274,28 @@ const indice = getHeadings().filter((h) => h.depth === 2);
 </script>
 
 <style>
+  /* Compacta: del selector de raíz al acompañamiento, sin desplazar la página. */
+  :global(main) {
+    padding-top: 0.75rem;
+  }
+  :global(.selector[data-selector-tonica]) {
+    margin-bottom: 0.6rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
   .ejemplo {
     margin: 0 0 1.5rem;
+  }
+  .ejemplo :global(.boton),
+  .ejemplo :global(.botones-audio button) {
+    min-height: 2.1rem;
   }
   .opciones {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem 1.75rem;
-    margin-bottom: 0.9rem;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.5rem;
   }
   .grupo-botones {
     display: flex;
@@ -301,21 +316,28 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     min-width: 2.6rem;
     padding: 0;
   }
+  .cabecera-capas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 1.5rem;
+    margin: 0 0 0.4rem;
+  }
   .titulo-capas {
-    margin: 0 0 0.25rem;
-    font-size: 1.1rem;
+    margin: 0;
+    font-size: 1.05rem;
   }
   .enlaces {
-    margin: 0 0 0.6rem;
-    font-size: 0.9rem;
+    margin: 0;
+    font-size: 0.88rem;
   }
 
   /* Las capas, como fichas numeradas: las ya vistas, marcadas; la actual, rellena. */
   .capas {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
-    margin: 0 0 0.75rem;
+    gap: 0.3rem;
+    margin: 0 0 0.5rem;
     padding: 0;
     list-style: none;
   }
@@ -323,9 +345,9 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.3rem 0.7rem 0.3rem 0.35rem;
+    padding: 0.15rem 0.6rem 0.15rem 0.2rem;
     font: inherit;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     color: var(--texto);
     background: var(--fondo);
     border: 1px solid var(--borde);
@@ -338,8 +360,8 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   .capas :global(.chip .numero) {
     display: inline-grid;
     place-items: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.35rem;
+    height: 1.35rem;
     font-size: 0.78rem;
     font-weight: 700;
     border-radius: 50%;
@@ -362,7 +384,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   /* El mástil no cabe en el móvil: se desplaza en horizontal dentro de su caja. */
   .mastil-caja {
     overflow-x: auto;
-    padding: 0.5rem;
+    padding: 0.25rem 0.5rem;
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
@@ -382,8 +404,8 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.6rem 1.5rem;
-    margin-top: 0.75rem;
+    gap: 0.5rem 1.5rem;
+    margin-top: 0.5rem;
   }
   .paso {
     display: flex;
@@ -398,8 +420,16 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   }
   .pista {
     max-width: 48rem;
-    min-height: 3em;
-    margin: 0.7rem 0 0.4rem;
+    min-height: 1.5em;
+    margin: 0.4rem 0 0;
+    font-size: 0.92rem;
+  }
+  .ejemplo :global(.botones-audio) {
+    margin-top: 0.5rem;
+  }
+  .ejemplo :global(.acompanamiento) {
+    margin-top: 0.5rem;
+    padding: 0.35rem 0.75rem;
   }
   .leyenda {
     margin: 0.5rem 0 0;
