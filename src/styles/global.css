@@ -89,6 +89,10 @@ h1 {
 }
 h2 { font-size: 1.35rem; margin: 2rem 0 0.6rem; }
 h3 { font-weight: 600; letter-spacing: -0.01em; }
+/* Todos los títulos en mayúsculas, salvo el cifrado que llevan (m7, b9, ii–V…), que
+   lib/titulos.ts envuelve en .cifra para que no cambie de significado. */
+h1, h2, h3, h4 { text-transform: uppercase; letter-spacing: 0.02em; }
+.cifra { text-transform: none; }
 
 .suave { color: var(--texto-suave); }
 

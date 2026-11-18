@@ -35,7 +35,7 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     <link rel="manifest" href={archivo('manifest.webmanifest')} />
     <link rel="icon" href={archivo('favicon.png')} type="image/png" />
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
-    <title>{titulo} · jazzmaster</title>
+    <title>{titulo} · JAZZMASTER</title>
   </head>
   <body>
     <header class="cabecera">
@@ -81,27 +81,41 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
             ))
           }
         </nav>
-        <label class="nav-movil">
-          <span class="visualmente-oculto">Ir a la sección</span>
-          <select data-nav-movil>
-            <option value={ruta('')} selected={actual === ruta('')}>Inicio</option>
-            {
-              SECCIONES.map((s) => (
-                <optgroup label={s.nombre}>
-                  <option value={s.href} selected={actual === s.href}>
-                    {s.nombre} (todas)
-                  </option>
-                  {s.partes.map((p) => (
-                    <option value={p.href} selected={p === pagina}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </optgroup>
-              ))
-            }
-          </select>
-        </label>
+        <button
+          type="button"
+          class="hamburguesa"
+          aria-expanded="false"
+          aria-controls="menu-movil"
+          aria-label="Menú de secciones"
+          data-hamburguesa
+        >
+          <span aria-hidden="true"></span>
+        </button>
       </div>
+      <nav id="menu-movil" class="menu-movil" aria-label="Secciones (móvil)" hidden data-menu-movil>
+        <a class="menu-inicio" href={ruta('')} aria-current={actual === ruta('') ? 'page' : undefined}>Inicio</a>
+        {
+          SECCIONES.map((s) => (
+            <details open={s === seccion}>
+              <summary>{s.nombre}</summary>
+              <ul data-lista-paginas>
+                <li>
+                  <a href={s.href} aria-current={actual === s.href ? 'page' : undefined}>
+                    Todas las de {s.nombre}
+                  </a>
+                </li>
+                {s.partes.map((p) => (
+                  <li data-pagina={p.href}>
+                    <a href={p.href} aria-current={p === pagina ? 'page' : undefined}>
+                      {p.nombre}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))
+        }
+      </nav>
     </header>
     <main>
       <slot />
@@ -112,16 +126,39 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
 <script>
   import { archivo } from '../lib/rutas.ts';
   import { aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
+  import { vigilarTitulos } from '../lib/titulos.ts';
 
   // Modo sin conexión: solo en la web compilada (en desarrollo la caché estorbaría).
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register(archivo('sw.js')).catch(console.error);
   }
 
-  // Navegación del móvil: un desplegable en lugar de la barra de secciones.
-  document.querySelector<HTMLSelectElement>('[data-nav-movil]')?.addEventListener('change', (e) => {
-    location.href = (e.target as HTMLSelectElement).value;
+  // Títulos en mayúsculas: el cifrado que pintan los scripts se deja como está.
+  vigilarTitulos();
+
+  // Navegación del móvil: menú hamburguesa en lugar de la barra de secciones.
+  const hamburguesa = document.querySelector<HTMLButtonElement>('[data-hamburguesa]')!;
+  const menu = document.querySelector<HTMLElement>('[data-menu-movil]')!;
+  const abrirMenu = (abrir: boolean) => {
+    hamburguesa.setAttribute('aria-expanded', String(abrir));
+    menu.hidden = !abrir;
+    document.body.classList.toggle('menu-abierto', abrir);
+  };
+  hamburguesa.addEventListener('click', () => abrirMenu(hamburguesa.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu.hidden) {
+      abrirMenu(false);
+      hamburguesa.focus();
+    }
   });
+  document.addEventListener('click', (e) => {
+    const t = e.target as Node;
+    if (!menu.hidden && !menu.contains(t) && !hamburguesa.contains(t)) abrirMenu(false);
+  });
+  // Al volver con «atrás» (caché del navegador), el menú no debe seguir abierto.
+  addEventListener('pageshow', () => abrirMenu(false));
+  // Si la ventana se ensancha hasta la barra de escritorio, se cierra.
+  matchMedia('(min-width: 78.01rem)').addEventListener('change', (e) => e.matches && abrirMenu(false));
 
   // Páginas favoritas: la estrella de la cabecera y el orden de los menús y listas.
   const favoritas = paginasFavoritas();
@@ -202,11 +239,12 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     font-family: var(--fuente-titulo);
     font-weight: 600;
     font-size: 1.6rem;
-    letter-spacing: -0.01em;
     line-height: 1.3;
     padding-right: 0.3em;
     white-space: nowrap;
     color: var(--texto);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
   nav[aria-label='Secciones'] {
     display: flex;
@@ -292,10 +330,11 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
   .desplegable a[aria-current='page'] {
     color: var(--acento);
   }
-  .nav-movil {
+  .hamburguesa,
+  .menu-movil {
     display: none;
   }
-  /* Móvil: la barra de secciones no cabe; se cambia por un desplegable. */
+  /* Móvil: la barra de secciones no cabe; se cambia por un menú hamburguesa. */
   @media (max-width: 78rem) {
     .cabecera-dentro {
       gap: 1rem;
@@ -309,32 +348,123 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     nav[aria-label='Secciones'] {
       display: none;
     }
-    .nav-movil {
-      display: block;
+    .hamburguesa {
       flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 2.6rem;
+      height: 2.6rem;
+      padding: 0;
+      border: 1px solid var(--borde);
+      border-radius: var(--radio);
+      background: var(--fondo);
+      color: var(--texto);
+      cursor: pointer;
     }
-    .nav-movil select {
-      width: auto;
-      min-height: 2.4rem;
-      padding-right: 1.8rem;
+    /* Las tres rayas: la del medio es el span y las otras dos, ::before y ::after; al abrir, una X. */
+    .hamburguesa span {
+      position: relative;
+      display: block;
+      width: 1.25rem;
+      height: 2px;
+      background: currentColor;
+      transition: background 0.15s;
+    }
+    .hamburguesa span::before,
+    .hamburguesa span::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: currentColor;
+      transition: transform 0.15s;
+    }
+    .hamburguesa span::before {
+      transform: translateY(-0.4rem);
+    }
+    .hamburguesa span::after {
+      transform: translateY(0.4rem);
+    }
+    .hamburguesa[aria-expanded='true'] span {
+      background: transparent;
+    }
+    .hamburguesa[aria-expanded='true'] span::before {
+      transform: rotate(45deg);
+    }
+    .hamburguesa[aria-expanded='true'] span::after {
+      transform: rotate(-45deg);
+    }
+    .menu-movil:not([hidden]) {
+      display: block;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: calc(100dvh - var(--cabecera-alto));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.25rem var(--margen) 1rem;
+      background: var(--fondo);
+      border-bottom: 0.25rem solid var(--acento);
+      box-shadow: 0 0.75rem 1.5rem var(--sombra-fuerte);
+    }
+    .menu-movil a,
+    .menu-movil summary {
+      display: block;
+      padding: 0.75rem 0;
+      font-family: var(--fuente);
+      font-size: 1rem;
       font-weight: 700;
-      font-size: 0.95rem;
+      color: var(--texto);
+      text-decoration: none;
+    }
+    .menu-movil > a,
+    .menu-movil details {
+      border-bottom: 1px solid var(--borde);
+    }
+    .menu-movil summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .menu-movil summary::-webkit-details-marker {
+      display: none;
+    }
+    .menu-movil summary::after {
+      content: '▾';
+      font-size: 0.8rem;
+      color: var(--texto-suave);
+      transition: transform 0.15s;
+    }
+    .menu-movil details[open] summary::after {
+      transform: rotate(180deg);
+    }
+    .menu-movil ul {
+      margin: 0 0 0.75rem;
+      padding: 0 0 0 1rem;
+      list-style: none;
+      border-left: 0.2rem solid var(--borde);
+    }
+    .menu-movil ul a {
+      padding: 0.55rem 0;
+      font-weight: 600;
+      color: var(--texto-suave);
+    }
+    .menu-movil a:hover,
+    .menu-movil summary:hover,
+    .menu-movil a[aria-current='page'] {
+      color: var(--acento);
+    }
+    /* Con el menú abierto, la página de detrás no se desplaza. */
+    :global(body.menu-abierto) {
+      overflow: hidden;
     }
   }
-  /* Móvil estrecho: el desplegable mide lo que su opción más larga («Disminuida y tonos
-     enteros») y dejaba al título en dos letras. Se limita para que el título se lea. */
+  /* Móvil estrecho: título más pequeño y, si es largo («Entrenador de intervalos»), en dos líneas. */
   @media (max-width: 40rem) {
-    .nav-movil {
-      flex: 0 1 auto;
-      min-width: 0;
-      max-width: 45%;
-    }
-    .nav-movil select {
-      width: 100%;
-      max-width: 100%;
-      text-overflow: ellipsis;
-    }
-    /* El título largo («Entrenador de intervalos») pasa a dos líneas en vez de cortarse. */
     .titulo-seccion {
       display: -webkit-box;
       -webkit-box-orient: vertical;
@@ -349,13 +479,6 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     .guitarra {
       width: 2rem;
       height: 2rem;
-    }
-    .nav-movil {
-      max-width: 40%;
-    }
-    .nav-movil select {
-      min-height: 2.1rem;
-      font-size: 0.85rem;
     }
   }
 </style>

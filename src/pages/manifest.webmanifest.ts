@@ -4,8 +4,8 @@ import { archivo, BASE } from '../lib/rutas.ts';
 
 export function GET() {
   const manifiesto = {
-    name: 'jazzmaster',
-    short_name: 'jazzmaster',
+    name: 'JAZZMASTER',
+    short_name: 'JAZZMASTER',
     description: 'Intervalos, escalas, acordes y repertorio para practicar guitarra.',
     lang: 'es',
     start_url: BASE,
