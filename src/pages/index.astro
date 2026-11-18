@@ -1,5 +1,6 @@
 ---
-// Portada: cada sección (lib/secciones.ts) con sus páginas plegadas en un desplegable.
+// Portada: cada sección (lib/secciones.ts) con sus páginas. En pantalla grande se ven
+// todas; en el móvil van plegadas en un desplegable.
 // Las páginas favoritas salen las primeras de cada lista (lib/paginas-favoritas.ts,
 // desde layouts/Base.astro).
 import Base from '../layouts/Base.astro';
@@ -38,6 +39,20 @@ import { SECCIONES } from '../lib/secciones.ts';
     }
   </ul>
 </Base>
+
+<script>
+  // Pantalla grande: todas las secciones abiertas y sin plegar; en el móvil, plegadas.
+  const grande = matchMedia('(min-width: 60rem)');
+  const desplegables = [...document.querySelectorAll<HTMLDetailsElement>('.secciones details')];
+  const ajustar = () => desplegables.forEach((d) => (d.open = grande.matches));
+  grande.addEventListener('change', ajustar);
+  ajustar();
+  for (const d of desplegables) {
+    d.querySelector('summary')!.addEventListener('click', (e) => {
+      if (grande.matches && !(e.target as Element).closest('a')) e.preventDefault();
+    });
+  }
+</script>
 
 <style>
   .secciones,
@@ -120,6 +135,15 @@ import { SECCIONES } from '../lib/secciones.ts';
   .paginas a:hover {
     color: var(--acento);
     background: var(--fondo);
+  }
+  /* Pantalla grande: nada que plegar, así que sin contador ni flecha. */
+  @media (min-width: 60rem) {
+    summary {
+      cursor: default;
+    }
+    .cuenta {
+      display: none;
+    }
   }
   .paginas :global(.favorita) > a::before {
     content: '★ ';
