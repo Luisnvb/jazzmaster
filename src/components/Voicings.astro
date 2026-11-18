@@ -47,6 +47,16 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     )
   }
   <SelectorTonica clave="acordes" conTonica={!alAire}>
+    {
+      alAire && (
+        <label>Nota
+          <select data-filtro-nota>
+            <option value="">Todas</option>
+            {TONICAS.map((t) => <option value={t}>{t}</option>)}
+          </select>
+        </label>
+      )
+    }
     <label>Arpegio
       <select data-filtro-arpegio>
         <option value="">Todos</option>
@@ -113,8 +123,8 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   import { editorTrastes, type EditorTrastes } from '../lib/editor-trastes.ts';
   import { secuenciaVoicing, secuenciaVoicingContinua, type ModoVoicing } from '../lib/secuencias.ts';
   import { SOSTENIDOS } from '../lib/audio.ts';
-  import { notaDeGrado, formatNota } from '../lib/teoria.ts';
-  import { cuerdaDelBajo, transportar, type Traste } from '../lib/voicings.ts';
+  import { notaDeGrado, formatNota, parseNota, pitchClass } from '../lib/teoria.ts';
+  import { transportar, type Traste } from '../lib/voicings.ts';
 
   interface Grupo {
     id: string;
@@ -153,6 +163,30 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   const conAlAire = (v: Voicing) => v.trastes.includes(0);
   /** Los voicings que salen en esta página. */
   const deEstaPagina = (v: Voicing) => conAlAire(v) === paginaAlAire;
+  /** Sonido (0–11) de una nota escrita, o null si no se entiende. */
+  const sonido = (nota: string) => {
+    try {
+      return pitchClass(parseNota(nota));
+    } catch {
+      return null;
+    }
+  };
+  // Cuerdas al aire: filtro por la tónica del voicing (no transporta). '' = todas.
+  const CLAVE_NOTA = 'acordes:al-aire:nota';
+  const selectorNota = document.querySelector<HTMLSelectElement>('[data-filtro-nota]');
+  let filtroNota = paginaAlAire ? (leerJSON<string>(CLAVE_NOTA) ?? '') : '';
+  if (selectorNota) {
+    if (![...selectorNota.options].some((o) => o.value === filtroNota)) filtroNota = '';
+    selectorNota.value = filtroNota;
+    selectorNota.addEventListener('change', () => {
+      filtroNota = selectorNota.value;
+      if (filtroNota) guardarJSON(CLAVE_NOTA, filtroNota);
+      else borrar(CLAVE_NOTA);
+      pintar();
+    });
+  }
+  /** Si el voicing pasa el filtro de nota (enarmónicos incluidos: Gb cuenta como F#). */
+  const pasaNota = (v: Voicing) => editando || !filtroNota || sonido(v.tonica) === sonido(filtroNota);
   /** Cuerda de la tónica más grave ('6'…'1'), o 'sin' si el voicing no la lleva. */
   const cuerdaTonica = (v: Voicing) => {
     const c = v.grados.findIndex((g, i) => g === '1' && v.trastes[i] !== 'x');
@@ -184,7 +218,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         <div class="diagrama-caja">${diagramaSVG({ trastes: trastesEn(v), grados: v.grados })}</div>
         ${editando ? '' : botonFavorito(favs.tiene(v.id), v.nombre)}
         <div class="info">
-          <h3>${esc(paginaAlAire ? conTonica(t, v.nombre) : v.nombre)} · bajo en ${cuerdaDelBajo(v.trastes)}ª</h3>
+          <h3>${esc(paginaAlAire ? conTonica(t, v.nombre) : v.nombre)}</h3>
           <dl class="detalle">
             <dt>Grados</dt><dd>${esc(tocados.join(' '))}</dd>
             <dt>Notas</dt><dd>${esc(notas)}</dd>
@@ -213,10 +247,20 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   }
 
   function pintar() {
+    // Cuerdas al aire: en el selector de nota, cuántos voicings hay de cada una.
+    if (selectorNota) {
+      const delaPagina = lista.filter(deEstaPagina);
+      for (const o of selectorNota.options) {
+        if (!o.value) continue;
+        const n = delaPagina.filter((v) => sonido(v.tonica) === sonido(o.value)).length;
+        o.textContent = n ? `${o.value} (${n})` : o.value;
+        o.disabled = n === 0 && o.value !== filtroNota;
+      }
+    }
     contenedor.innerHTML = grupos
       .filter((g) => !filtro || g.id === filtro)
       .map((g) => {
-        const todos = lista.filter((v) => v.grupo === g.id && deEstaPagina(v));
+        const todos = lista.filter((v) => v.grupo === g.id && deEstaPagina(v) && pasaNota(v));
         if (todos.length === 0 && !editando) return '';
         // Selector de la cuerda de la tónica, con las que hay en el grupo (de grave a aguda).
         const cuerdas = [...new Set(todos.map(cuerdaTonica))].sort((a, b) => (a === 'sin' ? 1 : b === 'sin' ? -1 : Number(b) - Number(a)));
@@ -240,6 +284,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
           </section>`;
       })
       .join('');
+    if (!contenedor.innerHTML.trim() && filtroNota) contenedor.innerHTML = '<p class="suave">No hay voicings con esa nota.</p>';
     avisoLocal.hidden = Object.keys(cambios).length === 0 && orden.length === 0;
   }
 

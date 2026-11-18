@@ -32,7 +32,7 @@ const indice = getHeadings().filter((h) => h.depth === 2);
         <span class="etiqueta">Melodía</span>
       </div>
       <label class="campo">Otra nota
-        <select data-otra>{TONICAS.filter((t) => t !== 'Gb').map((t) => <option value={t}>{t}</option>)}</select>
+        <select data-otra>{TONICAS.map((t) => <option value={t}>{t}</option>)}</select>
       </label>
     </div>
     <div class="opciones">

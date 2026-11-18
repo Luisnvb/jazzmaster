@@ -9,11 +9,11 @@ import { ruta } from '../../lib/rutas.ts';
 import { TONICAS } from '../../lib/teoria.ts';
 
 const indice = getHeadings().filter((h) => h.depth === 2);
-// Material para el sorteo: tónicas sin enarmónicos repetidos, cualidades de grupos.yaml
+// Material para el sorteo: las tónicas, cualidades de grupos.yaml
 // más las tríadas, y las canciones del repertorio.
 const grupos = porOrden(await getCollection('grupos'));
 const datos = JSON.stringify({
-  notas: TONICAS.filter((t) => t !== 'Gb'),
+  notas: TONICAS,
   cualidades: [
     { nombre: 'Tríada mayor', enlace: `${ruta('acordes')}#grupo-maj7` },
     { nombre: 'Tríada menor', enlace: `${ruta('acordes')}#grupo-m7` },

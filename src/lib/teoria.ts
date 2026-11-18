@@ -14,8 +14,12 @@ const PC_LETRA: Record<Letra, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B:
 /** Semitonos de los grados naturales (escala mayor) 1–7. */
 const SEMITONOS_GRADO = [0, 2, 4, 5, 7, 9, 11];
 
-/** Tónicas que ofrecen los selectores, con la ortografía habitual. */
-export const TONICAS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
+/**
+ * Tónicas que ofrecen los selectores, con la ortografía habitual: una por sonido (12).
+ * F# y Gb son la misma nota; se deja F#. Una tónica guardada o enlazada como Gb
+ * se resuelve al botón de F# (botonDeTonica, en lib/cliente.ts).
+ */
+export const TONICAS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
 
 export interface Nota {
   letra: Letra;

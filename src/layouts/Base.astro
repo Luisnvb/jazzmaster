@@ -37,11 +37,13 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
     <title>{titulo} · JazzMaster</title>
   </head>
-  <body data-pagina-actual={pagina?.href}>
+  <body>
     <header class="cabecera">
       <div class="cabecera-dentro">
         <div class="titulo-caja">
-          <img class="guitarra" src={archivo('iconos/guitarra.png')} alt="" width="120" height="120" />
+          <a class="guitarra" href={ruta('')} title="Inicio">
+            <img src={archivo('iconos/guitarra.png')} alt="Inicio" width="120" height="120" />
+          </a>
           <Titulo class="titulo-seccion">{encabezado}</Titulo>
           {
             favoritable && (
@@ -109,7 +111,7 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
 
 <script>
   import { archivo } from '../lib/rutas.ts';
-  import { anotarReciente, aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
+  import { aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
 
   // Modo sin conexión: solo en la web compilada (en desarrollo la caché estorbaría).
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
@@ -139,10 +141,6 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
   });
   pintarEstrella();
   aplicarFavoritas();
-
-  // Últimas páginas visitadas (para la portada).
-  const actual = document.body.dataset.paginaActual;
-  if (actual) anotarReciente(actual);
 </script>
 
 <style>
@@ -174,9 +172,20 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
   /* La guitarra de la web (la del favicon), delante del título. */
   .guitarra {
     flex: 0 0 auto;
+    display: block;
     width: 2.4rem;
     height: 2.4rem;
     margin-right: 0.2rem;
+    border-radius: var(--radio);
+    transition: transform 0.15s;
+  }
+  .guitarra:hover {
+    transform: rotate(-8deg);
+  }
+  .guitarra img {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
   /* La estrella va junto al título, no en una esquina como en las tarjetas. */
   .favorito-pagina {
@@ -191,11 +200,10 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: var(--fuente-titulo);
-    font-weight: 400;
-    font-size: 1.75rem;
-    letter-spacing: 0;
-    /* Holgura para que los trazos de la letra a mano no se corten con overflow: hidden. */
-    line-height: 1.4;
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
     padding-right: 0.3em;
     white-space: nowrap;
     color: var(--texto);

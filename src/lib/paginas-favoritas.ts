@@ -1,25 +1,12 @@
-// Páginas favoritas y recientes (guardadas en este navegador). Las favoritas salen
-// las primeras en el menú de su sección, en la portada de la sección y en la de la
-// web; las recientes, en la portada. Las listas que se ordenan son los elementos
+// Páginas favoritas (guardadas en este navegador). Salen las primeras en el menú de
+// su sección, en la portada de la sección y en la de la web. Las listas que se ordenan son los elementos
 // [data-lista-paginas] con hijos [data-pagina="<href>"].
-import { guardarJSON, leerJSON } from './almacen.ts';
 import { favoritos, favoritosPrimero, type Favoritos } from './favoritos.ts';
 
 export const paginasFavoritas = (): Favoritos => favoritos('paginas');
 
 /** Las favoritas primero, en su orden de siempre; el resto, detrás, también en su orden. */
 export const ordenarConFavoritas = (hrefs: readonly string[], esFavorita: (href: string) => boolean) => favoritosPrimero(hrefs, esFavorita);
-
-/** Lista de recientes tras visitar una página: delante, sin repetir, como mucho `max`. */
-export const conReciente = (lista: readonly string[], href: string, max = 8) => [href, ...lista.filter((x) => x !== href)].slice(0, max);
-
-const CLAVE_RECIENTES = 'paginas:recientes';
-
-export const recientes = (): string[] => leerJSON<string[]>(CLAVE_RECIENTES) ?? [];
-
-export function anotarReciente(href: string) {
-  guardarJSON(CLAVE_RECIENTES, conReciente(recientes(), href));
-}
 
 /** Ordena las listas de páginas de la página con las favoritas primero y las marca. */
 export function aplicarFavoritas(raiz: ParentNode = document) {
