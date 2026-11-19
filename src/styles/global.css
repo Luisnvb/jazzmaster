@@ -37,6 +37,8 @@
   --ancho: 150rem;
   --radio: 0.25rem;
   --radio-tarjeta: 0.55em;
+  /* Ancho de los textos largos (artículos, índices): centrados en la página. */
+  --ancho-texto: 52rem;
   --barra-alto: 0rem;
 
   /* 18 px en un portátil, ~19-20 px en un 27" de 2560 px. */
@@ -304,7 +306,8 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 1.5rem;
-  margin: 0 0 1rem;
+  max-width: var(--ancho-texto);
+  margin: 0 auto 1rem;
   font-weight: 700;
 }
 .indice a {
@@ -313,7 +316,8 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 
 /* Texto de la rutina (Markdown). */
 .texto-estudio {
-  max-width: 52rem;
+  max-width: var(--ancho-texto);
+  margin-inline: auto;
   line-height: 1.6;
 }
 .texto-estudio h2 {

@@ -174,13 +174,13 @@ const idPaso = (direccion: string) => `paso-${direccion.replace(/\//g, '-')}`;
 
 <style>
   .lema {
-    max-width: 52rem;
-    margin: 0 0 1.25rem;
+    max-width: var(--ancho-texto);
+    margin: 0 auto 1.25rem;
     color: var(--texto-suave);
   }
   .siguiente {
-    max-width: 52rem;
-    margin: 0 0 1.5rem;
+    max-width: var(--ancho-texto);
+    margin: 0 auto 1.5rem;
     padding: 1rem 1.2rem 1.1rem;
     background: var(--tarjeta);
     border: 1px solid var(--borde);
@@ -255,8 +255,8 @@ const idPaso = (direccion: string) => `paso-${direccion.replace(/\//g, '-')}`;
     color: var(--texto-suave);
   }
   .etapa {
-    max-width: 52rem;
-    margin-top: 2rem;
+    max-width: var(--ancho-texto);
+    margin: 2rem auto 0;
     padding-top: 1rem;
     border-top: 1px solid var(--borde);
   }
@@ -351,7 +351,8 @@ const idPaso = (direccion: string) => `paso-${direccion.replace(/\//g, '-')}`;
     color: var(--texto-suave);
   }
   .reiniciar {
-    margin-top: 2.5rem;
+    max-width: var(--ancho-texto);
+    margin: 2.5rem auto 0;
   }
   @media (max-width: 40rem) {
     .tarea,

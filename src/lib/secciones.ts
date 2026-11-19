@@ -26,13 +26,19 @@ const seccion = (id: string, nombre: string, lema: string, partes: Pagina[]): Se
 });
 
 export const SECCIONES: Seccion[] = [
-  seccion('ruta', 'Ruta', 'Por dónde empezar y en qué orden recorrer la web', [
+  seccion('rutina', 'Rutina', 'Por dónde empezar, qué practicar cada día y cómo', [
     pagina('Ruta de aprendizaje', 'ruta', 'Siete etapas por las páginas de la web, de los cimientos al sonido moderno'),
-  ]),
-  seccion('rutina', 'Rutina', 'Qué practicar cada día y cómo', [
     pagina('Rutina de práctica', 'estudio/rutina', 'Una nota y una cualidad; repertorio en una posición'),
     pagina('Mástil por capas', 'estudio/capas', 'Raíz, tríadas, arpegio, pentatónica, escala y acorde en una zona CAGED'),
     pagina('Ritmo', 'estudio/ritmo', 'Pulso, subdivisiones, swing y patrones de acompañamiento'),
+  ]),
+  seccion('oido-tecnica', 'Oído y técnica', 'Intervalos, oído armónico, lectura, digitación y púa', [
+    pagina('Intervalos', 'intervalos', 'Fichas, audio y entrenador de oído'),
+    pagina('Oído armónico', 'estudio/oido-armonico', 'Entrenador de cualidades, cadenas por grados y progresiones'),
+    pagina('Dictado melódico', 'estudio/dictado', 'Llamada y respuesta: repite en el compás siguiente la frase que acaba de sonar'),
+    pagina('Lectura a primera vista', 'estudio/lectura', 'Una nota en el pentagrama: encuéntrala en el mástil, en su octava'),
+    pagina('Digitación y posiciones', 'estudio/digitacion', 'Las 12 posiciones, tres notas por cuerda y cómo cambiar de sitio la mano'),
+    pagina('Técnica de púa', 'estudio/pua', 'Alternada, economy y sweep, con metrónomo y subida progresiva de tempo'),
   ]),
   seccion('repertorio', 'Repertorio', 'Canciones, sus formas y cómo aprenderlas', [
     pagina('Repertorio', 'repertorio', 'Cifrados, letras y notas'),
@@ -75,14 +81,6 @@ export const SECCIONES: Seccion[] = [
     pagina('Tensiones y avoid notes', 'estudio/tensiones', 'Las 12 notas sobre un acorde: cuáles suenan y cuáles chocan'),
     pagina('Acordes slash', 'estudio/slash', 'Tríadas sobre otro bajo y estructuras superiores: qué acorde sale'),
     pagina('Cambios de Coltrane', 'estudio/coltrane', 'Giant Steps y el ciclo de terceras mayores, con notas guía y shells'),
-  ]),
-  seccion('oido-tecnica', 'Oído y técnica', 'Intervalos, oído armónico, lectura, digitación y púa', [
-    pagina('Intervalos', 'intervalos', 'Fichas, audio y entrenador de oído'),
-    pagina('Oído armónico', 'estudio/oido-armonico', 'Entrenador de cualidades, cadenas por grados y progresiones'),
-    pagina('Dictado melódico', 'estudio/dictado', 'Llamada y respuesta: repite en el compás siguiente la frase que acaba de sonar'),
-    pagina('Lectura a primera vista', 'estudio/lectura', 'Una nota en el pentagrama: encuéntrala en el mástil, en su octava'),
-    pagina('Digitación y posiciones', 'estudio/digitacion', 'Las 12 posiciones, tres notas por cuerda y cómo cambiar de sitio la mano'),
-    pagina('Técnica de púa', 'estudio/pua', 'Alternada, economy y sweep, con metrónomo y subida progresiva de tempo'),
   ]),
   seccion('apuntes', 'Apuntes', 'Tus notas y tus documentos', [
     pagina('Apuntes', 'apuntes', 'Notas propias y enlaces a partituras y libros de tu equipo'),

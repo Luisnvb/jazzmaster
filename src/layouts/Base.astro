@@ -218,7 +218,7 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
   // Al volver con «atrás» (caché del navegador), el menú no debe seguir abierto.
   addEventListener('pageshow', () => abrirMenu(false));
   // Si la ventana se ensancha hasta la barra de escritorio, se cierra.
-  matchMedia('(min-width: 86.01rem)').addEventListener('change', (e) => e.matches && abrirMenu(false));
+  matchMedia('(min-width: 80.01rem)').addEventListener('change', (e) => e.matches && abrirMenu(false));
 
   // Páginas favoritas: la estrella de la cabecera y el orden de los menús y listas.
   const favoritas = paginasFavoritas();
@@ -412,7 +412,7 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     display: none;
   }
   /* Móvil: la barra de secciones no cabe; se cambia por un menú hamburguesa. */
-  @media (max-width: 86rem) {
+  @media (max-width: 80rem) {
     .cabecera-dentro {
       gap: 1rem;
     }
