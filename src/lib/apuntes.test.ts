@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { htmlIndiceNotas, juntarPorId, limpiarRuta, nombreDeRuta, ordenar, tamanoLegible, tituloDe, validarCopia, type Nota } from './apuntes.ts';
+import { htmlIndiceNotas, juntarPorId, limpiarRuta, nombreDeRuta, ordenar, tamanoLegible, tituloDe, validarCopia, type Documento, type Nota } from './apuntes.ts';
 
 const nota = (id: string, favorita: boolean, editada: number, titulo = id, texto = ''): Nota => ({ id, titulo, texto, favorita, creada: 0, editada });
 
@@ -20,6 +20,18 @@ test('índice de notas: enlaces escapados, favoritas primero y la actual marcada
   assert.ok(html.indexOf('Fav') < html.indexOf('&lt;b&gt;'));
   assert.match(html, /href="\/apuntes\/nota\/\?id=a" aria-current="page"/);
   assert.equal(htmlIndiceNotas([], (id) => id), '');
+});
+
+test('índice: los documentos favoritos van detrás de las notas favoritas y enlazan a su tarjeta', () => {
+  const doc = (id: string, favorita: boolean, titulo: string): Documento => ({ id, titulo, ruta: '', favorita, creada: 0, editada: 0 });
+  const html = htmlIndiceNotas([nota('a', false, 2, 'Normal'), nota('b', true, 1, 'NotaFav')], (id) => id, undefined, [
+    doc('d1', true, 'DocFav'),
+    doc('d2', false, 'DocNormal'),
+  ]);
+  assert.ok(html.indexOf('NotaFav') < html.indexOf('DocFav') && html.indexOf('DocFav') < html.indexOf('Normal'));
+  assert.match(html, /href="#documento-d1"/);
+  assert.ok(!html.includes('DocNormal'));
+  assert.match(htmlIndiceNotas([], (id) => id, undefined, [doc('d1', true, 'Solo')]), /Solo/);
 });
 
 test('rutas del equipo y tamaños', () => {

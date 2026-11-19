@@ -92,15 +92,32 @@ export function cambiarNota(id: string, cambios: Partial<Omit<Nota, 'id'>>): Not
 
 // --- Índice de notas: enlaces a la página de cada una -----------------------------
 
-/** Enlaces a todas las notas (favoritas primero), para la parte de arriba de las páginas. */
-export function htmlIndiceNotas(notas: readonly Nota[], hrefNota: (id: string) => string, actual?: string): string {
-  if (!notas.length) return '';
-  return ordenar(notas)
-    .map(
-      (n) =>
-        `<a class="enlace-nota${n.favorita ? ' favorita' : ''}" href="${esc(hrefNota(n.id))}"${n.id === actual ? ' aria-current="page"' : ''} data-enlace-nota="${esc(n.id)}">${n.favorita ? '★ ' : ''}${esc(tituloDe(n))}</a>`,
-    )
-    .join('');
+/** Id del elemento de la lista de documentos, para enlazarlo con #… */
+export const anclaDocumento = (id: string) => `documento-${id}`;
+
+/**
+ * Enlaces para la parte de arriba de las páginas de Apuntes: las notas favoritas, los
+ * documentos favoritos (llevan a su tarjeta en la lista) y el resto de las notas.
+ */
+export function htmlIndiceNotas(
+  notas: readonly Nota[],
+  hrefNota: (id: string) => string,
+  actual?: string,
+  documentos: readonly Documento[] = [],
+  hrefDocumento: (id: string) => string = (id) => `#${anclaDocumento(id)}`,
+): string {
+  const enlace = (clase: string, href: string, titulo: string, favorita: boolean, extra = '') =>
+    `<a class="${clase}${favorita ? ' favorita' : ''}" href="${esc(href)}"${extra}>${favorita ? '★ ' : ''}${esc(titulo)}</a>`;
+  const nota = (n: Nota) =>
+    enlace('enlace-nota', hrefNota(n.id), tituloDe(n), n.favorita, `${n.id === actual ? ' aria-current="page"' : ''} data-enlace-nota="${esc(n.id)}"`);
+  const doc = (d: Documento) =>
+    enlace('enlace-nota enlace-documento', hrefDocumento(d.id), d.titulo, true, ` data-enlace-documento="${esc(d.id)}"`);
+  const notasOrdenadas = ordenar(notas);
+  return [
+    ...notasOrdenadas.filter((n) => n.favorita).map(nota),
+    ...ordenar(documentos.filter((d) => d.favorita)).map(doc),
+    ...notasOrdenadas.filter((n) => !n.favorita).map(nota),
+  ].join('');
 }
 
 // --- Archivos adjuntos (IndexedDB) ------------------------------------------------

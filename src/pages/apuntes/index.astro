@@ -5,7 +5,7 @@ import Base from '../../layouts/Base.astro';
 ---
 
 <Base titulo="Apuntes">
-  <nav class="indice-notas" aria-label="Tus notas" data-indice-notas hidden></nav>
+  <nav class="indice-notas" aria-label="Tus apuntes" data-indice-notas hidden></nav>
 
   <div class="columnas">
     <section aria-labelledby="notas-titulo">
@@ -77,6 +77,7 @@ import Base from '../../layouts/Base.astro';
     guardarArchivo,
     guardarDocumentos,
     guardarNotas,
+    anclaDocumento,
     htmlIndiceNotas,
     leerArchivo,
     leerDocumentos,
@@ -102,11 +103,27 @@ import Base from '../../layouts/Base.astro';
   const avisoDoc = document.querySelector<HTMLElement>('[data-aviso-documento]')!;
   const fecha = (ms: number) => new Date(ms).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
 
+  // --- Parte de arriba: notas y documentos favoritos -------------------------------
+  function pintarIndice() {
+    indice.innerHTML = htmlIndiceNotas(leerNotas(), hrefNota, undefined, leerDocumentos());
+    indice.hidden = !indice.innerHTML;
+  }
+
+  // Un enlace #documento-… (de la parte de arriba o de otra página) lleva a su tarjeta.
+  function irAlDocumento() {
+    const li = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    if (!li?.matches('[data-documento]')) return;
+    li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    li.classList.remove('destacado');
+    void li.offsetWidth; // reinicia la animación si se vuelve a pulsar
+    li.classList.add('destacado');
+  }
+  addEventListener('hashchange', irAlDocumento);
+
   // --- Notas --------------------------------------------------------------------
   function pintarNotas(nueva?: string) {
     const notas = leerNotas();
-    indice.innerHTML = htmlIndiceNotas(notas, hrefNota);
-    indice.hidden = !notas.length;
+    pintarIndice();
     document.querySelector<HTMLElement>('[data-sin-notas]')!.hidden = notas.length > 0;
     listaNotas.innerHTML = ordenar(notas)
       .map((n) => {
@@ -147,10 +164,11 @@ import Base from '../../layouts/Base.astro';
   // --- Documentos ---------------------------------------------------------------
   function pintarDocumentos() {
     const docs = leerDocumentos();
+    pintarIndice();
     document.querySelector<HTMLElement>('[data-sin-documentos]')!.hidden = docs.length > 0;
     listaDocs.innerHTML = ordenar(docs)
       .map(
-        (d) => `<li class="tarjeta elemento" data-documento="${esc(d.id)}">
+        (d) => `<li class="tarjeta elemento" id="${esc(anclaDocumento(d.id))}" data-documento="${esc(d.id)}">
           ${botonFavorito(d.favorita, d.titulo)}
           <span class="elemento-titulo">${esc(d.titulo)}</span>
           ${
@@ -291,6 +309,7 @@ import Base from '../../layouts/Base.astro';
   pintarNotas();
   pintarDocumentos();
   pintarEspacio();
+  irAlDocumento();
 </script>
 
 <style>
@@ -329,6 +348,19 @@ import Base from '../../layouts/Base.astro';
   .lista :global(.elemento) {
     position: relative;
     padding: 0.75rem 2.6rem 0.75rem 1rem;
+    scroll-margin-top: calc(var(--cabecera-alto) + 1rem);
+  }
+  /* Documento al que se llega desde la parte de arriba: se marca un momento. */
+  .lista :global(.elemento.destacado) {
+    animation: destacar 1.6s ease-out;
+  }
+  @keyframes destacar {
+    from {
+      box-shadow: 0 0 0 3px var(--acento);
+    }
+    to {
+      box-shadow: 0 0 0 3px transparent;
+    }
   }
   .lista :global(.elemento-titulo) {
     font-weight: 700;

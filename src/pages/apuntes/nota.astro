@@ -6,7 +6,7 @@ import { ruta } from '../../lib/rutas.ts';
 ---
 
 <Base titulo="Nota" encabezado="Apuntes" conH1={false}>
-  <nav class="indice-notas" aria-label="Tus notas" data-indice-notas></nav>
+  <nav class="indice-notas" aria-label="Tus apuntes" data-indice-notas></nav>
 
   <p class="volver"><a href={ruta('apuntes')}>← Todos los apuntes</a></p>
 
@@ -29,7 +29,16 @@ import { ruta } from '../../lib/rutas.ts';
 </Base>
 
 <script>
-  import { cambiarNota, conConfirmacion, guardarNotas, htmlIndiceNotas, leerNotas, tituloDe } from '../../lib/apuntes.ts';
+  import {
+    anclaDocumento,
+    cambiarNota,
+    conConfirmacion,
+    guardarNotas,
+    htmlIndiceNotas,
+    leerDocumentos,
+    leerNotas,
+    tituloDe,
+  } from '../../lib/apuntes.ts';
   import { botonFavorito } from '../../lib/favoritos.ts';
   import { ruta } from '../../lib/rutas.ts';
 
@@ -42,7 +51,8 @@ import { ruta } from '../../lib/rutas.ts';
   const estrella = document.querySelector<HTMLElement>('[data-estrella]')!;
   const estado = document.querySelector<HTMLElement>('[data-estado]')!;
 
-  const pintarIndice = () => (indice.innerHTML = htmlIndiceNotas(leerNotas(), hrefNota, id));
+  const hrefDocumento = (x: string) => `${ruta('apuntes')}#${anclaDocumento(x)}`;
+  const pintarIndice = () => (indice.innerHTML = htmlIndiceNotas(leerNotas(), hrefNota, id, leerDocumentos(), hrefDocumento));
   const pintarCabecera = () => {
     const n = leerNotas().find((x) => x.id === id);
     if (!n) return;
