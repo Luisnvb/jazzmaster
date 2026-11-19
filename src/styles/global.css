@@ -317,7 +317,7 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 /* Descripciones y leyendas de las herramientas: en la misma columna centrada que el
    texto de la página. (:root sube la especificidad por encima de los estilos de cada
    página, que fijan sus márgenes con «margin: … 0».) */
-:root main :is(p.descripcion, p.leyenda, p.pista, p.uso, p.nota-par, p.intro) {
+:root main :is(p.descripcion, p.leyenda, details.leyenda, p.pista, p.uso, p.nota-par, p.intro) {
   max-width: var(--ancho-texto);
   margin-inline: auto;
 }
