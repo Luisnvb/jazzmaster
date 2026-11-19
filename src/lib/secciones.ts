@@ -84,6 +84,9 @@ export const SECCIONES: Seccion[] = [
     pagina('Digitación y posiciones', 'estudio/digitacion', 'Las 12 posiciones, tres notas por cuerda y cómo cambiar de sitio la mano'),
     pagina('Técnica de púa', 'estudio/pua', 'Alternada, economy y sweep, con metrónomo y subida progresiva de tempo'),
   ]),
+  seccion('apuntes', 'Apuntes', 'Tus notas y tus documentos', [
+    pagina('Apuntes', 'apuntes', 'Notas propias y enlaces a partituras y libros de tu equipo'),
+  ]),
 ];
 
 /** Todas las páginas, en el orden de las secciones. */

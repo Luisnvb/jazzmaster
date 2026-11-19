@@ -1,0 +1,406 @@
+---
+// Apuntes: notas propias y documentos del equipo (lib/apuntes.ts). Todo se guarda en
+// este navegador; la copia de seguridad lo lleva a otro navegador o dispositivo.
+import Base from '../../layouts/Base.astro';
+---
+
+<Base titulo="Apuntes">
+  <nav class="indice-notas" aria-label="Tus notas" data-indice-notas hidden></nav>
+
+  <div class="columnas">
+    <section aria-labelledby="notas-titulo">
+      <h2 id="notas-titulo">Notas</h2>
+      <form class="tarjeta formulario" data-nueva-nota>
+        <label class="bloque">
+          Título
+          <input name="titulo" maxlength="120" autocomplete="off" placeholder="Digitación de Stella, ideas para el solo…" />
+        </label>
+        <label class="bloque">
+          Texto
+          <textarea name="texto" rows="5"></textarea>
+        </label>
+        <button type="submit" class="boton principal">Crear nota</button>
+      </form>
+      <ul class="lista" data-lista-notas></ul>
+      <p class="vacio" data-sin-notas hidden>Aún no hay notas.</p>
+    </section>
+
+    <section aria-labelledby="documentos-titulo">
+      <h2 id="documentos-titulo">Documentos</h2>
+      <form class="tarjeta formulario" data-nuevo-documento>
+        <label class="bloque">
+          Título
+          <input name="titulo" maxlength="120" autocomplete="off" placeholder="Real Book, partitura de Footprints…" />
+        </label>
+        <label class="bloque">
+          Ruta en tu equipo
+          <input name="ruta" autocomplete="off" placeholder="C:\Users\…\Partituras\footprints.pdf" spellcheck="false" />
+        </label>
+        <p class="ayuda">
+          En el explorador de Windows: clic derecho en el archivo → <em>Copiar como ruta de acceso</em>, y pégala aquí. Los
+          navegadores no abren archivos del equipo desde una web, así que la ruta se copia para pegarla en el explorador.
+        </p>
+        <label class="bloque">
+          Archivo (opcional): se guarda en el navegador y se abre con un clic
+          <input type="file" name="archivo" />
+        </label>
+        <button type="submit" class="boton principal">Añadir documento</button>
+        <p class="aviso" data-aviso-documento role="status"></p>
+      </form>
+      <ul class="lista" data-lista-documentos></ul>
+      <p class="vacio" data-sin-documentos hidden>Aún no hay documentos.</p>
+    </section>
+  </div>
+
+  <section class="copia" aria-labelledby="copia-titulo">
+    <h2 id="copia-titulo">Copia de seguridad</h2>
+    <p>
+      Las notas y los documentos viven en este navegador. Exporta una copia (incluye los archivos adjuntos) para guardarla
+      o llevarla a otro navegador; al importarla se añade a lo que ya haya.
+    </p>
+    <div class="botones">
+      <button type="button" class="boton" data-exportar>Exportar copia</button>
+      <button type="button" class="boton" data-importar>Importar copia</button>
+    </div>
+    <p class="espacio" data-espacio role="status"></p>
+  </section>
+</Base>
+
+<script>
+  import { descargar, esc } from '../../lib/almacen.ts';
+  import {
+    borrarArchivo,
+    cambiarNota,
+    conConfirmacion,
+    crearCopia,
+    espacio,
+    guardarArchivo,
+    guardarDocumentos,
+    guardarNotas,
+    htmlIndiceNotas,
+    leerArchivo,
+    leerDocumentos,
+    leerNotas,
+    limpiarRuta,
+    nombreDeRuta,
+    nuevoId,
+    ordenar,
+    pedirPersistencia,
+    recuperarCopia,
+    tamanoLegible,
+    tituloDe,
+    validarCopia,
+    type Documento,
+  } from '../../lib/apuntes.ts';
+  import { botonFavorito } from '../../lib/favoritos.ts';
+  import { ruta } from '../../lib/rutas.ts';
+
+  const hrefNota = (id: string) => `${ruta('apuntes/nota')}?id=${encodeURIComponent(id)}`;
+  const indice = document.querySelector<HTMLElement>('[data-indice-notas]')!;
+  const listaNotas = document.querySelector<HTMLUListElement>('[data-lista-notas]')!;
+  const listaDocs = document.querySelector<HTMLUListElement>('[data-lista-documentos]')!;
+  const avisoDoc = document.querySelector<HTMLElement>('[data-aviso-documento]')!;
+  const fecha = (ms: number) => new Date(ms).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  // --- Notas --------------------------------------------------------------------
+  function pintarNotas(nueva?: string) {
+    const notas = leerNotas();
+    indice.innerHTML = htmlIndiceNotas(notas, hrefNota);
+    indice.hidden = !notas.length;
+    document.querySelector<HTMLElement>('[data-sin-notas]')!.hidden = notas.length > 0;
+    listaNotas.innerHTML = ordenar(notas)
+      .map((n) => {
+        const extracto = n.texto.trim().slice(0, 280);
+        return `<li class="tarjeta elemento" data-nota="${esc(n.id)}">
+          ${botonFavorito(n.favorita, tituloDe(n))}
+          <a class="elemento-titulo" href="${esc(hrefNota(n.id))}">${esc(tituloDe(n))}</a>
+          ${extracto ? `<p class="extracto">${esc(extracto)}${n.texto.trim().length > 280 ? '…' : ''}</p>` : ''}
+          <p class="fecha">${fecha(n.editada)}</p>
+        </li>`;
+      })
+      .join('');
+    if (nueva) indice.querySelector(`[data-enlace-nota="${CSS.escape(nueva)}"]`)?.classList.add('recien');
+  }
+
+  document.querySelector<HTMLFormElement>('[data-nueva-nota]')!.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const titulo = (form.elements.namedItem('titulo') as HTMLInputElement).value.trim();
+    const texto = (form.elements.namedItem('texto') as HTMLTextAreaElement).value;
+    if (!titulo && !texto.trim()) return;
+    const ahora = Date.now();
+    const id = nuevoId('n');
+    guardarNotas([...leerNotas(), { id, titulo, texto, favorita: false, creada: ahora, editada: ahora }]);
+    form.reset();
+    pintarNotas(id);
+  });
+
+  listaNotas.addEventListener('click', (e) => {
+    const estrella = (e.target as Element).closest('[data-favorito]');
+    const li = estrella?.closest<HTMLElement>('[data-nota]');
+    if (!li) return;
+    const n = leerNotas().find((x) => x.id === li.dataset.nota);
+    if (n) cambiarNota(n.id, { favorita: !n.favorita });
+    pintarNotas();
+  });
+
+  // --- Documentos ---------------------------------------------------------------
+  function pintarDocumentos() {
+    const docs = leerDocumentos();
+    document.querySelector<HTMLElement>('[data-sin-documentos]')!.hidden = docs.length > 0;
+    listaDocs.innerHTML = ordenar(docs)
+      .map(
+        (d) => `<li class="tarjeta elemento" data-documento="${esc(d.id)}">
+          ${botonFavorito(d.favorita, d.titulo)}
+          <span class="elemento-titulo">${esc(d.titulo)}</span>
+          ${
+            d.archivo
+              ? `<p class="adjunto"><button type="button" class="boton principal" data-abrir>Abrir</button>
+                 <span>${esc(d.archivo.nombre)} · ${tamanoLegible(d.archivo.tamano)}</span></p>`
+              : ''
+          }
+          ${
+            d.ruta
+              ? `<p class="ruta-equipo"><code title="${esc(d.ruta)}">${esc(d.ruta)}</code>
+                 <button type="button" class="boton" data-copiar>Copiar ruta</button></p>`
+              : ''
+          }
+          <p class="pie"><span class="fecha">${fecha(d.creada)}</span>
+            <button type="button" class="boton peligro" data-borrar-documento>Eliminar</button></p>
+        </li>`,
+      )
+      .join('');
+    for (const b of listaDocs.querySelectorAll<HTMLButtonElement>('[data-borrar-documento]')) {
+      const id = b.closest<HTMLElement>('[data-documento]')!.dataset.documento!;
+      conConfirmacion(b, async () => {
+        guardarDocumentos(leerDocumentos().filter((x) => x.id !== id));
+        await borrarArchivo(id).catch(() => {});
+        pintarDocumentos();
+        pintarEspacio();
+      });
+    }
+  }
+
+  document.querySelector<HTMLFormElement>('[data-nuevo-documento]')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const rutaEquipo = limpiarRuta((form.elements.namedItem('ruta') as HTMLInputElement).value);
+    const archivo = (form.elements.namedItem('archivo') as HTMLInputElement).files?.[0];
+    let titulo = (form.elements.namedItem('titulo') as HTMLInputElement).value.trim();
+    if (!rutaEquipo && !archivo) {
+      avisoDoc.textContent = 'Indica la ruta en tu equipo, elige un archivo o las dos cosas.';
+      return;
+    }
+    titulo ||= archivo?.name ?? nombreDeRuta(rutaEquipo);
+    const ahora = Date.now();
+    const doc: Documento = { id: nuevoId('d'), titulo, ruta: rutaEquipo, favorita: false, creada: ahora, editada: ahora };
+    if (archivo) {
+      avisoDoc.textContent = 'Guardando el archivo…';
+      try {
+        await pedirPersistencia();
+        await guardarArchivo(doc.id, archivo);
+        doc.archivo = { nombre: archivo.name, tipo: archivo.type, tamano: archivo.size };
+      } catch {
+        avisoDoc.textContent = 'No se pudo guardar el archivo (¿navegador en modo privado o sin espacio?).';
+        return;
+      }
+    }
+    guardarDocumentos([...leerDocumentos(), doc]);
+    form.reset();
+    avisoDoc.textContent = '';
+    pintarDocumentos();
+    pintarEspacio();
+  });
+
+  listaDocs.addEventListener('click', async (e) => {
+    const t = e.target as Element;
+    const li = t.closest<HTMLElement>('[data-documento]');
+    if (!li) return;
+    const id = li.dataset.documento!;
+    const doc = leerDocumentos().find((x) => x.id === id);
+    if (!doc) return;
+    if (t.closest('[data-favorito]')) {
+      guardarDocumentos(leerDocumentos().map((x) => (x.id === id ? { ...x, favorita: !x.favorita } : x)));
+      pintarDocumentos();
+    } else if (t.closest('[data-copiar]')) {
+      const boton = t.closest<HTMLButtonElement>('[data-copiar]')!;
+      try {
+        await navigator.clipboard.writeText(doc.ruta);
+        boton.textContent = 'Copiada ✓';
+      } catch {
+        // Sin portapapeles: se selecciona la ruta para copiarla a mano.
+        getSelection()?.selectAllChildren(li.querySelector('code')!);
+        boton.textContent = 'Cópiala (Ctrl+C)';
+      }
+      setTimeout(() => (boton.textContent = 'Copiar ruta'), 2000);
+    } else if (t.closest('[data-abrir]')) {
+      // La pestaña se abre ya, dentro del clic (si no, el navegador la bloquea).
+      const pestana = window.open('', '_blank');
+      const blob = await leerArchivo(id).catch(() => undefined);
+      if (!blob) {
+        pestana?.close();
+        avisoDoc.textContent = `No se encuentra el archivo de «${doc.titulo}» en este navegador.`;
+        return;
+      }
+      const url = URL.createObjectURL(blob.type ? blob : new Blob([blob], { type: doc.archivo?.tipo }));
+      if (pestana) pestana.location.href = url;
+      else location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    }
+  });
+
+  // --- Copia de seguridad y espacio ---------------------------------------------
+  const textoEspacio = document.querySelector<HTMLElement>('[data-espacio]')!;
+  async function pintarEspacio() {
+    const e = await espacio().catch(() => null);
+    if (!e) return;
+    textoEspacio.textContent =
+      `Esta web usa ${tamanoLegible(e.usado)} de ${tamanoLegible(e.cuota)} disponibles en este navegador. ` +
+      (e.persistente
+        ? 'Almacenamiento persistente: el navegador no lo borrará aunque falte espacio.'
+        : 'Almacenamiento no persistente: si falta espacio, el navegador podría borrarlo; guarda una copia.');
+  }
+
+  document.querySelector('[data-exportar]')!.addEventListener('click', async () => {
+    const copia = await crearCopia();
+    const hoy = new Date().toISOString().slice(0, 10);
+    descargar(`jazzmaster-apuntes-${hoy}.json`, JSON.stringify(copia));
+  });
+
+  document.querySelector('[data-importar]')!.addEventListener('click', () => {
+    const entrada = document.createElement('input');
+    entrada.type = 'file';
+    entrada.accept = '.json,application/json';
+    entrada.addEventListener('change', async () => {
+      const archivo = entrada.files?.[0];
+      if (!archivo) return;
+      try {
+        await pedirPersistencia();
+        const { notas, documentos } = await recuperarCopia(validarCopia(JSON.parse(await archivo.text())));
+        textoEspacio.textContent = `Importadas ${notas} notas y ${documentos} documentos.`;
+        pintarNotas();
+        pintarDocumentos();
+        setTimeout(pintarEspacio, 3000);
+      } catch (error) {
+        textoEspacio.textContent = error instanceof Error && !(error instanceof SyntaxError) ? error.message : 'No se pudo leer la copia.';
+      }
+    });
+    entrada.click();
+  });
+
+  pintarNotas();
+  pintarDocumentos();
+  pintarEspacio();
+</script>
+
+<style>
+  .columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    gap: 1rem 2.5rem;
+    align-items: start;
+  }
+  h2 {
+    margin: 0 0 0.6rem;
+  }
+  .formulario {
+    padding: 0.4rem 1rem 1rem;
+  }
+  .ayuda,
+  .aviso {
+    margin: -0.3rem 0 0.6rem;
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+  }
+  .aviso:empty {
+    display: none;
+  }
+  .aviso {
+    margin: 0.6rem 0 0;
+    color: var(--mal);
+  }
+  .lista {
+    display: grid;
+    gap: 0.6rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .lista :global(.elemento) {
+    position: relative;
+    padding: 0.75rem 2.6rem 0.75rem 1rem;
+  }
+  .lista :global(.elemento-titulo) {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--texto);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .lista :global(a.elemento-titulo:hover) {
+    color: var(--acento);
+  }
+  .lista :global(.elemento p) {
+    margin: 0.35rem 0 0;
+  }
+  .lista :global(.extracto) {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--texto-suave);
+    font-size: 0.92rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
+  }
+  .lista :global(.fecha) {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+  }
+  .lista :global(.adjunto),
+  .lista :global(.ruta-equipo),
+  .lista :global(.pie) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.7rem;
+    font-size: 0.85rem;
+  }
+  .lista :global(.pie) {
+    justify-content: space-between;
+  }
+  .lista :global(.ruta-equipo code) {
+    flex: 1 1 12rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.2rem 0.4rem;
+    background: var(--fondo);
+    border-radius: var(--radio);
+  }
+  .lista :global(.elemento .boton) {
+    min-height: 1.8rem;
+    padding: 0 0.8rem;
+    font-size: 0.82rem;
+  }
+  .vacio {
+    color: var(--texto-suave);
+  }
+  .copia {
+    max-width: 52rem;
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--borde);
+  }
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .espacio {
+    font-size: 0.85rem;
+    color: var(--texto-suave);
+  }
+</style>
