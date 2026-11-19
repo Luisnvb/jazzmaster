@@ -26,6 +26,9 @@ const seccion = (id: string, nombre: string, lema: string, partes: Pagina[]): Se
 });
 
 export const SECCIONES: Seccion[] = [
+  seccion('ruta', 'Ruta', 'Por dónde empezar y en qué orden recorrer la web', [
+    pagina('Ruta de aprendizaje', 'ruta', 'Siete etapas por las páginas de la web, de los cimientos al sonido moderno'),
+  ]),
   seccion('rutina', 'Rutina', 'Qué practicar cada día y cómo', [
     pagina('Rutina de práctica', 'estudio/rutina', 'Una nota y una cualidad; repertorio en una posición'),
     pagina('Mástil por capas', 'estudio/capas', 'Raíz, tríadas, arpegio, pentatónica, escala y acorde en una zona CAGED'),

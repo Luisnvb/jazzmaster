@@ -9,7 +9,7 @@ import { SECCIONES } from '../lib/secciones.ts';
 
 <Base titulo="Inicio" encabezado="JAZZMASTER">
   <h2 class="visualmente-oculto">Secciones</h2>
-  <ul class="secciones">
+  <ul class="secciones" style={`--columnas: ${SECCIONES.length}`}>
     {
       SECCIONES.map((s, i) => (
         <li class="seccion">
@@ -136,11 +136,11 @@ import { SECCIONES } from '../lib/secciones.ts';
     color: var(--acento);
     background: var(--fondo);
   }
-  /* Pantalla grande: las seis secciones en una fila, más pequeñas, y nada que plegar
+  /* Pantalla grande: todas las secciones en una fila, más pequeñas, y nada que plegar
      (sin contador ni flecha). */
   @media (min-width: 60rem) {
     .secciones {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(var(--columnas), minmax(0, 1fr));
       gap: 0.6rem;
     }
     summary {

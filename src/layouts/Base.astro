@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { archivo, ruta } from '../lib/rutas.ts';
 import { SECCIONES, paginaActual, seccionActual } from '../lib/secciones.ts';
+import { PASOS } from '../lib/ruta.ts';
 
 interface Props {
   /** Título de la pestaña. */
@@ -22,6 +23,9 @@ const seccion = seccionActual(actual);
 // la propia página, no en las que cuelgan de ella, como cada canción del Repertorio).
 const pagina = paginaActual(actual);
 const favoritable = pagina && pagina.href === actual ? pagina : undefined;
+// Si la página es un paso de la ruta de aprendizaje, un aviso arriba (solo se ve si
+// ya has empezado la ruta) para marcarlo como hecho e ir al siguiente.
+const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
 ---
 
 <!doctype html>
@@ -118,13 +122,29 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
       </nav>
     </header>
     <main>
+      {
+        pasoRuta && (
+          <aside class="aviso-ruta" aria-label="Ruta de aprendizaje" data-aviso-ruta={pasoRuta.direccion} hidden>
+            <a class="aviso-ruta-paso" href={`${ruta('ruta')}#paso-${pasoRuta.direccion.replace(/\//g, '-')}`}>
+              Ruta · paso {pasoRuta.numero} de {PASOS.length}
+            </a>
+            <span class="aviso-ruta-meta">{pasoRuta.meta}</span>
+            <label class="aviso-ruta-hecho">
+              <input type="checkbox" data-aviso-ruta-marcar /> Hecho
+            </label>
+            <a class="aviso-ruta-siguiente" data-aviso-ruta-siguiente hidden></a>
+          </aside>
+        )
+      }
       <slot />
     </main>
   </body>
 </html>
 
 <script>
-  import { archivo } from '../lib/rutas.ts';
+  import { archivo, ruta } from '../lib/rutas.ts';
+  import { PAGINAS } from '../lib/secciones.ts';
+  import { progresoRuta, siguientePaso } from '../lib/ruta.ts';
   import { aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
   import { vigilarTitulos } from '../lib/titulos.ts';
 
@@ -149,6 +169,31 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     };
     new ResizeObserver(ajustarTitulo).observe(titulo.closest('.cabecera-dentro')!);
     document.fonts?.ready.then(ajustarTitulo);
+  }
+
+  // Aviso de la ruta de aprendizaje (si esta página es un paso y la ruta ya se empezó).
+  const aviso = document.querySelector<HTMLElement>('[data-aviso-ruta]');
+  if (aviso) {
+    const progreso = progresoRuta();
+    const direccion = aviso.dataset.avisoRuta!;
+    const caja = aviso.querySelector<HTMLInputElement>('[data-aviso-ruta-marcar]')!;
+    const siguiente = aviso.querySelector<HTMLAnchorElement>('[data-aviso-ruta-siguiente]')!;
+    const pintarAviso = () => {
+      caja.checked = progreso.hechos.has(direccion);
+      const sig = siguientePaso(progreso.hechos, direccion);
+      const pg = sig && PAGINAS.find((p) => p.href === ruta(sig.direccion));
+      siguiente.hidden = !pg;
+      if (pg) {
+        siguiente.href = pg.href;
+        siguiente.textContent = `Siguiente: ${pg.nombre} →`;
+      }
+    };
+    aviso.hidden = progreso.hechos.size === 0;
+    caja.addEventListener('change', () => {
+      progreso.marcar(direccion, caja.checked);
+      pintarAviso();
+    });
+    pintarAviso();
   }
 
   // Navegación del móvil: menú hamburguesa en lugar de la barra de secciones.
@@ -512,5 +557,40 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
       width: 2rem;
       height: 2rem;
     }
+  }
+  /* Aviso de la ruta de aprendizaje, arriba de las páginas que son un paso. */
+  .aviso-ruta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
+    margin: 0 0 1rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.88rem;
+    background: var(--acento-suave);
+    border-radius: var(--radio-tarjeta);
+  }
+  .aviso-ruta[hidden] {
+    display: none;
+  }
+  .aviso-ruta a {
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .aviso-ruta-meta {
+    flex: 1 1 20rem;
+    color: var(--texto-suave);
+  }
+  .aviso-ruta-hecho {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .aviso-ruta-hecho input {
+    margin: 0;
+    accent-color: var(--acento);
   }
 </style>
