@@ -136,6 +136,21 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
   // Títulos en mayúsculas: el cifrado que pintan los scripts se deja como está.
   vigilarTitulos();
 
+  // Título de la cabecera: si no cabe en una línea, pasa a dos (.largo) y, si en dos
+  // tampoco (móvil estrecho), a una letra más pequeña (.muy-largo).
+  const titulo = document.querySelector<HTMLElement>('.titulo-seccion');
+  if (titulo) {
+    const noCabe = () =>
+      titulo.scrollWidth > titulo.clientWidth + 1 || titulo.scrollHeight > titulo.clientHeight + 2;
+    const ajustarTitulo = () => {
+      titulo.classList.remove('largo', 'muy-largo');
+      if (noCabe()) titulo.classList.add('largo');
+      if (noCabe()) titulo.classList.add('muy-largo');
+    };
+    new ResizeObserver(ajustarTitulo).observe(titulo.closest('.cabecera-dentro')!);
+    document.fonts?.ready.then(ajustarTitulo);
+  }
+
   // Navegación del móvil: menú hamburguesa en lugar de la barra de secciones.
   const hamburguesa = document.querySelector<HTMLButtonElement>('[data-hamburguesa]')!;
   const menu = document.querySelector<HTMLElement>('[data-menu-movil]')!;
@@ -198,9 +213,10 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     align-items: center;
     gap: 3rem;
   }
-  /* Ancho fijo para que la navegación no se mueva al cambiar de página. */
+  /* El título ocupa el sitio libre y la navegación va al extremo derecho: así no se
+     mueve al cambiar de página y los títulos largos caben. */
   .titulo-caja {
-    flex: 0 0 18rem;
+    flex: 1 1 18rem;
     min-width: 0;
     display: flex;
     align-items: center;
@@ -246,7 +262,23 @@ const favoritable = pagina && pagina.href === actual ? pagina : undefined;
     text-transform: uppercase;
     letter-spacing: 0.02em;
   }
+  /* Si aun así no cabe en una línea (lo decide el script), pasa a dos, más pequeño. */
+  .titulo-seccion.largo {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    font-size: 1.15rem;
+    line-height: 1.12;
+    white-space: normal;
+    overflow-wrap: break-word;
+    padding-block: 0.1em;
+  }
+  .titulo-seccion.muy-largo {
+    font-size: 0.98rem;
+  }
   nav[aria-label='Secciones'] {
+    flex: 0 0 auto;
     display: flex;
     align-items: stretch;
     height: 100%;
