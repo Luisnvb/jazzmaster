@@ -13,8 +13,9 @@
   color-scheme: light;
   /* --- Esquema de color ------------------------------------------------------ */
   --fondo: #ffffff; /* COLOR: fondo de la página, cabecera, campos de formulario y botones de tónica */
-  --superficie: #f6f6f4; /* COLOR: tarjetas, paneles, barra de secciones y fichas de la canción */
+  --superficie: #f6f6f4; /* COLOR: paneles, barra de secciones y fichas de la canción */
   --superficie-2: #ececea; /* COLOR: superficie más marcada (botones pulsados en el editor) */
+  --tarjeta: #e8e5e5; /* COLOR: fondo de las tarjetas (portadas, voicings, escalas, canciones, bloques de los ejercicios) */
   --texto: #111111; /* COLOR: texto principal, títulos y puntos de los diagramas */
   --texto-suave: #5e5e5e; /* COLOR: texto secundario, etiquetas, enlaces de la cabecera y rejilla de los diagramas */
   --acento: #3f7a85; /* COLOR: acento (verde azulado): botones activos, tónica de los diagramas, enlaces, subrayados y deslizadores */
@@ -35,6 +36,7 @@
   --margen: clamp(1rem, 3vw, 4rem);
   --ancho: 150rem;
   --radio: 0.25rem;
+  --radio-tarjeta: 0.55em;
   --barra-alto: 0rem;
 
   /* 18 px en un portátil, ~19-20 px en un 27" de 2560 px. */
@@ -107,9 +109,9 @@ h1, h2, h3, h4 { text-transform: uppercase; letter-spacing: 0.02em; }
 code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 0.9em; }
 
 .tarjeta {
-  background: var(--superficie);
+  background: var(--tarjeta);
   border: 1px solid var(--borde);
-  border-radius: var(--radio);
+  border-radius: var(--radio-tarjeta);
   padding: 0.7rem;
   transition: border-color 0.15s;
 }
