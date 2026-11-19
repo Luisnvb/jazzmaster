@@ -8,6 +8,7 @@ interface Props {
   /** Título de la pestaña. */
   titulo: string;
   /** Título que se ve en la cabecera, junto a la navegación (por defecto, `titulo`). */
+  /** Texto de la cabecera. Para darle formato, usa el slot "encabezado" (lo sustituye). */
   encabezado?: string;
   /** Si el título de la cabecera es el <h1> de la página (las fichas de canción tienen el suyo). */
   conH1?: boolean;
@@ -48,7 +49,7 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
           <a class="guitarra" href={ruta('')} title="Inicio">
             <img src={archivo('iconos/guitarra.png')} alt="Inicio" width="120" height="120" />
           </a>
-          <Titulo class="titulo-seccion">{encabezado}</Titulo>
+          <Titulo class="titulo-seccion">{Astro.slots.has('encabezado') ? <slot name="encabezado" /> : encabezado}</Titulo>
           {
             favoritable && (
               <button

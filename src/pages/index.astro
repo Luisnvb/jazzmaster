@@ -8,6 +8,7 @@ import { SECCIONES } from '../lib/secciones.ts';
 ---
 
 <Base titulo="Inicio" encabezado="JAZZMASTER">
+  <Fragment slot="encabezado">JAZZ<span class="master">MASTER</span></Fragment>
   <h2 class="visualmente-oculto">Secciones</h2>
   <ul class="secciones" style={`--columnas: ${SECCIONES.length}`}>
     {
@@ -55,6 +56,9 @@ import { SECCIONES } from '../lib/secciones.ts';
 </script>
 
 <style>
+  .master {
+    color: var(--acento);
+  }
   .secciones,
   .paginas {
     margin: 0;
