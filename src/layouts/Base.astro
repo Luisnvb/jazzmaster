@@ -13,9 +13,11 @@ interface Props {
   encabezado?: string;
   /** Si el título de la cabecera es el <h1> de la página (las fichas de canción tienen el suyo). */
   conH1?: boolean;
+  /** Con la barra de secciones de escritorio (la portada no la lleva: ya muestra todas). */
+  conBarra?: boolean;
 }
 
-const { titulo, encabezado = titulo, conH1 = true } = Astro.props;
+const { titulo, encabezado = titulo, conH1 = true, conBarra = true } = Astro.props;
 const Titulo = conH1 ? 'h1' : 'p';
 
 // Con barra final para comparar igual "/acordes" y "/acordes/" con ruta('acordes').
@@ -77,32 +79,36 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
             )
           }
         </div>
-        <nav aria-label="Secciones">
-          {
-            SECCIONES.map((s) =>
-              s.partes.length === 1 ? (
-                <a href={s.partes[0].href} aria-current={s === seccion ? 'page' : undefined}>
-                  {s.nombre}
-                </a>
-              ) : (
-              <div class="multiple">
-                <button type="button" aria-current={s === seccion ? 'page' : undefined} aria-haspopup="true">
-                  {s.nombre} <span aria-hidden="true">▾</span>
-                </button>
-                <ul class="desplegable" data-lista-paginas>
-                  {s.partes.map((p) => (
-                    <li data-pagina={p.href}>
-                      <a href={p.href} aria-current={p === pagina ? 'page' : undefined}>
-                        {p.nombre}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              ),
-            )
-          }
-        </nav>
+        {
+          conBarra && (
+            <nav aria-label="Secciones">
+              {
+                SECCIONES.map((s) =>
+                  s.partes.length === 1 ? (
+                    <a href={s.partes[0].href} aria-current={s === seccion ? 'page' : undefined}>
+                      {s.nombre}
+                    </a>
+                  ) : (
+                  <div class="multiple">
+                    <button type="button" aria-current={s === seccion ? 'page' : undefined} aria-haspopup="true">
+                      {s.nombre} <span aria-hidden="true">▾</span>
+                    </button>
+                    <ul class="desplegable" data-lista-paginas>
+                      {s.partes.map((p) => (
+                        <li data-pagina={p.href}>
+                          <a href={p.href} aria-current={p === pagina ? 'page' : undefined}>
+                            {p.nombre}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  ),
+                )
+              }
+            </nav>
+          )
+        }
       </div>
       <nav id="menu" class="menu" aria-label="Menú de secciones" hidden data-menu>
         <div class="menu-dentro">

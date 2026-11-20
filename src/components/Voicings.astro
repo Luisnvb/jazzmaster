@@ -214,7 +214,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     const posicion = hermanos.indexOf(v);
     const notas = tocados.map((g) => formatNota(notaDeGrado(t, g))).join(' ');
     return `
-      <li class="tarjeta voicing" data-id="${esc(v.id)}">
+      <li class="tarjeta voicing" id="voicing-${esc(v.id)}" data-id="${esc(v.id)}">
         <div class="diagrama-caja">${diagramaSVG({ trastes: trastesEn(v), grados: v.grados })}</div>
         ${editando ? '' : botonFavorito(favs.tiene(v.id), v.nombre)}
         <div class="info">
@@ -458,7 +458,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     pintar();
   });
   pintar();
-  // Los enlaces del repertorio llevan #grupo-…: la lista se pinta aquí, así que se busca a mano.
+  // Los enlaces del repertorio llevan #grupo-… (y los favoritos de la portada, #voicing-…): la lista se pinta aquí, así que se busca a mano.
   if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 </script>
 

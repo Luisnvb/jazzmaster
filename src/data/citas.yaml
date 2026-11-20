@@ -1,0 +1,81 @@
+# Citas de los grandes del jazz, en su idioma original. La portada muestra una al azar
+# cada vez que se abre.
+#
+#   texto:  la cita, tal cual (sin comillas: las pone la web)
+#   autor:  quién la dijo
+#   idioma: código del idioma del texto (en, fr, pt…); por defecto, en
+#
+# Muchas circulan con pequeñas variantes; aquí va la versión más conocida.
+
+- id: armstrong-ask
+  texto: "If you have to ask what jazz is, you'll never know."
+  autor: Louis Armstrong
+
+- id: parker-horn
+  texto: "Music is your own experience, your thoughts, your wisdom. If you don't live it, it won't come out of your horn."
+  autor: Charlie Parker
+
+- id: parker-master
+  texto: "Master your instrument, master the music, and then forget all that bullshit and just play."
+  autor: Charlie Parker
+
+- id: davis-mistakes
+  texto: "Do not fear mistakes. There are none."
+  autor: Miles Davis
+
+- id: davis-play-first
+  texto: "I'll play it first and tell you what it is later."
+  autor: Miles Davis
+
+- id: gillespie-not-to-play
+  texto: "It's taken me all my life to learn what not to play."
+  autor: Dizzy Gillespie
+
+- id: monk-keep-time
+  texto: "Just because you're not a drummer, doesn't mean you don't have to keep time."
+  autor: Thelonious Monk
+
+- id: monk-wrong-notes
+  texto: "The piano ain't got no wrong notes."
+  autor: Thelonious Monk
+
+- id: ellington-two-kinds
+  texto: "There are simply two kinds of music, good music and the other kind."
+  autor: Duke Ellington
+
+- id: ellington-problem
+  texto: "A problem is a chance for you to do your best."
+  autor: Duke Ellington
+
+- id: mingus-simple
+  texto: "Making the simple complicated is commonplace; making the complicated simple, awesomely simple, that's creativity."
+  autor: Charles Mingus
+
+- id: coltrane-sentence
+  texto: "I start in the middle of a sentence and move both directions at once."
+  autor: John Coltrane
+
+- id: coltrane-spiritual
+  texto: "My music is the spiritual expression of what I am: my faith, my knowledge, my being."
+  autor: John Coltrane
+
+- id: evans-simple
+  texto: "It's better to do something simple which is real. It's something you can build on because you know what you're doing."
+  autor: Bill Evans
+
+- id: coleman-mistakes
+  texto: "It was when I found out I could make mistakes that I knew I was on to something."
+  autor: Ornette Coleman
+
+- id: basie-tap
+  texto: "If you play a tune and a person don't tap their feet, don't play the tune."
+  autor: Count Basie
+
+- id: pass-wrong-note
+  texto: "If you hit a wrong note, then make it right by what you play afterwards."
+  autor: Joe Pass
+
+- id: marsalis-structured
+  texto: "Jazz is not just, 'Well, man, this is what I feel like playing.' It's a very structured thing that comes down from a tradition and requires a lot of thought and study."
+  autor: Wynton Marsalis
+

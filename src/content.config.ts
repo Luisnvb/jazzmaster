@@ -149,6 +149,17 @@ const improvisacion = z.object({
   estudio: z.array(z.string()).default([]),
 });
 
+// Citas de músicos de jazz para la portada (una al azar), en su idioma original.
+const citas = defineCollection({
+  loader: archivo('src/data/citas.yaml'),
+  schema: z.object({
+    orden,
+    texto: z.string().min(1),
+    autor: z.string().min(1),
+    idioma: z.string().regex(/^[a-z]{2,3}(-[A-Za-z]{2})?$/, { message: 'Código de idioma (en, fr, pt-BR…)' }).default('en'),
+  }),
+});
+
 const repertorio = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: 'src/content/repertorio' }),
   schema: z.object({
@@ -182,4 +193,4 @@ const cifrados = defineCollection({
   }),
 });
 
-export const collections = { grupos, intervalos, escalas, acordes, progresiones, patrones, repertorio, cifrados };
+export const collections = { grupos, intervalos, escalas, acordes, progresiones, patrones, repertorio, cifrados, citas };
