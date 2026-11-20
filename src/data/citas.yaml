@@ -4,6 +4,7 @@
 #   texto:  la cita, tal cual (sin comillas: las pone la web)
 #   autor:  quién la dijo
 #   idioma: código del idioma del texto (en, fr, pt…); por defecto, en
+#   traduccion: al español; obligatoria si no está en inglés (sale debajo de la cita)
 #
 # Muchas circulan con pequeñas variantes; aquí va la versión más conocida.
 
@@ -79,3 +80,56 @@
   texto: "Jazz is not just, 'Well, man, this is what I feel like playing.' It's a very structured thing that comes down from a tradition and requires a lot of thought and study."
   autor: Wynton Marsalis
 
+- id: davis-sound-like-yourself
+  texto: "Sometimes you have to play a long time to be able to play like yourself."
+  autor: Miles Davis
+
+- id: mingus-improvise-on-something
+  texto: "You can't improvise on nothing, man; you've gotta improvise on something."
+  autor: Charles Mingus
+
+- id: monk-let-things-go-by
+  texto: "Don't play everything (or every time); let some things go by."
+  autor: Thelonious Monk
+
+- id: terry-imitate
+  texto: "Imitate, assimilate, innovate."
+  autor: Clark Terry
+
+- id: evans-how
+  texto: "Jazz is not a what, it is a how."
+  autor: Bill Evans
+
+- id: holiday-someone-else
+  texto: "If I'm going to sing like someone else, then I don't need to sing at all."
+  autor: Billie Holiday
+
+- id: fitzgerald-more-singing
+  texto: "The only thing better than singing is more singing."
+  autor: Ella Fitzgerald
+
+- id: ellington-sounds-good
+  texto: "If it sounds good, it is good."
+  autor: Duke Ellington
+
+- id: armstrong-retire
+  texto: "Musicians don't retire; they stop when there's no more music in them."
+  autor: Louis Armstrong
+
+- id: vian-ecume
+  texto: "Il y a seulement deux choses : c'est l'amour, de toutes les façons, avec des jolies filles, et la musique de La Nouvelle-Orléans ou de Duke Ellington. Le reste devrait disparaître, car le reste est laid."
+  autor: Boris Vian
+  idioma: fr
+  traduccion: "Solo hay dos cosas: el amor, de todas las maneras, con chicas bonitas, y la música de Nueva Orleans o de Duke Ellington. Lo demás debería desaparecer, porque lo demás es feo."
+
+- id: jobim-principiantes
+  texto: "O Brasil não é para principiantes."
+  autor: Antônio Carlos Jobim
+  idioma: pt
+  traduccion: "Brasil no es para principiantes."
+
+- id: vinicius-alegre
+  texto: "É melhor ser alegre que ser triste. Alegria é a melhor coisa que existe."
+  autor: Vinicius de Moraes
+  idioma: pt
+  traduccion: "Es mejor estar alegre que estar triste. La alegría es lo mejor que existe."

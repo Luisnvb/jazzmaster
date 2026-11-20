@@ -157,6 +157,10 @@ const citas = defineCollection({
     texto: z.string().min(1),
     autor: z.string().min(1),
     idioma: z.string().regex(/^[a-z]{2,3}(-[A-Za-z]{2})?$/, { message: 'Código de idioma (en, fr, pt-BR…)' }).default('en'),
+    /** Traducción al español; obligatoria si la cita no está en inglés. */
+    traduccion: z.string().min(1).optional(),
+  }).refine((c) => c.idioma === 'en' || c.traduccion, {
+    message: 'Una cita que no está en inglés lleva su traducción (traduccion).',
   }),
 });
 

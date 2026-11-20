@@ -14,6 +14,7 @@ const citas = porOrden(await getCollection('citas')).map(({ data }) => ({
   texto: data.texto,
   autor: data.autor,
   idioma: data.idioma,
+  traduccion: data.traduccion ?? '',
 }));
 // JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
 const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
@@ -29,6 +30,7 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
   </div>
   <figure class="cita" data-cita hidden>
     <blockquote><p data-cita-texto></p></blockquote>
+    <p class="traduccion" lang="es" data-cita-traduccion hidden></p>
     <figcaption data-cita-autor></figcaption>
   </figure>
   <script type="application/json" id="datos-portada" set:html={datos} />
@@ -43,6 +45,7 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
     texto: string;
     autor: string;
     idioma: string;
+    traduccion: string;
   }
   const citas: Cita[] = JSON.parse(document.getElementById('datos-portada')!.textContent!);
 
@@ -52,6 +55,10 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
     const caja = document.querySelector<HTMLElement>('[data-cita]')!;
     caja.querySelector<HTMLElement>('[data-cita-texto]')!.textContent = cita.texto;
     caja.querySelector('blockquote')!.lang = cita.idioma;
+    // Si no está en inglés, debajo va la traducción.
+    const traduccion = caja.querySelector<HTMLElement>('[data-cita-traduccion]')!;
+    traduccion.textContent = cita.traduccion;
+    traduccion.hidden = cita.idioma === 'en' || !cita.traduccion;
     caja.querySelector<HTMLElement>('[data-cita-autor]')!.textContent = cita.autor;
     caja.hidden = false;
   }
@@ -97,8 +104,6 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
   .cita {
     max-width: var(--ancho-texto);
     margin: 0 0 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--borde);
   }
   .cita blockquote {
     margin: 0;
@@ -115,6 +120,11 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
   }
   .cita blockquote p::after {
     content: '»';
+  }
+  .cita .traduccion {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+    color: var(--texto-suave);
   }
   .cita figcaption {
     margin-top: 0.4rem;
