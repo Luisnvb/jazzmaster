@@ -78,7 +78,6 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
           }
         </div>
         <nav aria-label="Secciones">
-          <a href={ruta('')} aria-current={actual === ruta('') ? 'page' : undefined}>Inicio</a>
           {
             SECCIONES.map((s) =>
               s.partes.length === 1 ? (
