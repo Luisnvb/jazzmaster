@@ -133,3 +133,51 @@
   autor: Vinicius de Moraes
   idioma: pt
   traduccion: "Es mejor estar alegre que estar triste. La alegría es lo mejor que existe."
+
+- id: parker-boundary
+  texto: "They teach you there's a boundary line to music. But, man, there's no boundary line to art."
+  autor: Charlie Parker
+
+- id: parker-let-it-play
+  texto: "Don't play the saxophone. Let it play you."
+  autor: Charlie Parker
+
+- id: davis-not-there
+  texto: "Don't play what's there, play what's not there."
+  autor: Miles Davis
+
+- id: coltrane-picture
+  texto: "Overall, I think the main thing a musician would like to do is to give a picture to the listener of the many wonderful things he knows of and senses in the universe."
+  autor: John Coltrane
+
+- id: ellington-barometer
+  texto: "Jazz is a good barometer of freedom."
+  autor: Duke Ellington
+
+- id: ellington-pout
+  texto: "I merely took the energy it takes to pout and wrote some blues."
+  autor: Duke Ellington
+
+- id: armstrong-same-way
+  texto: "Never play a thing the same way twice."
+  autor: Louis Armstrong
+
+- id: roach-democratic
+  texto: "Jazz is a very democratic musical form. It comes out of a communal experience. We take our respective instruments and solo, individually, but we work together."
+  autor: Max Roach
+
+- id: fitzgerald-going
+  texto: "It isn't where you came from; it's where you're going that counts."
+  autor: Ella Fitzgerald
+
+- id: simone-duty
+  texto: "An artist's duty, as far as I'm concerned, is to reflect the times."
+  autor: Nina Simone
+
+- id: rollins-open-sky
+  texto: "Music is an open sky."
+  autor: Sonny Rollins
+
+- id: marsalis-negotiate
+  texto: "The real power of jazz and the innovation of jazz is that a group of people can come together and create improvised art and negotiate their agendas with each other. And that negotiation is the art."
+  autor: Wynton Marsalis
