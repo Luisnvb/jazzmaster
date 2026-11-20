@@ -3,8 +3,12 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Buscador from '../../components/Buscador.astro';
 import { ruta } from '../../lib/rutas.ts';
+import { compararIniciales, inicial } from '../../lib/inicial.ts';
 
+// Índice alfabético: un grupo por inicial. El script le añade las canciones creadas en
+// este navegador y, arriba, el grupo de favoritas.
 const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titulo.localeCompare(b.data.titulo, 'es'));
+const grupos = [...new Set(canciones.map((c) => inicial(c.data.titulo)))].sort(compararIniciales);
 ---
 
 <Base titulo="Repertorio">
@@ -14,23 +18,45 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     <button type="button" class="boton" data-importar>Importar .cmb.json</button>
     <button type="button" class="boton" data-restaurar-eliminados hidden>Restaurar eliminados</button>
   </div>
-  <ul class="lista-tarjetas" data-lista>
+  <div class="indice-canciones" data-lista>
+    <section class="grupo" data-grupo-busqueda data-grupo="favoritas" hidden>
+      <h2 class="letra">★ Favoritas</h2>
+      <ul></ul>
+    </section>
     {
-      canciones.map(({ id, data }) => (
-        <li data-buscar={`${data.titulo} ${data.autor}`} data-id={id} data-titulo={data.titulo} data-eliminable={id} data-nombre={data.titulo}>
-          <a class="tarjeta cancion" href={ruta(`repertorio/${id}`)}>
-            <span class="titulo">{data.titulo}</span>
-            <span class="suave" data-detalle>
-              {data.autor}
-              {data.tonalidad && ` · ${data.tonalidad}`}
-              {data.instrumental && ' · Instrumental'}
-            </span>
-          </a>
-          <button type="button" class="eliminar" data-eliminar aria-label={`Eliminar ${data.titulo}`} title="Eliminar">✕</button>
-        </li>
+      grupos.map((letra) => (
+        <section class="grupo" data-grupo-busqueda data-grupo={letra}>
+          <h2 class="letra">{letra}</h2>
+          <ul>
+            {canciones
+              .filter((c) => inicial(c.data.titulo) === letra)
+              .map(({ id, data }) => (
+                <li
+                  data-buscar={`${data.titulo} ${data.autor}`}
+                  data-id={id}
+                  data-titulo={data.titulo}
+                  data-eliminable={id}
+                  data-nombre={data.titulo}
+                >
+                  <a class="cancion" href={ruta(`repertorio/${id}`)}>
+                    <span class="titulo">{data.titulo}</span>
+                    <span class="detalle" data-detalle>
+                      {data.autor}
+                      {data.tonalidad && ` · ${data.tonalidad}`}
+                      {data.instrumental && ' · Instrumental'}
+                    </span>
+                  </a>
+                  <button type="button" class="eliminar" data-eliminar aria-label={`Eliminar ${data.titulo}`} title="Eliminar">
+                    ✕
+                  </button>
+                </li>
+              ))}
+          </ul>
+        </section>
       ))
     }
-  </ul>
+  </div>
+  <p class="suave" data-sin-resultados hidden>Ninguna canción coincide.</p>
 </Base>
 
 <script>
@@ -38,20 +64,39 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
   import { cancionesGuardadas, claveCancion, cmbACancion, crearCancionLocal } from '../../lib/cancion.ts';
   import { conectarEliminados } from '../../lib/eliminados.ts';
   import { conectarBuscador } from '../../lib/cliente.ts';
-  import { botonFavorito, favoritos, favoritosPrimero } from '../../lib/favoritos.ts';
+  import { botonFavorito, favoritos } from '../../lib/favoritos.ts';
   import { ruta } from '../../lib/rutas.ts';
+  import { compararIniciales, inicial } from '../../lib/inicial.ts';
   import type { Cancion } from '../../lib/cancion.ts';
 
   const lista = document.querySelector<HTMLElement>('[data-lista]')!;
   const detalle = (c: Cancion) =>
     `${esc(c.autor)}${c.tonalidad ? ` · ${esc(c.tonalidad)}` : ''}${c.instrumental ? ' · Instrumental' : ''}`;
   const urlLocal = (id: string) => `${ruta('repertorio/local')}?id=${encodeURIComponent(id)}`;
+  const canciones = () => [...lista.querySelectorAll<HTMLElement>('li[data-titulo]')];
+
+  /** La lista de un grupo; si no existe (canción creada en el navegador), se crea en su sitio. */
+  const grupo = (letra: string): HTMLUListElement => {
+    const hecho = lista.querySelector<HTMLElement>(`[data-grupo="${CSS.escape(letra)}"]`);
+    if (hecho) return hecho.querySelector('ul')!;
+    const nuevo = document.createElement('section');
+    nuevo.className = 'grupo';
+    nuevo.dataset.grupoBusqueda = '';
+    nuevo.dataset.grupo = letra;
+    nuevo.innerHTML = `<h2 class="letra">${esc(letra)}</h2><ul></ul>`;
+    const despues = [...lista.querySelectorAll<HTMLElement>('[data-grupo]')].find(
+      (g) => g.dataset.grupo !== 'favoritas' && compararIniciales(g.dataset.grupo!, letra) > 0,
+    );
+    lista.insertBefore(nuevo, despues ?? null);
+    return nuevo.querySelector('ul')!;
+  };
 
   // Lo guardado en este navegador: cambios a canciones del repositorio y canciones nuevas.
   for (const c of cancionesGuardadas()) {
     const li = lista.querySelector<HTMLElement>(`[data-id="${CSS.escape(c.id)}"]`);
     if (li) {
       li.dataset.buscar = `${c.titulo} ${c.autor}`;
+      li.dataset.titulo = c.titulo;
       li.querySelector('.titulo')!.textContent = c.titulo;
       li.querySelector('[data-detalle]')!.innerHTML = `${detalle(c)} · <em>editada</em>`;
       continue;
@@ -62,25 +107,27 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     nuevo.dataset.eliminable = c.id;
     nuevo.dataset.nombre = c.titulo;
     nuevo.dataset.local = '';
-    nuevo.innerHTML = `<a class="tarjeta cancion" href="${urlLocal(c.id)}">
+    nuevo.innerHTML = `<a class="cancion" href="${urlLocal(c.id)}">
       <span class="titulo">${esc(c.titulo)}</span>
-      <span class="suave">${detalle(c)}${c.autor || c.tonalidad || c.instrumental ? ' · ' : ''}<em>solo en este navegador</em></span></a>
+      <span class="detalle">${detalle(c)}${c.autor || c.tonalidad || c.instrumental ? ' · ' : ''}<em>solo en este navegador</em></span></a>
       <button type="button" class="eliminar" data-eliminar aria-label="Eliminar ${esc(c.titulo)}" title="Eliminar">✕</button>`;
-    lista.append(nuevo);
+    grupo(inicial(c.titulo)).append(nuevo);
   }
-  // Estrella de favorito en cada canción; las favoritas van primero.
+  // Estrella de favorito en cada canción; las favoritas van al grupo de arriba.
   const favs = favoritos('repertorio');
-  for (const li of lista.querySelectorAll<HTMLElement>(':scope > li')) {
+  for (const li of canciones()) {
     const id = li.dataset.id ?? li.dataset.eliminable!;
     li.dataset.id = id;
     li.insertAdjacentHTML('beforeend', botonFavorito(favs.tiene(id), li.dataset.titulo!));
   }
-  /** Orden alfabético (con las nuevas incluidas), con las favoritas delante. */
-  const ordenar = () =>
-    favoritosPrimero(
-      [...lista.children as HTMLCollectionOf<HTMLElement>].sort((a, b) => a.dataset.titulo!.localeCompare(b.dataset.titulo!, 'es')),
-      (li) => favs.tiene(li.dataset.id!),
-    ).forEach((li) => lista.append(li));
+  /** Cada canción en su grupo (favoritas o su inicial), por orden alfabético. */
+  const ordenar = () => {
+    for (const li of canciones().sort((a, b) => a.dataset.titulo!.localeCompare(b.dataset.titulo!, 'es'))) {
+      grupo(favs.tiene(li.dataset.id!) ? 'favoritas' : inicial(li.dataset.titulo!)).append(li);
+    }
+    // Que el buscador vuelva a ocultar los grupos vacíos.
+    document.querySelector('[data-buscador]')?.dispatchEvent(new Event('input'));
+  };
   ordenar();
   lista.addEventListener('click', (e) => {
     const boton = (e.target as Element).closest<HTMLButtonElement>('[data-favorito]');
@@ -96,6 +143,7 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     if (!('local' in li.dataset)) return false;
     borrar(claveCancion(id));
     li.remove();
+    document.querySelector('[data-buscador]')?.dispatchEvent(new Event('input'));
     return true;
   });
 
@@ -122,21 +170,70 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     gap: 0.5rem;
     margin: 0 0 1.5rem;
   }
-  [data-lista].lista-tarjetas {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  /* Índice alfabético: grupos por inicial en columnas, filas sin tarjeta. */
+  .indice-canciones {
+    columns: 18rem;
+    column-gap: 2.5rem;
+    margin-bottom: 2rem;
   }
-  [data-lista] > li {
-    position: relative;
+  .indice-canciones .grupo {
+    break-inside: avoid;
+    margin: 0 0 1.5rem;
   }
-  [data-lista] .eliminar {
-    position: absolute;
-    top: 0.6rem;
-    right: 2.9rem;
+  .indice-canciones .grupo[hidden] {
+    display: none;
+  }
+  .indice-canciones .letra {
+    margin: 0 0 0.25rem;
+    padding: 0 0 0.3rem;
+    border-bottom: 0.15rem solid var(--acento);
+    font-family: var(--fuente-titulo);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--acento);
+  }
+  .indice-canciones ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .indice-canciones li {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--borde);
+  }
+  .indice-canciones li[hidden] {
+    display: none;
+  }
+  .cancion {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
+    color: var(--texto);
+    text-decoration: none;
+  }
+  .cancion .titulo {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .cancion:hover .titulo {
+    color: var(--acento);
+  }
+  .cancion .detalle {
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+  }
+  /* Eliminar y favorito al final de la fila; aparecen al pasar por encima. */
+  .indice-canciones .eliminar,
+  .indice-canciones .favorito {
+    position: static;
+    flex: 0 0 auto;
     width: 2rem;
     height: 2rem;
     padding: 0;
     font: inherit;
-    font-size: 0.85rem;
     color: var(--texto-suave);
     background: none;
     border: 1px solid transparent;
@@ -145,41 +242,32 @@ const canciones = (await getCollection('repertorio')).sort((a, b) => a.data.titu
     opacity: 0;
     transition: opacity 0.15s;
   }
-  [data-lista] > li:hover .eliminar,
-  [data-lista] .eliminar:focus-visible {
+  .indice-canciones .eliminar {
+    font-size: 0.8rem;
+  }
+  .indice-canciones .favorito {
+    font-size: 1.1rem;
+  }
+  .indice-canciones li:hover .eliminar,
+  .indice-canciones li:hover .favorito,
+  .indice-canciones .eliminar:focus-visible,
+  .indice-canciones .favorito:focus-visible,
+  .indice-canciones .favorito[aria-pressed='true'] {
     opacity: 1;
   }
-  [data-lista] .eliminar:hover {
+  .indice-canciones .favorito:hover,
+  .indice-canciones .favorito[aria-pressed='true'] {
+    color: var(--acento);
+  }
+  .indice-canciones .eliminar:hover {
     color: var(--mal);
     border-color: var(--mal);
   }
-  .cancion {
-    display: grid;
-    align-content: space-between;
-    gap: 1rem;
-    min-height: 5rem;
-    height: 100%;
-    text-decoration: none;
-    color: var(--texto);
-    border-top: 0.3rem solid var(--borde);
-  }
-  .cancion:hover {
-    border-color: var(--borde);
-    border-top-color: var(--acento);
-  }
-  .titulo {
-    padding-right: 5rem;
-    font-weight: 700;
-    font-size: 1.25rem;
-    line-height: 1.1;
-  }
-  .cancion:hover .titulo {
-    color: var(--acento);
-  }
-  [data-detalle],
-  .cancion > .suave {
-    font-family: var(--fuente);
-    font-size: 0.78rem;
-    letter-spacing: 0.02em;
+  /* Pantallas táctiles: sin «pasar por encima», los botones se ven siempre, suaves. */
+  @media (hover: none) {
+    .indice-canciones .eliminar,
+    .indice-canciones .favorito {
+      opacity: 0.6;
+    }
   }
 </style>
