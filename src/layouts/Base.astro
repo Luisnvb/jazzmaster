@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { archivo, ruta } from '../lib/rutas.ts';
 import { SECCIONES, paginaActual, seccionActual } from '../lib/secciones.ts';
 import { PASOS } from '../lib/ruta.ts';
+import MenuSecciones from '../components/MenuSecciones.astro';
 
 interface Props {
   /** Título de la pestaña. */
@@ -46,9 +47,17 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     <header class="cabecera">
       <div class="cabecera-dentro">
         <div class="titulo-caja">
-          <a class="guitarra" href={ruta('')} title="Inicio">
-            <img src={archivo('iconos/guitarra.png')} alt="Inicio" width="120" height="120" />
-          </a>
+          <button
+            type="button"
+            class="guitarra"
+            aria-expanded="false"
+            aria-controls="menu"
+            aria-label="Menú de secciones"
+            title="Menú"
+            data-abrir-menu
+          >
+            <img src={archivo('iconos/guitarra.png')} alt="" width="120" height="120" />
+          </button>
           <Titulo class="titulo-seccion">{Astro.slots.has('encabezado') ? <slot name="encabezado" /> : encabezado}</Titulo>
           {
             favoritable && (
@@ -68,11 +77,16 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
         <nav aria-label="Secciones">
           <a href={ruta('')} aria-current={actual === ruta('') ? 'page' : undefined}>Inicio</a>
           {
-            SECCIONES.map((s) => (
-              <div class="multiple">
-                <a href={s.href} aria-current={s === seccion ? 'page' : undefined} aria-haspopup="true">
-                  {s.nombre} <span aria-hidden="true">▾</span>
+            SECCIONES.map((s) =>
+              s.partes.length === 1 ? (
+                <a href={s.partes[0].href} aria-current={s === seccion ? 'page' : undefined}>
+                  {s.nombre}
                 </a>
+              ) : (
+              <div class="multiple">
+                <button type="button" aria-current={s === seccion ? 'page' : undefined} aria-haspopup="true">
+                  {s.nombre} <span aria-hidden="true">▾</span>
+                </button>
                 <ul class="desplegable" data-lista-paginas>
                   {s.partes.map((p) => (
                     <li data-pagina={p.href}>
@@ -83,43 +97,15 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
                   ))}
                 </ul>
               </div>
-            ))
+              ),
+            )
           }
         </nav>
-        <button
-          type="button"
-          class="hamburguesa"
-          aria-expanded="false"
-          aria-controls="menu-movil"
-          aria-label="Menú de secciones"
-          data-hamburguesa
-        >
-          <span aria-hidden="true"></span>
-        </button>
       </div>
-      <nav id="menu-movil" class="menu-movil" aria-label="Secciones (móvil)" hidden data-menu-movil>
-        <a class="menu-inicio" href={ruta('')} aria-current={actual === ruta('') ? 'page' : undefined}>Inicio</a>
-        {
-          SECCIONES.map((s) => (
-            <details open={s === seccion}>
-              <summary>{s.nombre}</summary>
-              <ul data-lista-paginas>
-                <li>
-                  <a href={s.href} aria-current={actual === s.href ? 'page' : undefined}>
-                    Todas las de {s.nombre}
-                  </a>
-                </li>
-                {s.partes.map((p) => (
-                  <li data-pagina={p.href}>
-                    <a href={p.href} aria-current={p === pagina ? 'page' : undefined}>
-                      {p.nombre}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ))
-        }
+      <nav id="menu" class="menu" aria-label="Menú de secciones" hidden data-menu>
+        <div class="menu-dentro">
+          <MenuSecciones pagina={pagina} abierta={seccion} conInicio enInicio={actual === ruta('')} />
+        </div>
       </nav>
     </header>
     <main>
@@ -197,29 +183,27 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     pintarAviso();
   }
 
-  // Navegación del móvil: menú hamburguesa en lugar de la barra de secciones.
-  const hamburguesa = document.querySelector<HTMLButtonElement>('[data-hamburguesa]')!;
-  const menu = document.querySelector<HTMLElement>('[data-menu-movil]')!;
+  // Menú de secciones: lo abre y lo cierra la guitarra de la cabecera.
+  const guitarra = document.querySelector<HTMLButtonElement>('[data-abrir-menu]')!;
+  const menu = document.querySelector<HTMLElement>('[data-menu]')!;
   const abrirMenu = (abrir: boolean) => {
-    hamburguesa.setAttribute('aria-expanded', String(abrir));
+    guitarra.setAttribute('aria-expanded', String(abrir));
     menu.hidden = !abrir;
     document.body.classList.toggle('menu-abierto', abrir);
   };
-  hamburguesa.addEventListener('click', () => abrirMenu(hamburguesa.getAttribute('aria-expanded') !== 'true'));
+  guitarra.addEventListener('click', () => abrirMenu(guitarra.getAttribute('aria-expanded') !== 'true'));
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !menu.hidden) {
       abrirMenu(false);
-      hamburguesa.focus();
+      guitarra.focus();
     }
   });
   document.addEventListener('click', (e) => {
     const t = e.target as Node;
-    if (!menu.hidden && !menu.contains(t) && !hamburguesa.contains(t)) abrirMenu(false);
+    if (!menu.hidden && !menu.contains(t) && !guitarra.contains(t)) abrirMenu(false);
   });
   // Al volver con «atrás» (caché del navegador), el menú no debe seguir abierto.
   addEventListener('pageshow', () => abrirMenu(false));
-  // Si la ventana se ensancha hasta la barra de escritorio, se cierra.
-  matchMedia('(min-width: 80.01rem)').addEventListener('change', (e) => e.matches && abrirMenu(false));
 
   // Páginas favoritas: la estrella de la cabecera y el orden de los menús y listas.
   const favoritas = paginasFavoritas();
@@ -275,10 +259,15 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     width: 2.4rem;
     height: 2.4rem;
     margin-right: 0.2rem;
+    padding: 0;
+    border: 0;
     border-radius: var(--radio);
+    background: none;
+    cursor: pointer;
     transition: transform 0.15s;
   }
-  .guitarra:hover {
+  .guitarra:hover,
+  .guitarra[aria-expanded='true'] {
     transform: rotate(-8deg);
   }
   .guitarra img {
@@ -331,7 +320,12 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     gap: 1.6rem;
   }
   nav[aria-label='Secciones'] > a,
-  .multiple > a {
+  .multiple > button {
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    border-left: 0;
+    border-right: 0;
     display: flex;
     align-items: center;
     border-bottom: 0.25rem solid transparent;
@@ -345,15 +339,15 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     white-space: nowrap;
   }
   nav[aria-label='Secciones'] > a:hover,
-  .multiple > a:hover {
+  .multiple > button:hover {
     color: var(--texto);
   }
   nav[aria-label='Secciones'] > a[aria-current='page'],
-  .multiple > a[aria-current='page'] {
+  .multiple > button[aria-current='page'] {
     color: var(--texto);
     border-bottom-color: var(--acento);
   }
-  .multiple > a span {
+  .multiple > button span {
     margin-left: 0.35rem;
     font-size: 0.7rem;
   }
@@ -408,11 +402,7 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
   .desplegable a[aria-current='page'] {
     color: var(--acento);
   }
-  .hamburguesa,
-  .menu-movil {
-    display: none;
-  }
-  /* Móvil: la barra de secciones no cabe; se cambia por un menú hamburguesa. */
+  /* Pantalla pequeña: la barra de secciones no cabe; queda el menú de la guitarra. */
   @media (max-width: 80rem) {
     .cabecera-dentro {
       gap: 1rem;
@@ -426,120 +416,32 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     nav[aria-label='Secciones'] {
       display: none;
     }
-    .hamburguesa {
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      width: 2.6rem;
-      height: 2.6rem;
-      padding: 0;
-      border: 1px solid var(--borde);
-      border-radius: var(--radio);
-      background: var(--fondo);
-      color: var(--texto);
-      cursor: pointer;
-    }
-    /* Las tres rayas: la del medio es el span y las otras dos, ::before y ::after; al abrir, una X. */
-    .hamburguesa span {
-      position: relative;
-      display: block;
-      width: 1.25rem;
-      height: 2px;
-      background: currentColor;
-      transition: background 0.15s;
-    }
-    .hamburguesa span::before,
-    .hamburguesa span::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: currentColor;
-      transition: transform 0.15s;
-    }
-    .hamburguesa span::before {
-      transform: translateY(-0.4rem);
-    }
-    .hamburguesa span::after {
-      transform: translateY(0.4rem);
-    }
-    .hamburguesa[aria-expanded='true'] span {
-      background: transparent;
-    }
-    .hamburguesa[aria-expanded='true'] span::before {
-      transform: rotate(45deg);
-    }
-    .hamburguesa[aria-expanded='true'] span::after {
-      transform: rotate(-45deg);
-    }
-    .menu-movil:not([hidden]) {
-      display: block;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      max-height: calc(100dvh - var(--cabecera-alto));
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 0.25rem var(--margen) 1rem;
-      background: var(--fondo);
-      border-bottom: 0.25rem solid var(--acento);
-      box-shadow: 0 0.75rem 1.5rem var(--sombra-fuerte);
-    }
-    .menu-movil a,
-    .menu-movil summary {
-      display: block;
-      padding: 0.75rem 0;
-      font-family: var(--fuente);
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--texto);
-      text-decoration: none;
-    }
-    .menu-movil > a,
-    .menu-movil details {
-      border-bottom: 1px solid var(--borde);
-    }
-    .menu-movil summary {
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .menu-movil summary::-webkit-details-marker {
-      display: none;
-    }
-    .menu-movil summary::after {
-      content: '▾';
-      font-size: 0.8rem;
-      color: var(--texto-suave);
-      transition: transform 0.15s;
-    }
-    .menu-movil details[open] summary::after {
-      transform: rotate(180deg);
-    }
-    .menu-movil ul {
-      margin: 0 0 0.75rem;
-      padding: 0 0 0 1rem;
-      list-style: none;
-      border-left: 0.2rem solid var(--borde);
-    }
-    .menu-movil ul a {
-      padding: 0.55rem 0;
-      font-weight: 600;
-      color: var(--texto-suave);
-    }
-    .menu-movil a:hover,
-    .menu-movil summary:hover,
-    .menu-movil a[aria-current='page'] {
-      color: var(--acento);
-    }
-    /* Con el menú abierto, la página de detrás no se desplaza. */
-    :global(body.menu-abierto) {
-      overflow: hidden;
-    }
+  }
+  /* Menú de la guitarra: debajo de la cabecera, a todo lo ancho. */
+  .menu:not([hidden]) {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: calc(100dvh - var(--cabecera-alto));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.25rem var(--margen) 1rem;
+    background: var(--fondo);
+    border-bottom: 0.25rem solid var(--acento);
+    box-shadow: 0 0.75rem 1.5rem var(--sombra-fuerte);
+  }
+  .menu-dentro {
+    max-width: var(--ancho);
+    margin: 0 auto;
+  }
+  .menu-dentro > :global(*) {
+    max-width: 36rem;
+  }
+  /* Con el menú abierto, la página de detrás no se desplaza. */
+  :global(body.menu-abierto) {
+    overflow: hidden;
   }
   /* Móvil estrecho: título más pequeño y, si es largo («Entrenador de intervalos»), en dos líneas. */
   @media (max-width: 40rem) {

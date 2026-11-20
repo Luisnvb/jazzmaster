@@ -1,0 +1,149 @@
+---
+// Lista de secciones con sus páginas (lib/secciones.ts): el menú que abre la guitarra
+// de la cabecera y el de la portada. Cada sección es un desplegable con sus páginas
+// (las favoritas primero, lib/paginas-favoritas.ts); la de una sola página (Apuntes)
+// es un enlace directo.
+import { ruta } from '../lib/rutas.ts';
+import { SECCIONES, type Pagina, type Seccion } from '../lib/secciones.ts';
+
+interface Props {
+  /** Página en la que estamos (se marca). */
+  pagina?: Pagina;
+  /** Sección abierta de entrada (la de la página actual). */
+  abierta?: Seccion;
+  /** Con el enlace a Inicio arriba (el menú de la cabecera). */
+  conInicio?: boolean;
+  /** Si estamos en Inicio. */
+  enInicio?: boolean;
+  /** Portada: en pantalla grande, las secciones en columnas y todas abiertas. */
+  columnas?: boolean;
+}
+
+const { pagina, abierta, conInicio = false, enInicio = false, columnas = false } = Astro.props;
+---
+
+<ul class:list={['menu-secciones', { columnas }]} style={columnas ? `--columnas: ${SECCIONES.length}` : undefined}>
+  {
+    conInicio && (
+      <li class="seccion">
+        <a class="nombre" href={ruta('')} aria-current={enInicio ? 'page' : undefined}>
+          Inicio
+        </a>
+      </li>
+    )
+  }
+  {
+    SECCIONES.map((s) =>
+      s.partes.length === 1 ? (
+        <li class="seccion">
+          <a class="nombre" href={s.partes[0].href} aria-current={s.partes[0] === pagina ? 'page' : undefined}>
+            {s.nombre}
+          </a>
+        </li>
+      ) : (
+        <li class="seccion">
+          <details open={s === abierta}>
+            <summary class="nombre">{s.nombre}</summary>
+            <ul class="paginas" data-lista-paginas>
+              {s.partes.map((p) => (
+                <li data-pagina={p.href}>
+                  <a href={p.href} title={p.lema} aria-current={p === pagina ? 'page' : undefined}>
+                    {p.nombre}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </li>
+      ),
+    )
+  }
+</ul>
+
+<style>
+  .menu-secciones,
+  .paginas {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .seccion {
+    border-bottom: 1px solid var(--borde);
+  }
+  .nombre {
+    display: block;
+    padding: 0.75rem 0;
+    font-family: var(--fuente);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--texto);
+    text-decoration: none;
+  }
+  summary.nombre {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  summary.nombre::-webkit-details-marker {
+    display: none;
+  }
+  summary.nombre::after {
+    content: '▾';
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+    transition: transform 0.15s;
+  }
+  details[open] summary.nombre::after {
+    transform: rotate(180deg);
+  }
+  .paginas {
+    margin: 0 0 0.75rem;
+    padding: 0 0 0 1rem;
+    border-left: 0.2rem solid var(--borde);
+  }
+  .paginas a {
+    display: block;
+    padding: 0.55rem 0;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-decoration: none;
+  }
+  .menu-secciones a:hover,
+  summary.nombre:hover,
+  .menu-secciones a[aria-current='page'] {
+    color: var(--acento);
+  }
+  .paginas :global(.favorita) > a::before {
+    content: '★ ';
+    color: var(--acento);
+  }
+  /* Portada en pantalla grande: una columna por sección, todas abiertas y sin flecha. */
+  @media (min-width: 60rem) {
+    .columnas {
+      display: grid;
+      grid-template-columns: repeat(var(--columnas), minmax(0, 1fr));
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .columnas .seccion {
+      border-bottom: 0;
+    }
+    .columnas .nombre {
+      padding: 0 0 0.5rem;
+      cursor: default;
+    }
+    .columnas a.nombre {
+      cursor: pointer;
+    }
+    .columnas summary.nombre::after {
+      display: none;
+    }
+    .columnas .paginas a {
+      padding: 0.3rem 0;
+      font-size: 0.9rem;
+      line-height: 1.3;
+    }
+  }
+</style>
