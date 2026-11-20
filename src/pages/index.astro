@@ -1,110 +1,76 @@
 ---
-// Portada: una cita al azar (src/data/citas.yaml) y cada sección (lib/secciones.ts) con
-// sus páginas, como en el menú de la guitarra. En pantalla grande se ven todas en
-// columnas, sin la barra de secciones de la cabecera; en el móvil van plegadas. Las
-// páginas favoritas salen las primeras de cada lista (lib/paginas-favoritas.ts, desde
-// layouts/Base.astro), y bajo Apuntes se reúnen todos los favoritos: páginas,
-// canciones y voicings.
+// Portada: cada sección (lib/secciones.ts) con sus páginas, como en el menú de la
+// guitarra, y debajo una cita al azar (src/data/citas.yaml). En pantalla grande se ven
+// todas en columnas, sin la barra de secciones de la cabecera; en el móvil van
+// plegadas. Las páginas favoritas salen las primeras de cada lista
+// (lib/paginas-favoritas.ts, desde layouts/Base.astro), y bajo Apuntes van las notas y
+// los documentos favoritos (lib/apuntes.ts).
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import MenuSecciones from '../components/MenuSecciones.astro';
 import { porOrden } from '../lib/orden.ts';
-import { ruta } from '../lib/rutas.ts';
 
 const citas = porOrden(await getCollection('citas')).map(({ data }) => ({
   texto: data.texto,
   autor: data.autor,
   idioma: data.idioma,
 }));
-const grupos = new Map((await getCollection('grupos')).map((g) => [g.id, g.data.nombre]));
-const canciones = (await getCollection('repertorio')).map(({ id, data }) => ({
-  id,
-  titulo: data.titulo,
-  href: ruta(`repertorio/${id}`),
-}));
-const voicings = porOrden(await getCollection('acordes')).map(({ id, data }) => ({
-  id,
-  nombre: `${grupos.get(data.grupo.id) ?? data.grupo.id} · ${data.nombre}`,
-  href: `${ruta(data.trastes.includes(0) ? 'acordes/al-aire' : 'acordes')}#voicing-${id}`,
-}));
 // JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
-const datos = JSON.stringify({ citas, canciones, voicings, local: ruta('repertorio/local') }).replace(/</g, '\\u003c');
+const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
 ---
 
 <Base titulo="Inicio" encabezado="JAZZMASTER" conBarra={false}>
   <Fragment slot="encabezado">JAZZ<span class="master">MASTER</span></Fragment>
-  <figure class="cita" data-cita hidden>
-    <blockquote><p data-cita-texto></p></blockquote>
-    <figcaption data-cita-autor></figcaption>
-  </figure>
   <h2 class="visualmente-oculto">Secciones</h2>
   <div class="portada" data-portada>
     <MenuSecciones columnas>
       <div slot="apuntes" class="favoritos" data-favoritos hidden></div>
     </MenuSecciones>
   </div>
+  <figure class="cita" data-cita hidden>
+    <blockquote><p data-cita-texto></p></blockquote>
+    <figcaption data-cita-autor></figcaption>
+  </figure>
   <script type="application/json" id="datos-portada" set:html={datos} />
 </Base>
 
 <script>
   import { esc } from '../lib/almacen.ts';
-  import { favoritos } from '../lib/favoritos.ts';
-  import { paginasFavoritas } from '../lib/paginas-favoritas.ts';
-  import { cancionesGuardadas } from '../lib/cancion.ts';
-  import { PAGINAS } from '../lib/secciones.ts';
+  import { anclaDocumento, leerDocumentos, leerNotas, ordenar, tituloDe } from '../lib/apuntes.ts';
+  import { ruta } from '../lib/rutas.ts';
 
-  interface Enlace {
-    id: string;
-    href: string;
+  interface Cita {
+    texto: string;
+    autor: string;
+    idioma: string;
   }
-  interface Datos {
-    citas: { texto: string; autor: string; idioma: string }[];
-    canciones: (Enlace & { titulo: string })[];
-    voicings: (Enlace & { nombre: string })[];
-    local: string;
-  }
-  const datos: Datos = JSON.parse(document.getElementById('datos-portada')!.textContent!);
+  const citas: Cita[] = JSON.parse(document.getElementById('datos-portada')!.textContent!);
 
   // Una cita al azar en cada visita.
-  const cita = datos.citas[Math.floor(Math.random() * datos.citas.length)];
+  const cita = citas[Math.floor(Math.random() * citas.length)];
   if (cita) {
     const caja = document.querySelector<HTMLElement>('[data-cita]')!;
-    const texto = caja.querySelector<HTMLElement>('[data-cita-texto]')!;
-    texto.textContent = cita.texto;
+    caja.querySelector<HTMLElement>('[data-cita-texto]')!.textContent = cita.texto;
     caja.querySelector('blockquote')!.lang = cita.idioma;
     caja.querySelector<HTMLElement>('[data-cita-autor]')!.textContent = cita.autor;
     caja.hidden = false;
   }
 
-  // Favoritos bajo Apuntes: páginas, canciones y voicings, cada grupo en su orden de siempre.
+  // Bajo Apuntes: las notas favoritas (a su página) y los documentos favoritos (a su
+  // tarjeta en la lista de Apuntes).
   function pintarFavoritos() {
-    const paginas = paginasFavoritas();
-    const favCanciones = favoritos('repertorio');
-    const favVoicings = favoritos('acordes');
-    // Las canciones de este navegador (nuevas o editadas) mandan sobre las del repositorio.
-    const guardadas = new Map(cancionesGuardadas().map((c) => [c.id, c]));
-    const canciones = [
-      ...datos.canciones.map((c) => ({ ...c, titulo: guardadas.get(c.id)?.titulo || c.titulo })),
-      ...[...guardadas.values()]
-        .filter((c) => !datos.canciones.some((d) => d.id === c.id))
-        .map((c) => ({ id: c.id, titulo: c.titulo || 'Sin título', href: `${datos.local}?id=${encodeURIComponent(c.id)}` })),
-    ]
-      .filter((c) => favCanciones.tiene(c.id))
-      .sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
-    const grupos: [string, { href: string; nombre: string }[]][] = [
-      ['Páginas', PAGINAS.filter((p) => paginas.tiene(p.href))],
-      ['Canciones', canciones.map((c) => ({ href: c.href, nombre: c.titulo }))],
-      ['Voicings', datos.voicings.filter((v) => favVoicings.tiene(v.id))],
-    ];
+    const notas = ordenar(leerNotas().filter((n) => n.favorita)).map((n) => ({
+      href: `${ruta('apuntes/nota')}?id=${encodeURIComponent(n.id)}`,
+      nombre: tituloDe(n),
+    }));
+    const documentos = ordenar(leerDocumentos().filter((d) => d.favorita)).map((d) => ({
+      href: `${ruta('apuntes')}#${anclaDocumento(d.id)}`,
+      nombre: d.titulo,
+    }));
     const caja = document.querySelector<HTMLElement>('[data-favoritos]')!;
-    const conAlgo = grupos.filter(([, lista]) => lista.length);
-    caja.hidden = conAlgo.length === 0;
-    caja.innerHTML = conAlgo
-      .map(
-        ([titulo, lista]) => `<p class="favoritos-titulo">★ ${esc(titulo)}</p>
-        <ul>${lista.map((e) => `<li><a href="${esc(e.href)}">${esc(e.nombre)}</a></li>`).join('')}</ul>`,
-      )
-      .join('');
+    const lista = [...notas, ...documentos];
+    caja.hidden = lista.length === 0;
+    caja.innerHTML = `<ul>${lista.map((e) => `<li><a href="${esc(e.href)}">★ ${esc(e.nombre)}</a></li>`).join('')}</ul>`;
   }
   pintarFavoritos();
   // Si se cambian en otra pestaña, o al volver con «atrás».
@@ -131,6 +97,8 @@ const datos = JSON.stringify({ citas, canciones, voicings, local: ruta('repertor
   .cita {
     max-width: var(--ancho-texto);
     margin: 0 0 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--borde);
   }
   .cita blockquote {
     margin: 0;
@@ -167,12 +135,6 @@ const datos = JSON.stringify({ citas, canciones, voicings, local: ruta('repertor
     margin: 0 0 0.75rem;
     padding: 0 0 0 1rem;
     border-left: 0.2rem solid var(--acento);
-  }
-  .favoritos :global(.favoritos-titulo) {
-    margin: 0.4rem 0 0.1rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--acento);
   }
   .favoritos :global(ul) {
     margin: 0;
