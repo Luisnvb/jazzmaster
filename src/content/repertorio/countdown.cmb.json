@@ -1,0 +1,1197 @@
+{
+  "version": 4,
+  "bars": [
+    {
+      "id": 1773,
+      "cells": [
+        {
+          "id": 1774,
+          "root": "E",
+          "type": "Minor",
+          "interval": "b3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "4",
+              "b7",
+              "b3",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1775,
+          "root": "F",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": {
+        "label": "4/4",
+        "top": 4,
+        "bottom": 4
+      },
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1776,
+      "cells": [
+        {
+          "id": 1777,
+          "root": "B♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 14,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1778,
+          "root": "D♭",
+          "type": "Dominant",
+          "interval": "3",
+          "comboIndex": 8,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "3",
+              "b7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1779,
+      "cells": [
+        {
+          "id": 1780,
+          "root": "G♭",
+          "type": "Major",
+          "interval": "7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "2",
+              "5",
+              "7",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1781,
+          "root": "A",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1782,
+      "cells": [
+        {
+          "id": 1783,
+          "root": "D",
+          "type": "Major",
+          "interval": "3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1784,
+      "cells": [
+        {
+          "id": 1785,
+          "root": "D",
+          "type": "Minor",
+          "interval": "b3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "4",
+              "b7",
+              "b3",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1786,
+          "root": "E♭",
+          "type": "Dominant",
+          "interval": "3",
+          "comboIndex": 9,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "3",
+              "b7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 1787,
+      "cells": [
+        {
+          "id": 1788,
+          "root": "A♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 7,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1789,
+          "root": "B",
+          "type": "Dominant",
+          "interval": "3",
+          "comboIndex": 1,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "3",
+              "b7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1790,
+      "cells": [
+        {
+          "id": 1791,
+          "root": "E",
+          "type": "Major",
+          "interval": "7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "2",
+              "5",
+              "7",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1792,
+          "root": "G",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1793,
+      "cells": [
+        {
+          "id": 1794,
+          "root": "C",
+          "type": "Major",
+          "interval": "3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1795,
+      "cells": [
+        {
+          "id": 1796,
+          "root": "C",
+          "type": "Minor",
+          "interval": "b3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "4",
+              "b7",
+              "b3",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1797,
+          "root": "D♭",
+          "type": "Dominant",
+          "interval": "3",
+          "comboIndex": 8,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "3",
+              "b7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 1798,
+      "cells": [
+        {
+          "id": 1799,
+          "root": "G♭",
+          "type": "Major",
+          "interval": "7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "2",
+              "5",
+              "7",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1800,
+          "root": "A",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1801,
+      "cells": [
+        {
+          "id": 1802,
+          "root": "D",
+          "type": "Major",
+          "interval": "3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1803,
+          "root": "F",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1804,
+      "cells": [
+        {
+          "id": 1805,
+          "root": "B♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 14,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1806,
+      "cells": [
+        {
+          "id": 1807,
+          "root": "E",
+          "type": "Minor",
+          "interval": "b3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "4",
+              "b7",
+              "b3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 1808,
+      "cells": [
+        {
+          "id": 1809,
+          "root": "F",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1810,
+      "cells": [
+        {
+          "id": 1811,
+          "root": "B♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 14,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1812,
+      "cells": [
+        {
+          "id": 1813,
+          "root": "A",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1814,
+      "cells": [
+        {
+          "id": 1815,
+          "root": "E",
+          "type": "Minor",
+          "interval": "b3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "4",
+              "b7",
+              "b3",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1816,
+          "root": "F",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 1817,
+      "cells": [
+        {
+          "id": 1818,
+          "root": "B♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 14,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1819,
+          "root": "D♭",
+          "type": "Dominant",
+          "interval": "3",
+          "comboIndex": 8,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "3",
+              "b7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1820,
+      "cells": [
+        {
+          "id": 1821,
+          "root": "G♭",
+          "type": "Major",
+          "interval": "7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "2",
+              "5",
+              "7",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1822,
+          "root": "F",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1823,
+      "cells": [
+        {
+          "id": 1824,
+          "root": "B♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 14,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1825,
+          "root": "A",
+          "type": "Dominant",
+          "interval": "b7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "b7",
+              "3",
+              "b7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1826,
+      "cells": [
+        {
+          "id": 1827,
+          "root": "D",
+          "type": "Major",
+          "interval": "3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1828,
+          "root": "B♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 14,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": true
+    },
+    {
+      "id": 1829,
+      "cells": [
+        {
+          "id": 1830,
+          "root": "G♭",
+          "type": "Major",
+          "interval": "7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "2",
+              "5",
+              "7",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1831,
+          "root": "D",
+          "type": "Major",
+          "interval": "3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1832,
+      "cells": [
+        {
+          "id": 1833,
+          "root": "B♭",
+          "type": "Major",
+          "interval": "5",
+          "comboIndex": 14,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              "1",
+              null,
+              "7",
+              "3",
+              "5",
+              null
+            ],
+            "p": 0
+          }
+        },
+        {
+          "id": 1834,
+          "root": "G♭",
+          "type": "Major",
+          "interval": "7",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "2",
+              "5",
+              "7",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    },
+    {
+      "id": 1835,
+      "cells": [
+        {
+          "id": 1836,
+          "root": "D",
+          "type": "Major",
+          "interval": "3",
+          "comboIndex": 0,
+          "importedQuality": null,
+          "showBass": false,
+          "importedBass": null,
+          "placeholder": false,
+          "vf": {
+            "v": [
+              null,
+              "1",
+              "5",
+              "7",
+              "3",
+              null
+            ],
+            "p": 0
+          }
+        }
+      ],
+      "durationOverride": null,
+      "timeSig": null,
+      "section": null,
+      "repeatStart": false,
+      "repeatEnd": false,
+      "ending": null,
+      "lineBreakBefore": false
+    }
+  ],
+  "timeSigLabel": "4/4",
+  "defaultChordsPerBar": 2,
+  "spellingPreference": "flat",
+  "halfDimSymbol": "o",
+  "title": "Countdown",
+  "composer": "John Coltrane",
+  "tempoMarking": "",
+  "style": "Up Tempo Swing",
+  "barsPerLine": 4,
+  "lineBreaksExplicit": true,
+  "showAllNotes": false,
+  "tempoBpm": 210,
+  "globalGridScale": 1,
+  "globalSymbolScale": 1,
+  "globalSymbolOffsetY": 0,
+  "globalGridOffsetY": 0,
+  "globalFretScale": 1,
+  "systemGap": null,
+  "showDegrees": true,
+  "nextId": 1837
+}
