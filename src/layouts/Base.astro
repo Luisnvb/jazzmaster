@@ -47,9 +47,12 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     <header class="cabecera">
       <div class="cabecera-dentro">
         <div class="titulo-caja">
+          <a class="guitarra guitarra-inicio" href={ruta('')} title="Inicio">
+            <img src={archivo('iconos/guitarra.png')} alt="Inicio" width="120" height="120" />
+          </a>
           <button
             type="button"
-            class="guitarra"
+            class="guitarra guitarra-menu"
             aria-expanded="false"
             aria-controls="menu"
             aria-label="Menú de secciones"
@@ -183,7 +186,8 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     pintarAviso();
   }
 
-  // Menú de secciones: lo abre y lo cierra la guitarra de la cabecera.
+  // Menú de secciones (pantalla pequeña): lo abre y lo cierra la guitarra de la cabecera.
+  // En escritorio la guitarra es un enlace a Inicio y el menú está en la barra.
   const guitarra = document.querySelector<HTMLButtonElement>('[data-abrir-menu]')!;
   const menu = document.querySelector<HTMLElement>('[data-menu]')!;
   const abrirMenu = (abrir: boolean) => {
@@ -204,6 +208,8 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
   });
   // Al volver con «atrás» (caché del navegador), el menú no debe seguir abierto.
   addEventListener('pageshow', () => abrirMenu(false));
+  // Si la ventana se ensancha hasta la barra de escritorio, se cierra.
+  matchMedia('(min-width: 80.01rem)').addEventListener('change', (e) => e.matches && abrirMenu(false));
 
   // Páginas favoritas: la estrella de la cabecera y el orden de los menús y listas.
   const favoritas = paginasFavoritas();
@@ -269,6 +275,10 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
   .guitarra:hover,
   .guitarra[aria-expanded='true'] {
     transform: rotate(-8deg);
+  }
+  /* Escritorio: la guitarra lleva a Inicio; con la barra estrecha, abre el menú. */
+  .guitarra-menu {
+    display: none;
   }
   .guitarra img {
     display: block;
@@ -415,6 +425,12 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     }
     nav[aria-label='Secciones'] {
       display: none;
+    }
+    .guitarra-inicio {
+      display: none;
+    }
+    .guitarra-menu {
+      display: block;
     }
   }
   /* Menú de la guitarra: debajo de la cabecera, a todo lo ancho. */
