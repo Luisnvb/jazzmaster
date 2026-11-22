@@ -48,3 +48,20 @@ export function textos<T extends Record<string, unknown>>(es: T, en: { [K in key
 
 /** Formatos de fecha y número de cada idioma (para Intl). */
 export const LOCALE: Record<Idioma, string> = { es: 'es', en: 'en' };
+
+/** Clave de localStorage con el idioma que eligió el visitante (al cambiar o al rechazar la sugerencia). */
+export const CLAVE_IDIOMA = 'idioma:elegido';
+
+/**
+ * El idioma que conviene sugerir en una página en `actual`, o null si no hay que sugerir
+ * nada. Si el visitante ya eligió, se respeta: solo se sugiere su idioma si la página
+ * está en el otro. Si no eligió, manda el primero de los idiomas del navegador que
+ * tenga la web (es-MX → es); si ninguno, el inglés. Nunca se redirige: es una sugerencia.
+ */
+export function idiomaSugerido(navegador: readonly string[], actual: Idioma, elegido: unknown): Idioma | null {
+  if (elegido === 'es' || elegido === 'en') return elegido === actual ? null : elegido;
+  if (!navegador.length) return null;
+  const principal = navegador.map((l) => l.toLowerCase().split(/[-_]/)[0]).find((l): l is Idioma => (IDIOMAS as readonly string[]).includes(l));
+  const preferido: Idioma = principal ?? 'en';
+  return preferido === actual ? null : preferido;
+}

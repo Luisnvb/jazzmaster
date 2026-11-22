@@ -48,6 +48,10 @@ const pasoRuta = idioma === 'es' ? PASOS.find((p) => ruta(p.direccion) === actua
 const equivalente = Astro.props.otroIdioma ?? (pagina && pagina.href === actual ? pagina.otroIdioma : undefined);
 const enlaceIdioma = equivalente ?? ruta(conPrefijo(otro, ''));
 const enInicio = actual === ruta(conPrefijo(idioma, ''));
+// Aviso «esta página también está en…»: solo si la página existe en el otro idioma (o
+// es la portada). Va escrito en el otro idioma; el script decide si se enseña.
+const sugerir = equivalente !== undefined || enInicio;
+const TS = INTERFAZ[otro];
 ---
 
 <!doctype html>
@@ -142,6 +146,19 @@ const enInicio = actual === ruta(conPrefijo(idioma, ''));
     </header>
     <main>
       {
+        sugerir && (
+          <aside class="sugerencia-idioma" lang={otro} data-sugerencia-idioma={otro} hidden>
+            <span>{TS.sugerencia}</span>
+            <a class="boton principal" href={enlaceIdioma} hreflang={otro} data-sugerencia-leer>
+              {TS.sugerenciaLeer}
+            </a>
+            <button type="button" class="boton" data-sugerencia-quedarse>
+              {TS.sugerenciaQuedarse}
+            </button>
+          </aside>
+        )
+      }
+      {
         pasoRuta && (
           <aside class="aviso-ruta" aria-label="Ruta de aprendizaje" data-aviso-ruta={pasoRuta.direccion} hidden>
             <a class="aviso-ruta-paso" href={`${ruta('ruta')}#paso-${pasoRuta.direccion.replace(/\//g, '-')}`}>
@@ -166,7 +183,8 @@ const enInicio = actual === ruta(conPrefijo(idioma, ''));
   import { progresoRuta, siguientePaso } from '../lib/ruta.ts';
   import { aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
   import { vigilarTitulos } from '../lib/titulos.ts';
-  import { idiomaValido } from '../i18n/idiomas.ts';
+  import { CLAVE_IDIOMA, idiomaSugerido, idiomaValido } from '../i18n/idiomas.ts';
+  import { guardarJSON, leerJSON } from '../lib/almacen.ts';
   import { INTERFAZ } from '../i18n/interfaz.ts';
 
   const T = INTERFAZ[idiomaValido(document.documentElement.lang)];
@@ -174,6 +192,27 @@ const enInicio = actual === ruta(conPrefijo(idioma, ''));
   // El enlace al otro idioma lleva a la misma página con lo mismo abierto (?id=…, ?q=…, #…).
   const cambiarIdioma = document.querySelector<HTMLAnchorElement>('[data-cambiar-idioma="pagina"]');
   if (cambiarIdioma) cambiarIdioma.href = cambiarIdioma.href.split(/[?#]/)[0] + location.search + location.hash;
+
+  // Cambiar de idioma con la cabecera cuenta como elección: se recuerda.
+  const idiomaPagina = idiomaValido(document.documentElement.lang);
+  const elegir = (idioma: string) => guardarJSON(CLAVE_IDIOMA, idioma);
+  document.querySelector<HTMLAnchorElement>('[data-cambiar-idioma]')?.addEventListener('click', (e) => elegir((e.currentTarget as HTMLElement).lang));
+
+  // Sugerencia del otro idioma según el navegador (o lo elegido antes). Nunca redirige.
+  const sugerencia = document.querySelector<HTMLElement>('[data-sugerencia-idioma]');
+  if (sugerencia) {
+    const sugerido = idiomaSugerido(navigator.languages?.length ? navigator.languages : [navigator.language], idiomaPagina, leerJSON(CLAVE_IDIOMA));
+    if (sugerido === sugerencia.dataset.sugerenciaIdioma) {
+      const leer = sugerencia.querySelector<HTMLAnchorElement>('[data-sugerencia-leer]')!;
+      if (cambiarIdioma) leer.href = cambiarIdioma.href;
+      leer.addEventListener('click', () => elegir(sugerido));
+      sugerencia.querySelector('[data-sugerencia-quedarse]')!.addEventListener('click', () => {
+        elegir(idiomaPagina);
+        sugerencia.hidden = true;
+      });
+      sugerencia.hidden = false;
+    }
+  }
 
   // Modo sin conexión: solo en la web compilada (en desarrollo la caché estorbaría).
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
@@ -539,6 +578,30 @@ const enInicio = actual === ruta(conPrefijo(idioma, ''));
       width: 2rem;
       height: 2rem;
     }
+  }
+  /* Sugerencia del otro idioma, arriba del todo (la decide el script). */
+  .sugerencia-idioma {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin: 0 0 1rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.9rem;
+    background: var(--acento-suave); /* COLOR: aviso del otro idioma */
+    border-radius: var(--radio-tarjeta);
+  }
+  .sugerencia-idioma[hidden] {
+    display: none;
+  }
+  .sugerencia-idioma span {
+    flex: 1 1 14rem;
+    font-weight: 600;
+  }
+  .sugerencia-idioma .boton {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    text-decoration: none;
   }
   /* Aviso de la ruta de aprendizaje, arriba de las páginas que son un paso. */
   .aviso-ruta {

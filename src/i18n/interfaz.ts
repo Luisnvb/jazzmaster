@@ -15,6 +15,10 @@ export const INTERFAZ = textos(
     cambiarIdioma: 'English',
     cambiarIdiomaTitulo: 'Read this page in English',
     otroIdioma: 'en',
+    // Aviso que sugiere este idioma en una página del otro (va escrito en este idioma).
+    sugerencia: 'Esta página también está en español.',
+    sugerenciaLeer: 'Leer en español',
+    sugerenciaQuedarse: 'Seguir en inglés',
     // Portada
     registrar: '▶ Registrar práctica',
     actividad: 'Actividad: {actividad}',
@@ -47,6 +51,9 @@ export const INTERFAZ = textos(
     cambiarIdioma: 'Español',
     cambiarIdiomaTitulo: 'Leer esta página en español',
     otroIdioma: 'es',
+    sugerencia: 'This page is also in English.',
+    sugerenciaLeer: 'Read in English',
+    sugerenciaQuedarse: 'Stay in Spanish',
     registrar: '▶ Log practice',
     actividad: 'Activity: {actividad}',
     cambiarActividad: 'Change the activity in the Practice log',
