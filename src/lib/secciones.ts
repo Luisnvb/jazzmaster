@@ -272,7 +272,27 @@ export const SECCIONES: Seccion[] = [
     pagina(
       "Buscador de acordes",
       "herramientas/buscador-acordes",
-      "Escribe unas notas y te dice qué acorde forman",
+      "Escribe unas notas o márcalas en el mástil y te dice qué acorde forman",
+    ),
+    pagina(
+      "Metrónomo",
+      "herramientas/metronomo",
+      "Acentos por pulso, subdivisiones, subida de tempo y compases en silencio",
+    ),
+    pagina(
+      "Círculo de quintas",
+      "herramientas/circulo-quintas",
+      "Armaduras, relativas, acordes de cada tonalidad y dominantes secundarios",
+    ),
+    pagina(
+      "Progresiones aleatorias",
+      "herramientas/progresiones-aleatorias",
+      "Cambios nuevos para leer, acompañar e improvisar, en cualquier tono",
+    ),
+    pagina(
+      "Registro de práctica",
+      "herramientas/registro",
+      "Cronómetro por actividad, minutos por día, por sección y racha",
     ),
     pagina(
       "Apuntes",

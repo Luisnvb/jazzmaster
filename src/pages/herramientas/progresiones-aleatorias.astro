@@ -1,0 +1,374 @@
+---
+// Progresiones aleatorias (sección Herramientas): genera progresiones de jazz al azar
+// (lib/generador-progresiones.ts) en una tonalidad fija o al azar, para leer cifrados,
+// acompañar o improvisar sobre cambios nuevos. Suenan en bucle con el acorde que toca
+// marcado; se pueden copiar o guardar en Progresiones (progresiones:cambios).
+import Base from '../../layouts/Base.astro';
+import Tempo from '../../components/Tempo.astro';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { NIVELES } from '../../lib/generador-progresiones.ts';
+import { ruta } from '../../lib/rutas.ts';
+---
+
+<Base titulo="Progresiones aleatorias">
+  <p class="intro">
+    Progresiones que nunca has visto, construidas con las reglas de la armonía funcional: cada acorde va hacia el siguiente
+    como en los standards (II–V, dominantes secundarios, sustitutos…) y todas acaban en la tónica. Léelas a primera vista,
+    acompáñalas o improvisa encima; oculta los grados para analizarlas tú.
+  </p>
+
+  <section class="opciones" aria-label="Opciones">
+    <div class="grupo-botones" role="group" aria-label="Modo">
+      <button type="button" class="boton" data-modo="mayor" aria-pressed="true">Mayor</button>
+      <button type="button" class="boton" data-modo="menor" aria-pressed="false">Menor</button>
+    </div>
+    <div class="grupo-botones" role="group" aria-label="Nivel">
+      {NIVELES.map((n) => <button type="button" class="boton" data-nivel={n.id} title={n.descripcion} aria-pressed="false">{n.nombre}</button>)}
+    </div>
+    <div class="selectores">
+      <label class="campo">Tonalidad <select data-tonalidad></select></label>
+      <label class="campo">Compases
+        <select data-compases>{[4, 8, 12, 16, 24, 32].map((n) => <option value={n}>{n}</option>)}</select>
+      </label>
+      <label class="campo">Dos acordes por compás
+        <select data-dos>
+          <option value="0">Nunca</option>
+          <option value="0.3">A veces</option>
+          <option value="0.6">A menudo</option>
+        </select>
+      </label>
+    </div>
+    <div class="casillas">
+      <label><input type="checkbox" data-grados /> Mostrar los grados</label>
+      <label><input type="checkbox" data-nueva-cada-vuelta /> Una nueva en cada vuelta</label>
+    </div>
+  </section>
+
+  <div class="acciones">
+    <button type="button" class="boton principal" data-nueva>Nueva progresión</button>
+    <button type="button" class="boton" data-copiar>Copiar cifrado</button>
+    <button type="button" class="boton" data-guardar>Guardar en Progresiones</button>
+    <span class="aviso" data-aviso role="status"></span>
+  </div>
+
+  <h2 class="titulo-progresion" data-titulo></h2>
+  <ol class="compases" data-compases-lista></ol>
+
+  <div class="controles">
+    <label>Sonido
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    </label>
+    <Tempo clave="progresiones-aleatorias" inicial={110} />
+    <label><input type="checkbox" data-metronomo /> Metrónomo</label>
+    <label><input type="checkbox" data-bucle checked /> En bucle</label>
+  </div>
+  <div class="botones-audio">
+    <button type="button" data-audio="progresion" aria-pressed="false">▶ Escuchar</button>
+    <button type="button" data-detener>■ Detener</button>
+  </div>
+
+  <p class="suave pie">
+    Al guardarla aparece en <a href={ruta('progresiones')}>Progresiones</a> (en grados), donde puedes verla con voicings y en
+    cualquier tono.
+  </p>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import type { Modo } from '../../lib/circulo.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, type Reproduccion } from '../../lib/cliente.ts';
+  import { NIVELES, TONICAS_GENERADOR, generarProgresion, tonicaAlAzar, type Nivel } from '../../lib/generador-progresiones.ts';
+  import { analizarProgresion, secuenciaProgresion, simboloEn, type CambiosProgresiones, type Tramo } from '../../lib/progresiones.ts';
+
+  interface Opciones {
+    modo: Modo;
+    nivel: Nivel;
+    /** '' = al azar. */
+    tonalidad: string;
+    compases: number;
+    dos: number;
+    grados: boolean;
+    nuevaCadaVuelta: boolean;
+  }
+  interface Actual {
+    tonica: string;
+    modo: Modo;
+    compases: string[];
+  }
+  const CLAVE = 'herramientas:generador';
+  const CLAVE_ACTUAL = 'herramientas:generador-actual';
+  const op: Opciones = { modo: 'mayor', nivel: 'secundarios', tonalidad: '', compases: 8, dos: 0.3, grados: true, nuevaCadaVuelta: false, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  if (op.modo !== 'menor') op.modo = 'mayor';
+  if (!NIVELES.some((n) => n.id === op.nivel)) op.nivel = 'secundarios';
+  if (op.tonalidad && !TONICAS_GENERADOR[op.modo].includes(op.tonalidad)) op.tonalidad = '';
+  if (![4, 8, 12, 16, 24, 32].includes(op.compases)) op.compases = 8;
+  if (![0, 0.3, 0.6].includes(op.dos)) op.dos = 0.3;
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selTonalidad = $<HTMLSelectElement>('[data-tonalidad]');
+  const lista = $('[data-compases-lista]');
+  const aviso = $('[data-aviso]');
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('herramientas:generador-sonido');
+  const metronomo = $<HTMLInputElement>('[data-metronomo]');
+  const bucle = $<HTMLInputElement>('[data-bucle]');
+
+  function nueva(): Actual {
+    return {
+      tonica: op.tonalidad || tonicaAlAzar(op.modo),
+      modo: op.modo,
+      compases: generarProgresion({ modo: op.modo, nivel: op.nivel, compases: op.compases, dosPorCompas: op.dos }),
+    };
+  }
+
+  // La última generada se recuerda (si se puede leer).
+  let actual: Actual = (() => {
+    const g = leerJSON<Actual>(CLAVE_ACTUAL);
+    try {
+      if (g && Array.isArray(g.compases) && TONICAS_GENERADOR[g.modo]?.includes(g.tonica)) {
+        analizarProgresion(g.compases);
+        return g;
+      }
+    } catch {
+      // Guardada con otra versión: se genera otra.
+    }
+    return nueva();
+  })();
+
+  const bonito = (t: string) => t.replace(/([A-G])#/g, '$1♯').replace(/([A-G])b/g, '$1♭');
+  const cifrado = () => analizarProgresion(actual.compases).map((c) => c.map((a) => simboloEn(actual.tonica, a)).join(' '));
+
+  function pintarOpciones() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-modo]')) b.setAttribute('aria-pressed', String(b.dataset.modo === op.modo));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-nivel]')) b.setAttribute('aria-pressed', String(b.dataset.nivel === op.nivel));
+    selTonalidad.innerHTML =
+      `<option value="">Al azar</option>` + TONICAS_GENERADOR[op.modo].map((t) => `<option value="${t}">${esc(bonito(t))}${op.modo === 'menor' ? 'm' : ''}</option>`).join('');
+    selTonalidad.value = op.tonalidad;
+    $<HTMLSelectElement>('[data-compases]').value = String(op.compases);
+    $<HTMLSelectElement>('[data-dos]').value = String(op.dos);
+    $<HTMLInputElement>('[data-grados]').checked = op.grados;
+    $<HTMLInputElement>('[data-nueva-cada-vuelta]').checked = op.nuevaCadaVuelta;
+    guardarJSON(CLAVE, op);
+  }
+
+  function pintarProgresion() {
+    const analisis = analizarProgresion(actual.compases);
+    $('[data-titulo]').textContent = `En ${bonito(actual.tonica)} ${actual.modo}`;
+    lista.classList.toggle('sin-grados', !op.grados);
+    lista.innerHTML = analisis
+      .map(
+        (c, i) =>
+          `<li class="compas" aria-label="Compás ${i + 1}">${c
+            .map(
+              (a, j) =>
+                `<span class="acorde" data-tramo="${i}-${j}"><strong>${esc(bonito(simboloEn(actual.tonica, a)))}</strong><span class="grado">${esc(a.texto)}</span></span>`,
+            )
+            .join('')}</li>`,
+      )
+      .join('');
+    guardarJSON(CLAVE_ACTUAL, actual);
+  }
+
+  const marcar = (tramo: Tramo | null) => {
+    for (const el of lista.querySelectorAll('.sonando')) el.classList.remove('sonando');
+    if (tramo) lista.querySelector(`[data-tramo="${tramo.compas}-${tramo.acorde}"]`)?.classList.add('sonando');
+  };
+
+  const cambiar = (f: () => void, regenerar = true) => {
+    f();
+    pintarOpciones();
+    if (regenerar) {
+      actual = nueva();
+      pintarProgresion();
+    }
+  };
+
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+    const m = el.closest<HTMLButtonElement>('[data-modo]');
+    if (m)
+      return cambiar(() => {
+        op.modo = m.dataset.modo as Modo;
+        if (op.tonalidad && !TONICAS_GENERADOR[op.modo].includes(op.tonalidad)) op.tonalidad = '';
+      });
+    const n = el.closest<HTMLButtonElement>('[data-nivel]');
+    if (n) return cambiar(() => (op.nivel = n.dataset.nivel as Nivel));
+  });
+  selTonalidad.addEventListener('change', () => cambiar(() => (op.tonalidad = selTonalidad.value)));
+  $<HTMLSelectElement>('[data-compases]').addEventListener('change', (e) => cambiar(() => (op.compases = Number((e.target as HTMLSelectElement).value))));
+  $<HTMLSelectElement>('[data-dos]').addEventListener('change', (e) => cambiar(() => (op.dos = Number((e.target as HTMLSelectElement).value))));
+  $<HTMLInputElement>('[data-grados]').addEventListener('change', (e) =>
+    cambiar(() => {
+      op.grados = (e.target as HTMLInputElement).checked;
+      lista.classList.toggle('sin-grados', !op.grados);
+    }, false),
+  );
+  $<HTMLInputElement>('[data-nueva-cada-vuelta]').addEventListener('change', (e) => cambiar(() => (op.nuevaCadaVuelta = (e.target as HTMLInputElement).checked), false));
+  $('[data-nueva]').addEventListener('click', () => {
+    actual = nueva();
+    pintarProgresion();
+    aviso.textContent = '';
+  });
+
+  $('[data-copiar]').addEventListener('click', async () => {
+    const texto = cifrado().join(' | ');
+    try {
+      await navigator.clipboard.writeText(texto);
+      aviso.textContent = 'Copiado.';
+    } catch {
+      aviso.textContent = texto;
+    }
+  });
+
+  $('[data-guardar]').addEventListener('click', () => {
+    const cambios = leerJSON<CambiosProgresiones>('progresiones:cambios') ?? {};
+    const id = `local-${Date.now().toString(36)}`;
+    const nombres = Object.values(cambios).filter((p) => p?.nombre.startsWith('Al azar')).length;
+    cambios[id] = {
+      id,
+      nombre: `Al azar ${nombres + 1}`,
+      descripcion: `Generada con Progresiones aleatorias (${NIVELES.find((n) => n.id === op.nivel)!.nombre.toLowerCase()}), en ${actual.tonica} ${actual.modo}.`,
+      compases: [...actual.compases],
+    };
+    aviso.textContent = guardarJSON('progresiones:cambios', cambios)
+      ? `Guardada en Progresiones como «${cambios[id]!.nombre}».`
+      : 'No se ha podido guardar (¿almacenamiento lleno o modo privado?).';
+  });
+
+  conectarAudio(() => {
+    const r: Reproduccion = { eventos: [], instrumento: instrumento(), bucle: () => bucle.checked, duracion: 1 };
+    const preparar = () => {
+      const { eventos, tramos, duracion } = secuenciaProgresion(actual.tonica, analizarProgresion(actual.compases), tempo(), 4, {
+        metronomo: metronomo.checked,
+        sostenido: SOSTENIDOS.includes(instrumento()),
+      });
+      Object.assign(r, {
+        eventos,
+        duracion,
+        instrumento: instrumento(),
+        alProgresar: (s: number) => marcar(tramos.find((t) => s >= t.inicio && s < t.fin) ?? null),
+      });
+    };
+    preparar();
+    r.otraVuelta = () => {
+      if (op.nuevaCadaVuelta) {
+        actual = nueva();
+        pintarProgresion();
+      }
+      preparar();
+    };
+    r.alTerminar = () => marcar(null);
+    return r;
+  });
+
+  pintarOpciones();
+  pintarProgresion();
+</script>
+
+<style>
+  .intro,
+  .pie {
+    max-width: var(--ancho-texto);
+  }
+  .opciones {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0 0 1rem;
+  }
+  .grupo-botones,
+  .selectores,
+  .casillas,
+  .acciones,
+  .controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1.25rem;
+  }
+  .grupo-botones {
+    gap: 0.35rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    margin: 0;
+  }
+  .acciones {
+    gap: 0.4rem;
+    margin: 0 0 1rem;
+  }
+  .aviso {
+    color: var(--texto-suave);
+    font-size: 0.9rem;
+  }
+  .titulo-progresion {
+    margin: 0 0 0.5rem;
+  }
+  .compases {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+    border-left: 3px solid var(--texto);
+  }
+  @media (max-width: 36rem) {
+    .compases {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .compases :global(.compas) {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.3rem;
+    min-height: 4.2rem;
+    padding: 0.5rem 0.4rem;
+    border-right: 2px solid var(--texto);
+    border-bottom: 1px solid var(--borde);
+  }
+  .compases :global(.compas:last-child) {
+    border-right-width: 5px;
+    border-right-style: double;
+  }
+  .compases :global(.acorde) {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0.15rem;
+    min-width: 0;
+    padding: 0.2rem 0.35rem;
+    border-radius: var(--radio);
+  }
+  .compases :global(.acorde strong) {
+    font-size: 1.25rem;
+    overflow-wrap: anywhere;
+  }
+  .compases :global(.grado) {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .compases.sin-grados :global(.grado) {
+    visibility: hidden;
+  }
+  /* COLOR: acorde que suena */
+  .compases :global(.acorde.sonando) {
+    color: var(--sobre-acento);
+    background: var(--acento);
+  }
+  .compases :global(.acorde.sonando .grado) {
+    color: inherit;
+  }
+  .controles {
+    margin: 0 0 0.5rem;
+  }
+  .controles :global(.tempo) {
+    margin: 0;
+  }
+</style>

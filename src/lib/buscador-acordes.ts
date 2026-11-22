@@ -3,7 +3,7 @@
 // nota como raíz con nombrarAcorde (lib/slash.ts) y puntúa cada lectura. Funciones
 // puras, sin DOM.
 import { nombrarAcorde } from './slash.ts';
-import { formatNota, parseNota, pitchClass, type Nota } from './teoria.ts';
+import { formatNota, notaDeGrado, parseNota, pitchClass, type Nota } from './teoria.ts';
 
 const mod = (n: number) => ((n % 12) + 12) % 12;
 
@@ -130,4 +130,75 @@ export function midisAcorde(notas: readonly string[]): number[] {
     suelo = m + 1;
   }
   return res;
+}
+
+// --- Desde el mástil ---------------------------------------------------------------
+
+/** Grafía de cada sonido al leerlo del mástil (la de los selectores de tónica). */
+const GRAFIA = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+/** Un traste por cuerda (0 = 6ª … 5 = 1ª), 'x' = no suena. */
+export type TrastesMastil = (number | 'x')[];
+
+/** MIDI de las cuerdas al aire, de 6ª a 1ª. */
+const AL_AIRE = [40, 45, 50, 55, 59, 64];
+
+export const sinTrastes = (): TrastesMastil => ['x', 'x', 'x', 'x', 'x', 'x'];
+
+/** Trastes guardados o enlazados, saneados: seis valores, 'x' o 0–24. */
+export function trastesValidos(x: unknown): TrastesMastil {
+  if (!Array.isArray(x) || x.length !== 6) return sinTrastes();
+  return x.map((t) => (Number.isInteger(t) && t >= 0 && t <= 24 ? (t as number) : 'x'));
+}
+
+/** Pone o quita un traste: en cada cuerda suena solo uno; pulsar el que ya está lo quita. */
+export function alternarTraste(trastes: TrastesMastil, cuerda: number, traste: number): TrastesMastil {
+  return trastes.map((t, c) => (c !== cuerda ? t : t === traste ? 'x' : traste));
+}
+
+/**
+ * Lo que suena con unos trastes: las alturas de grave a agudo y las notas sin
+ * repetir sonidos, en ese orden (la primera es el bajo).
+ */
+export function notasDeTrastes(trastes: TrastesMastil): { midis: number[]; notas: string[] } {
+  const midis = trastes.flatMap((t, c) => (t === 'x' ? [] : [AL_AIRE[c] + t])).sort((a, b) => a - b);
+  const notas: string[] = [];
+  for (const m of midis) {
+    const n = GRAFIA[m % 12];
+    if (!notas.includes(n)) notas.push(n);
+  }
+  return { midis, notas };
+}
+
+/** Grado de cada cuerda sobre la raíz de un candidato ('' en las que no suenan), para el diagrama. */
+export function gradosDeTrastes(trastes: TrastesMastil, c: Candidato): string[] {
+  return trastes.map((t, cuerda) => {
+    if (t === 'x') return '';
+    const pc = (AL_AIRE[cuerda] + t) % 12;
+    return c.notas.find((n) => pitchClass(parseNota(n.nota)) === pc)?.grado ?? '';
+  });
+}
+
+/**
+ * Las notas escritas según los grados de un candidato (G# y no Ab como 3 de E). Si un
+ * grado daría una doble alteración, la nota se deja como estaba.
+ */
+export function deletrearSegun(c: Candidato): string[] {
+  return c.notas.map(({ nota, grado }) => {
+    try {
+      const n = notaDeGrado(c.raiz, grado);
+      return Math.abs(n.alteracion) > 1 ? nota : formatNota(n);
+    } catch {
+      return nota;
+    }
+  });
+}
+
+/** Del mástil al acorde: lee las notas, busca y vuelve a buscar con las notas bien escritas. */
+export function buscarEnMastil(trastes: TrastesMastil): { midis: number[]; notas: string[]; candidatos: Candidato[] } {
+  const { midis, notas } = notasDeTrastes(trastes);
+  const primera = buscarAcordes(notas);
+  if (!primera.length) return { midis, notas, candidatos: [] };
+  const escritas = deletrearSegun(primera[0]);
+  return { midis, notas: escritas, candidatos: buscarAcordes(escritas) };
 }

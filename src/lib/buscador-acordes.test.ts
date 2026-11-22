@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buscarAcordes, leerNota, leerNotas, midisAcorde, nombrarIntervalo } from './buscador-acordes.ts';
+import { alternarTraste, buscarAcordes, buscarEnMastil, gradosDeTrastes, leerNota, leerNotas, midisAcorde, nombrarIntervalo, notasDeTrastes, sinTrastes, trastesValidos } from './buscador-acordes.ts';
 import { formatNota } from './teoria.ts';
 
 const mejor = (texto: string) => buscarAcordes(leerNotas(texto).notas)[0]?.simbolo;
@@ -69,4 +69,32 @@ test('audio: el bajo abajo y el resto subiendo en el orden escrito', () => {
   assert.deepEqual(midisAcorde(['E', 'C', 'G']), [40, 60, 67]);
   const m = midisAcorde(['A', 'C', 'E', 'G']);
   assert.ok(m.every((x, i) => i === 0 || x > m[i - 1]));
+});
+
+test('mástil: un traste por cuerda, y pulsar el mismo lo quita', () => {
+  let t = sinTrastes();
+  t = alternarTraste(t, 1, 3);
+  assert.deepEqual(t, ['x', 3, 'x', 'x', 'x', 'x']);
+  t = alternarTraste(t, 1, 5);
+  assert.deepEqual(t, ['x', 5, 'x', 'x', 'x', 'x']);
+  assert.deepEqual(alternarTraste(t, 1, 5), sinTrastes());
+  assert.deepEqual(trastesValidos([0, 'a', 3, 30, -1, 2]), [0, 'x', 3, 'x', 'x', 2]);
+  assert.deepEqual(trastesValidos('nada'), sinTrastes());
+});
+
+test('mástil: notas de grave a agudo y el acorde que forman', () => {
+  // C maj7 en la 5ª cuerda: x 3 5 4 5 x
+  const { midis, notas } = notasDeTrastes(['x', 3, 5, 4, 5, 'x']);
+  assert.deepEqual(midis, [48, 55, 59, 64]);
+  assert.deepEqual(notas, ['C', 'G', 'B', 'E']);
+  assert.equal(buscarAcordes(notas)[0].simbolo, 'Cmaj7');
+  // Mi mayor al aire: 0 2 2 1 0 0 (E repetido no cuenta dos veces)
+  assert.deepEqual(notasDeTrastes([0, 2, 2, 1, 0, 0]).notas, ['E', 'B', 'Ab']);
+  // …pero se escribe según el acorde: la 3 de E es G#.
+  const e = buscarEnMastil([0, 2, 2, 1, 0, 0]);
+  assert.deepEqual(e.notas, ['E', 'B', 'G#']);
+  assert.equal(e.candidatos[0].simbolo, 'E');
+  assert.deepEqual(gradosDeTrastes([0, 2, 2, 1, 0, 0], e.candidatos[0]), ['1', '5', '1', '3', '5', '1']);
+  // D7/F#: 2 x 0 2 1 2
+  assert.equal(buscarEnMastil([2, 'x', 0, 2, 1, 2]).candidatos[0].simbolo, 'D7/F#');
 });
