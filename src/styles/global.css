@@ -319,10 +319,11 @@ main > section ~ .indice {
   margin-top: 4rem;
 }
 
-/* Descripciones y leyendas de las herramientas: en la misma columna centrada que el
-   texto de la página. (:root sube la especificidad por encima de los estilos de cada
-   página, que fijan sus márgenes con «margin: … 0».) */
-:root main :is(p.descripcion, p.leyenda, details.leyenda, p.pista, p.uso, p.nota-par, p.intro) {
+/* Leyendas y notas de las herramientas: en la misma columna centrada que el texto de la
+   página. (:root sube la especificidad por encima de los estilos de cada página, que
+   fijan sus márgenes con «margin: … 0».) Las descripciones de encima del ejercicio
+   (p.descripcion, p.pista) no: ocupan todo el ancho de la herramienta. */
+:root main :is(p.leyenda, details.leyenda, p.uso, p.nota-par, p.intro) {
   max-width: var(--ancho-texto);
   margin-inline: auto;
 }
