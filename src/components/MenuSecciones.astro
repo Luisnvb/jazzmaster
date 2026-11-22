@@ -1,9 +1,9 @@
 ---
 // Lista de secciones con sus páginas (lib/secciones.ts): el menú que abre la guitarra
 // de la cabecera y el de la portada. Cada sección es un desplegable con sus páginas
-// (las favoritas primero, lib/paginas-favoritas.ts); la de una sola página (Apuntes)
-// es un enlace directo; debajo puede llevar contenido (slot "apuntes": los favoritos
-// en la portada).
+// (las favoritas primero, lib/paginas-favoritas.ts); la de una sola página es un
+// enlace directo. Herramientas puede llevar debajo contenido (slot "apuntes": las
+// notas y documentos favoritos de Apuntes, en la portada).
 import { ruta } from '../lib/rutas.ts';
 import { SECCIONES, type Pagina, type Seccion } from '../lib/secciones.ts';
 
@@ -40,7 +40,6 @@ const { pagina, abierta, conInicio = false, enInicio = false, columnas = false }
           <a class="nombre" href={s.partes[0].href} aria-current={s.partes[0] === pagina ? 'page' : undefined}>
             {s.nombre}
           </a>
-          {s.id === 'apuntes' && <slot name="apuntes" />}
         </li>
       ) : (
         <li class="seccion">
@@ -56,6 +55,7 @@ const { pagina, abierta, conInicio = false, enInicio = false, columnas = false }
               ))}
             </ul>
           </details>
+          {s.id === 'herramientas' && <slot name="apuntes" />}
         </li>
       ),
     )

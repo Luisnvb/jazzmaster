@@ -268,7 +268,12 @@ export const SECCIONES: Seccion[] = [
       "Giant Steps y el ciclo de terceras mayores, con notas guía y shells",
     ),
   ]),
-  seccion("apuntes", "Apuntes", "Tus notas y tus documentos", [
+  seccion("herramientas", "Herramientas", "Utilidades de consulta y tus apuntes", [
+    pagina(
+      "Buscador de acordes",
+      "herramientas/buscador-acordes",
+      "Escribe unas notas y te dice qué acorde forman",
+    ),
     pagina(
       "Apuntes",
       "apuntes",

@@ -1,0 +1,239 @@
+---
+// Buscador de acordes (sección Herramientas): escribes unas notas (la primera es el
+// bajo) y dice qué acorde forman, con las otras lecturas posibles debajo
+// (lib/buscador-acordes.ts). Las notas se recuerdan y se pueden enlazar con ?notas=.
+import Base from '../../layouts/Base.astro';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { ruta } from '../../lib/rutas.ts';
+import { TONICAS } from '../../lib/teoria.ts';
+---
+
+<Base titulo="Buscador de acordes">
+  <p class="intro">
+    Escribe las notas del acorde de grave a agudo, separadas por espacios o comas: la primera es el <strong>bajo</strong>.
+    Valen <code>C Eb G Bb</code>, <code>do mib sol sib</code> o <code>c, d#, f♯</code>. También puedes ir pulsando las notas.
+  </p>
+
+  <section class="buscador" aria-label="Buscador">
+    <div class="entrada">
+      <label class="campo" for="notas">Notas</label>
+      <input id="notas" type="text" autocomplete="off" spellcheck="false" placeholder="C E G Bb" data-notas />
+      <button type="button" class="boton" data-borrar>Borrar</button>
+    </div>
+    <div class="teclas" role="group" aria-label="Añadir o quitar notas">
+      {TONICAS.map((t) => <button type="button" class="boton" data-nota={t} aria-pressed="false">{t}</button>)}
+    </div>
+
+    <div class="resultado" data-resultado aria-live="polite"></div>
+    <div class="botones-audio">
+      <label>Sonido
+        <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+      </label>
+      <button type="button" data-audio="bloque" aria-pressed="false">▶ En bloque</button>
+      <button type="button" data-audio="arpegio" aria-pressed="false">▶ Arpegiado</button>
+      <button type="button" data-detener>■ Detener</button>
+    </div>
+
+    <h2 class="titulo-otras" data-otras-titulo hidden>Otras lecturas</h2>
+    <ul class="otras" data-otras></ul>
+  </section>
+
+  <p class="nota-pie">
+    El nombre depende del bajo: <code>A C E G</code> es Am7, pero <code>C A E G</code> se lee antes como C6 (y Am7/C queda
+    entre las otras lecturas). Sin 3ª, el acorde se nombra como sus o se avisa de que falta. Los nombres siguen las mismas
+    reglas que <a href={ruta('estudio/slash')}>Acordes slash</a>.
+  </p>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { buscarAcordes, leerNota, leerNotas, midisAcorde, nombrarIntervalo, type Candidato } from '../../lib/buscador-acordes.ts';
+  import { conectarAudio, conectarInstrumento } from '../../lib/cliente.ts';
+  import type { Evento } from '../../lib/secuencias.ts';
+  import { pitchClass } from '../../lib/teoria.ts';
+
+  const CLAVE = 'herramientas:buscador-acordes';
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const entrada = $<HTMLInputElement>('[data-notas]');
+  const resultado = $('[data-resultado]');
+  const otras = $('[data-otras]');
+  const otrasTitulo = $('[data-otras-titulo]');
+  const instrumento = conectarInstrumento('herramientas:sonido');
+
+  const deEnlace = new URLSearchParams(location.search).get('notas');
+  entrada.value = deEnlace ?? leerJSON<string>(CLAVE) ?? 'C E G Bb';
+
+  const chips = (c: Candidato) =>
+    c.notas.map((n) => `<span class="chip${n.grado === '1' ? ' raiz' : ''}"><strong>${esc(n.nota)}</strong> <span class="grado">${esc(n.grado)}</span></span>`).join('');
+
+  function pintar() {
+    const { notas, errores } = leerNotas(entrada.value);
+    const pcs = new Set(notas.map((n) => pitchClass(leerNota(n)!)));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-nota]')) b.setAttribute('aria-pressed', String(pcs.has(pitchClass(leerNota(b.dataset.nota!)!))));
+    const aviso = errores.length ? `<p class="aviso">No entiendo: ${errores.map((e) => `<code>${esc(e)}</code>`).join(', ')}</p>` : '';
+    const candidatos = buscarAcordes(notas);
+    if (!candidatos.length) {
+      const texto =
+        notas.length === 0
+          ? 'Escribe o pulsa al menos tres notas distintas.'
+          : notas.length === 1
+            ? `Solo una nota: <strong>${esc(notas[0])}</strong>. Faltan dos más para un acorde.`
+            : `<strong>${esc(notas[0])}–${esc(notas[1])}</strong>: ${esc(nombrarIntervalo(notas[0], notas[1]))}. Con dos notas es un intervalo; añade otra para formar un acorde.`;
+      resultado.innerHTML = `<p class="vacio">${texto}</p>${aviso}`;
+      otras.innerHTML = '';
+      otrasTitulo.hidden = true;
+    } else {
+      const [mejor, ...resto] = candidatos;
+      resultado.innerHTML = `
+        <div class="simbolo">${esc(mejor.simbolo)}</div>
+        <div class="detalle suave">${mejor.fundamental ? 'Raíz en el bajo' : `Raíz ${esc(mejor.raiz)}, con ${esc(notas[0])} en el bajo`}${mejor.sinTercera ? ' · sin 3ª' : ''}</div>
+        <div class="chips" aria-label="Notas y grados">${chips(mejor)}</div>${aviso}`;
+      otras.innerHTML = resto.map((c) => `<li><span class="simbolo-otro">${esc(c.simbolo)}</span><span class="chips">${chips(c)}</span></li>`).join('');
+      otrasTitulo.hidden = resto.length === 0;
+    }
+    guardarJSON(CLAVE, entrada.value);
+  }
+
+  entrada.addEventListener('input', pintar);
+  $('[data-borrar]').addEventListener('click', () => {
+    entrada.value = '';
+    pintar();
+    entrada.focus();
+  });
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button[data-nota]');
+    if (!b) return;
+    const pc = pitchClass(leerNota(b.dataset.nota!)!);
+    const { notas } = leerNotas(entrada.value);
+    const sin = notas.filter((n) => pitchClass(leerNota(n)!) !== pc);
+    entrada.value = (sin.length < notas.length ? sin : [...notas, b.dataset.nota!]).join(' ');
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const midis = midisAcorde(leerNotas(entrada.value).notas);
+    const sostenido = SOSTENIDOS.includes(instrumento());
+    const eventos: Evento[] =
+      boton.dataset.audio === 'arpegio'
+        ? midis.map((midi, i) => ({ midi, inicio: i * 0.3, duracion: (midis.length - i) * 0.3 + 2 }))
+        : midis.map((midi, i) => ({ midi, inicio: sostenido ? 0 : i * 0.015, duracion: 2.5 }));
+    return { eventos, instrumento: instrumento() };
+  });
+
+  pintar();
+</script>
+
+<style>
+  .intro,
+  .nota-pie {
+    max-width: var(--ancho-texto);
+  }
+  .nota-pie {
+    margin-top: 2rem;
+    font-size: 0.92rem;
+    color: var(--texto-suave);
+  }
+  .entrada {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 40rem;
+    margin-bottom: 0.6rem;
+  }
+  .entrada .campo {
+    font-weight: 700;
+  }
+  .entrada input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .teclas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    max-width: 40rem;
+    margin-bottom: 1rem;
+  }
+  .teclas .boton {
+    min-width: 2.8rem;
+  }
+  .resultado {
+    display: grid;
+    gap: 0.4rem;
+    max-width: 40rem;
+    margin: 0 0 0.75rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-top: 0.3rem solid var(--acento);
+    border-radius: var(--radio);
+  }
+  .resultado :global(.simbolo) {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+  .resultado :global(.vacio),
+  .resultado :global(.aviso) {
+    margin: 0;
+  }
+  .resultado :global(.aviso) {
+    color: var(--texto-suave);
+    font-size: 0.9rem;
+  }
+  .buscador :global(.chips) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .buscador :global(.chip) {
+    padding: 0.1rem 0.5rem;
+    background: var(--fondo);
+    border: 1px solid var(--texto-suave);
+    border-radius: var(--radio);
+  }
+  .buscador :global(.chip .grado) {
+    color: var(--texto-suave);
+    font-weight: 700;
+  }
+  .buscador :global(.chip.raiz) {
+    color: var(--sobre-acento);
+    background: var(--acento); /* COLOR: la raíz del acorde */
+    border-color: var(--acento);
+  }
+  .buscador :global(.chip.raiz .grado) {
+    color: inherit;
+  }
+  .titulo-otras {
+    margin: 1.5rem 0 0.5rem;
+    font-size: 1.05rem;
+  }
+  .otras {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+    max-width: 40rem;
+  }
+  .otras :global(li) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .otras :global(.simbolo-otro) {
+    min-width: 7rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+</style>

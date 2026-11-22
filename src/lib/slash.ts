@@ -118,6 +118,8 @@ export function nombrarAcorde(bajo: string, semitonos: Iterable<number>): Analis
     if (menor && b5 && septima === 'b7' && simbolo !== 'm7b5') extra.unshift('b5');
     // La 11 natural sobre una 3 mayor no se sube al número: va entre paréntesis.
     if (grado[5] === '11' && !menor) extra.push('11');
+    // La b6 de un menor sin 7ª (C, Eb y Ab: suele ser Ab/C) no se calla.
+    if (grado[8] === 'b6') extra.push('b6');
     if (extra.length) simbolo += `(${extra.join(',')})`;
   }
   const grados = [...s].sort((a, b) => a - b).map((st) => ({ st, grado: grado[st] }));

@@ -3,8 +3,8 @@
 // guitarra, y debajo una cita al azar (src/data/citas.yaml). En pantalla grande se ven
 // todas en columnas, sin la barra de secciones de la cabecera; en el móvil van
 // plegadas. Las páginas favoritas salen las primeras de cada lista
-// (lib/paginas-favoritas.ts, desde layouts/Base.astro), y bajo Apuntes van las notas y
-// los documentos favoritos (lib/apuntes.ts).
+// (lib/paginas-favoritas.ts, desde layouts/Base.astro), y bajo Herramientas van las
+// notas y los documentos favoritos de Apuntes (lib/apuntes.ts).
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import MenuSecciones from '../components/MenuSecciones.astro';
@@ -63,7 +63,7 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
     caja.hidden = false;
   }
 
-  // Bajo Apuntes: las notas favoritas (a su página) y los documentos favoritos (a su
+  // Bajo Herramientas: las notas favoritas (a su página) y los documentos favoritos (a su
   // tarjeta en la lista de Apuntes).
   function pintarFavoritos() {
     const notas = ordenar(leerNotas().filter((n) => n.favorita)).map((n) => ({
