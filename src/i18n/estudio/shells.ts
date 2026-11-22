@@ -1,0 +1,43 @@
+// Textos de Shell voicings (components/estudio/shells.astro).
+import { textos } from '../idiomas.ts';
+
+export const SHELLS = textos(
+  {
+    titulo: 'Shell voicings',
+    ejemplo: 'Ejemplo',
+    progresion: 'Progresión',
+    zona: 'Zona del mástil donde empieza el primer acorde',
+    empezarEn: 'Empezar en',
+    grave: 'Grave',
+    graveAyuda: 'El primer acorde, entre los trastes 1 y 6',
+    media: 'Media',
+    mediaAyuda: 'El primer acorde, entre los trastes 4 y 10',
+    aguda: 'Aguda',
+    agudaAyuda: 'El primer acorde, entre los trastes 8 y 14',
+    tension: 'Con tensión (9, 13…)',
+    tocar: '▶ Tocar',
+    bucle: '∞ Bucle',
+    bucleAyuda: 'Suena sin parar hasta pulsar Detener',
+    sinProgresiones: 'No hay progresiones.',
+    sinShell: 'Algún acorde no tiene shell posible.',
+  },
+  {
+    titulo: 'Shell voicings',
+    ejemplo: 'Example',
+    progresion: 'Progression',
+    zona: 'Area of the neck where the first chord starts',
+    empezarEn: 'Start',
+    grave: 'Low',
+    graveAyuda: 'The first chord between frets 1 and 6',
+    media: 'Middle',
+    mediaAyuda: 'The first chord between frets 4 and 10',
+    aguda: 'High',
+    agudaAyuda: 'The first chord between frets 8 and 14',
+    tension: 'With a tension (9, 13…)',
+    tocar: '▶ Play',
+    bucle: '∞ Loop',
+    bucleAyuda: 'Keeps playing until you press Stop',
+    sinProgresiones: 'No progressions.',
+    sinShell: 'Some chord has no possible shell.',
+  },
+);

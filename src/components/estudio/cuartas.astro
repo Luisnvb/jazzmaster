@@ -1,0 +1,303 @@
+---
+// Cuartas (sección Estudio). El texto está en src/data/estudio/cuartas.md; aquí van
+// los voicings por cuartas de un modo en escalera por el mástil (lib/cuartas.ts). En
+// inglés, cuartas.en.md e i18n/estudio/cuartas.ts; lo usan pages/estudio/cuartas.astro y
+// pages/en/study/quartal.astro.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import * as es from '../../data/estudio/cuartas.md';
+import * as en from '../../data/estudio/cuartas.en.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { MODOS_CUARTAS } from '../../lib/cuartas.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { CUARTAS } from '../../i18n/estudio/cuartas.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = CUARTAS[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const indice = getHeadings().filter((h) => h.depth === 2);
+const TIPOS = ['tres', 'cuatro', 'so-what'].map((v, i) => [v, T.tipos[i]]);
+---
+
+<Base titulo={T.titulo}>
+  <SelectorTonica clave="cuartas" idioma={idioma}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave="cuartas" inicial={110} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label={T.ejemplo}>
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label="Vamp">
+        <span class="etiqueta">Vamp</span>
+        {MODOS_CUARTAS.map((m) => <button type="button" class="boton" data-modo={m.id} aria-pressed="false" title={T.modos[m.id] ?? m.nombre}><span data-tonica-texto>C</span>{m.simbolo}</button>)}
+      </div>
+      <div class="grupo-botones" role="group" aria-label="Voicing">
+        <span class="etiqueta">Voicing</span>
+        {TIPOS.map(([v, n]) => <button type="button" class="boton" data-tipo={v} aria-pressed="false">{n}</button>)}
+      </div>
+    </div>
+    <div class="opciones">
+      <label class="campo">{T.cuerdas} <select data-grupo></select></label>
+      <label class="casilla" data-solo-justas><input type="checkbox" data-justas /> {T.justas}</label>
+      <label class="campo">{T.patron}
+        <select data-patron>
+          <option value="escalera">{T.escalera}</option>
+          <option value="vecinos">{T.vecinos}</option>
+        </select>
+      </label>
+    </div>
+    <p class="titulo-escala" data-titulo></p>
+    <ol class="voicings" data-voicings></ol>
+    <p class="suave leyenda">{T.leyenda}</p>
+    <div class="botones-audio">
+      <button type="button" data-audio="patron" aria-pressed="false">{T.tocar}</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title={T.bucleAyuda}>{T.bucle}</button>
+      <button type="button" data-detener>{I.detener}</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { CUARTAS } from '../../i18n/estudio/cuartas.ts';
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { GRUPOS_CUARTAS, MODOS_CUARTAS, escaleraCuartas, secuenciaCuartas, vampEn, type Patron, type TipoCuartas, type VoicingCuartas } from '../../lib/cuartas.ts';
+  import { diagramaSVG } from '../../lib/diagrama.ts';
+
+  interface Opciones {
+    modo: string;
+    tipo: TipoCuartas;
+    grupo: Record<TipoCuartas, string>;
+    justas: boolean;
+    patron: Patron;
+    elegido: number;
+  }
+  const T = CUARTAS[idiomaValido(document.documentElement.lang)];
+  const CLAVE = 'cuartas:opciones';
+  const guardado = leerJSON<Partial<Opciones>>(CLAVE) ?? {};
+  const op: Opciones = {
+    modo: 'dorico',
+    tipo: 'tres',
+    justas: false,
+    patron: 'escalera',
+    elegido: 0,
+    ...guardado,
+    grupo: { tres: '543', cuatro: '5432', 'so-what': '65432', ...(guardado.grupo ?? {}) },
+  };
+  if (!MODOS_CUARTAS.some((m) => m.id === op.modo)) op.modo = 'dorico';
+  if (!(op.tipo in GRUPOS_CUARTAS)) op.tipo = 'tres';
+  let tonica = 'C';
+  let voicings: VoicingCuartas[] = [];
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('cuartas:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selGrupo = $<HTMLSelectElement>('[data-grupo]');
+  const selPatron = $<HTMLSelectElement>('[data-patron]');
+  const casillaJustas = $<HTMLInputElement>('[data-justas]');
+  const lista = $('[data-voicings]');
+  const titulo = $('[data-titulo]');
+  selPatron.value = op.patron;
+  casillaJustas.checked = op.justas;
+
+  const modo = () => MODOS_CUARTAS.find((m) => m.id === op.modo)!;
+  const grupos = () => GRUPOS_CUARTAS[op.tipo];
+  const cuerdas = () => (grupos().find((g) => g.id === op.grupo[op.tipo]) ?? grupos()[0]).cuerdas;
+
+  const NOMBRE_INTERVALO: Record<number, string> = T.intervalos;
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-modo]')) b.setAttribute('aria-pressed', String(b.dataset.modo === op.modo));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tipo]')) b.setAttribute('aria-pressed', String(b.dataset.tipo === op.tipo));
+    selGrupo.innerHTML = grupos().map((g) => `<option value="${g.id}">${esc(formatear(T.grupo, { cuerdas: g.id.split('').join('-') }))}</option>`).join('');
+    if (!grupos().some((g) => g.id === op.grupo[op.tipo])) op.grupo[op.tipo] = grupos()[0].id;
+    selGrupo.value = op.grupo[op.tipo];
+    // En el So What la estructura es fija: no hay cuartas aumentadas que quitar.
+    $('[data-solo-justas]').hidden = op.tipo === 'so-what';
+    voicings = escaleraCuartas(tonica, modo(), op.tipo, cuerdas(), op.justas && op.tipo !== 'so-what');
+    op.elegido = Math.min(op.elegido, Math.max(0, voicings.length - 1));
+    titulo.innerHTML = formatear(T.titulo2, { vamp: esc(vampEn(tonica, modo())), modo: esc(T.modos[modo().id] ?? modo().nombre), n: voicings.length });
+    lista.innerHTML = voicings
+      .map(
+        (v, i) => `<li><button type="button" class="voicing" data-i="${i}" aria-pressed="${i === op.elegido}" aria-label="${esc(v.notas.join(' '))}">
+          ${diagramaSVG({ trastes: v.trastes, grados: v.gradosCuerda })}
+          <span class="notas-v">${esc(v.notas.join(' '))}</span>
+          <span class="suave intervalos">${v.intervalos.map((s) => NOMBRE_INTERVALO[s] ?? `${s} st`).join(' · ')}</span>
+        </button></li>`,
+      )
+      .join('');
+    guardarJSON(CLAVE, op);
+  }
+
+  selGrupo.addEventListener('change', () => ((op.grupo[op.tipo] = selGrupo.value), pintar()));
+  selPatron.addEventListener('change', () => ((op.patron = selPatron.value as Patron), guardarJSON(CLAVE, op)));
+  casillaJustas.addEventListener('change', () => ((op.justas = casillaJustas.checked), pintar()));
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+    const bm = el.closest<HTMLButtonElement>('button[data-modo]');
+    if (bm) return ((op.modo = bm.dataset.modo!), pintar());
+    const bt = el.closest<HTMLButtonElement>('button[data-tipo]');
+    if (bt) return ((op.tipo = bt.dataset.tipo as TipoCuartas), (op.elegido = 0), pintar());
+    const bv = el.closest<HTMLButtonElement>('button.voicing');
+    if (bv) {
+      op.elegido = Number(bv.dataset.i);
+      for (const b of lista.querySelectorAll('button.voicing')) b.setAttribute('aria-pressed', String(b === bv));
+      guardarJSON(CLAVE, op);
+      // Al elegirlo, suena (con el bajo) por el botón oculto de audio de un voicing.
+      $<HTMLButtonElement>('[data-audio="uno"]').click();
+    }
+  });
+
+  // Botón oculto que toca solo el voicing elegido.
+  const uno = document.createElement('button');
+  uno.type = 'button';
+  uno.hidden = true;
+  uno.dataset.audio = 'uno';
+  document.body.append(uno);
+
+  conectarAudio((boton) => {
+    const solo = boton.dataset.audio === 'uno';
+    const sostenido = SOSTENIDOS.includes(instrumento());
+    if (solo) {
+      const v = voicings[op.elegido];
+      const { eventos, duracion } = secuenciaCuartas(tonica, [v], 'escalera', 0, tempo(), sostenido);
+      return { eventos, instrumento: instrumento(), duracion };
+    }
+    const { eventos, orden, tiempos, duracion } = secuenciaCuartas(tonica, voicings, op.patron, op.elegido, tempo(), sostenido);
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      lista.querySelector('.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) lista.querySelector(`[data-i="${orden[k]}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => marcar(tiempos.findIndex((x) => t >= x.inicio && t < x.fin)),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    for (const el of document.querySelectorAll('[data-tonica-texto]')) el.textContent = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .titulo-escala {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+  .voicings {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.5rem;
+  }
+  @media (max-width: 40rem) {
+    .voicings {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .voicings :global(.voicing) {
+    display: grid;
+    justify-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem 0.4rem 0.6rem;
+    font: inherit;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    cursor: pointer;
+  }
+  .voicings :global(.voicing:hover) {
+    border-color: var(--acento);
+  }
+  .voicings :global(.voicing[aria-pressed='true']) {
+    border-color: var(--acento);
+    box-shadow: 0 0 0 1px var(--acento);
+  }
+  .voicings :global(.voicing.sonando-ahora) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+  }
+  .voicings :global(.diagrama) {
+    width: 100%;
+    max-width: 8.5rem;
+  }
+  .voicings :global(.notas-v) {
+    font-weight: 700;
+  }
+  .voicings :global(.intervalos) {
+    font-size: 0.75rem;
+  }
+  .leyenda {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+  }
+</style>

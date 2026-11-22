@@ -1,31 +1,9 @@
 ---
-// Drop 3 (sección Estudio). El texto está en src/data/estudio/drop3.md; el ejemplo
-// (inversiones o progresión, con diagramas) es components/EjemploDrop.astro.
-import Base from '../../layouts/Base.astro';
-import SelectorTonica from '../../components/SelectorTonica.astro';
-import Tempo from '../../components/Tempo.astro';
-import EjemploDrop from '../../components/EjemploDrop.astro';
-import { Content, getHeadings } from '../../data/estudio/drop3.md';
-import { INSTRUMENTOS } from '../../lib/audio.ts';
-
-const indice = getHeadings().filter((h) => h.depth === 2);
+// Drop 3 (sección Acordes). Texto en src/data/estudio/drop3.md (en inglés, drop3.en.md,
+// en /en/study/drop3/); el ejemplo es components/EjemploDrop.astro.
+import ConEjemploDrop from '../../components/estudio/ConEjemploDrop.astro';
+import * as es from '../../data/estudio/drop3.md';
+import * as en from '../../data/estudio/drop3.en.md';
 ---
 
-<Base titulo="Drop 3">
-  <SelectorTonica clave="drop3">
-    <label>Sonido
-      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
-    </label>
-    <Tempo clave="drop3" inicial={80} />
-  </SelectorTonica>
-
-  <EjemploDrop clave="drop3" tipos={["drop3"]} fundamental />
-
-  <nav class="indice" aria-label="En esta página">
-    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
-  </nav>
-
-  <article class="texto-estudio">
-    <Content />
-  </article>
-</Base>
+<ConEjemploDrop idioma="es" titulo="Drop 3" clave="drop3" tipos={['drop3']} fundamental es={es} en={en} />

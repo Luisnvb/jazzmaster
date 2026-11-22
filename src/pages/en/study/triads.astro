@@ -1,0 +1,8 @@
+---
+// English page: text in src/data/estudio/triadas.en.md; example in components/EjemploDrop.astro.
+import ConEjemploDrop from '../../../components/estudio/ConEjemploDrop.astro';
+import * as es from '../../../data/estudio/triadas.md';
+import * as en from '../../../data/estudio/triadas.en.md';
+---
+
+<ConEjemploDrop idioma="en" titulo="Triads" clave="triadas" tipos={['triada', 'triada-abierta']} triadas es={es} en={en} />

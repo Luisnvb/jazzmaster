@@ -137,7 +137,6 @@ const HASTA = Array.from({ length: 19 }, (_, i) => 60 + i * 10);
 
   const ejercicio = () => EJERCICIOS.find((e) => e.id === op.ejercicio)!;
   const notas = () => ejercicio().notas(tonica);
-  const NOMBRES: Record<Tecnica, string> = { alternada: 'Alternada', economy: 'Economy' };
 
   function plan(): number[] {
     return planSubida(tempo(), op.paso, op.cada, op.hasta);

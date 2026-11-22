@@ -1,0 +1,62 @@
+---
+// Páginas de Tríadas, Drop 2 y Drop 3: selector de tónica, el ejemplo de
+// components/EjemploDrop.astro y el texto (.md o .en.md). Lo usan pages/estudio/{triadas,
+// drop2,drop3}.astro y sus páginas inglesas en pages/en/study/.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../SelectorTonica.astro';
+import Tempo from '../Tempo.astro';
+import EjemploDrop from '../EjemploDrop.astro';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import type { TipoDrop } from '../../lib/drop.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { DROP } from '../../i18n/estudio/drop.ts';
+
+type Texto = typeof import('*.md');
+
+interface Props {
+  idioma: Idioma;
+  titulo: string;
+  clave: string;
+  tipos: TipoDrop[];
+  /** Si "Raíz en el bajo" empieza marcado (Drop 3). */
+  fundamental?: boolean;
+  /** Tríadas: los acordes del modo Inversiones son tríadas. */
+  triadas?: boolean;
+  es: Texto;
+  en: Texto;
+}
+const { idioma, titulo, clave, tipos, fundamental = false, triadas = false, es, en } = Astro.props;
+const T = DROP[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const indice = getHeadings().filter((h) => h.depth === 2);
+const cualidades: [string, string][] | undefined = triadas
+  ? [
+      ['I', T.mayor],
+      ['Im', T.menor],
+      ['I°', T.disminuida],
+      ['I+', T.aumentada],
+      ['Isus4', 'Sus4'],
+    ]
+  : undefined;
+---
+
+<Base titulo={titulo}>
+  <SelectorTonica clave={clave} idioma={idioma}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave={clave} inicial={80} />
+  </SelectorTonica>
+
+  <EjemploDrop clave={clave} tipos={tipos} fundamental={fundamental} cualidades={cualidades} idioma={idioma} />
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>

@@ -5,8 +5,12 @@
 import { getCollection } from 'astro:content';
 import { gruposDe, type TipoDrop } from '../lib/drop.ts';
 import { porOrden } from '../lib/orden.ts';
+import { formatear, type Idioma } from '../i18n/idiomas.ts';
+import { INTERFAZ } from '../i18n/interfaz.ts';
+import { DROP } from '../i18n/estudio/drop.ts';
 
 interface Props {
+  idioma?: Idioma;
   /** Clave con la que se recuerdan las opciones y el sonido. */
   clave: string;
   /** Tipos de voicing que se ofrecen (cada uno con sus grupos de cuerdas). */
@@ -16,10 +20,16 @@ interface Props {
   /** Si "Raíz en el bajo" empieza marcado. */
   fundamental?: boolean;
 }
-const NOMBRE_TIPO: Record<TipoDrop, string> = { triada: 'Cerradas', 'triada-abierta': 'Abiertas', drop2: 'Drop 2', drop3: 'Drop 3' };
+const idioma = Astro.props.idioma ?? 'es';
+const T = DROP[idioma];
+const I = INTERFAZ[idioma];
+const NOMBRE_TIPO = T.tipos as Record<TipoDrop, string>;
+/** Nombre de un grupo de cuerdas: «Cuerdas 6-4-3 (abierta)». */
+const nombreGrupo = (g: { id: string; tipo: TipoDrop }) =>
+  formatear(T.grupo, { cuerdas: g.id.split('').join('-') }) + (g.tipo === 'triada-abierta' ? T.abierta : '');
 const progresiones = porOrden(await getCollection('progresiones')).map(({ id, data }) => ({
   id,
-  nombre: data.nombre,
+  nombre: (idioma === 'en' && data.en?.nombre) || data.nombre,
   pulsos: data.pulsos,
   compases: data.compases,
 }));
@@ -43,59 +53,61 @@ const {
 const grupos = gruposDe(...tipos);
 ---
 
-<section class="ejemplo" aria-label="Ejemplo" data-ejemplo-drop={clave} data-fundamental-inicial={String(fundamental)} data-grupos={grupos.map((g) => g.id).join(',')}>
+<section class="ejemplo" aria-label={T.ejemplo} data-ejemplo-drop={clave} data-fundamental-inicial={String(fundamental)} data-grupos={grupos.map((g) => g.id).join(',')}>
   <div class="opciones">
-    <div class="grupo-botones" role="group" aria-label="Qué ver">
-      <button type="button" class="boton" data-modo="inversiones" aria-pressed="false">Inversiones</button>
-      <button type="button" class="boton" data-modo="progresion" aria-pressed="false">Progresión</button>
+    <div class="grupo-botones" role="group" aria-label={T.queVer}>
+      <button type="button" class="boton" data-modo="inversiones" aria-pressed="false">{T.inversiones}</button>
+      <button type="button" class="boton" data-modo="progresion" aria-pressed="false">{T.progresion}</button>
     </div>
-    <label class="campo" data-solo="inversiones">Acorde
+    <label class="campo" data-solo="inversiones">{T.acorde}
       <select data-cualidad>{cualidades.map(([v, n]) => <option value={v}>{n}</option>)}</select>
     </label>
-    <label class="campo" data-solo="progresion">Progresión
+    <label class="campo" data-solo="progresion">{T.progresion}
       <select data-progresion></select>
     </label>
     {
       tipos.length > 1 &&
         tipos.map((t) => (
-          <div class="grupo-botones" role="group" aria-label={`Cuerdas (${NOMBRE_TIPO[t]})`}>
+          <div class="grupo-botones" role="group" aria-label={formatear(T.cuerdasDe, { tipo: NOMBRE_TIPO[t] })}>
             <span class="etiqueta">{NOMBRE_TIPO[t]}</span>
             {gruposDe(t).map((g) => (
-              <button type="button" class="boton" data-grupo={g.id} aria-pressed="false" title={g.nombre}>
+              <button type="button" class="boton" data-grupo={g.id} aria-pressed="false" title={nombreGrupo(g)}>
                 {g.id.split('').join('-')}
               </button>
             ))}
           </div>
         ))
     }
-    <div class="grupo-botones" role="group" aria-label="Cuerdas" hidden={tipos.length > 1}>
-      {tipos.length === 1 && grupos.map((g) => <button type="button" class="boton" data-grupo={g.id} aria-pressed="false" title={g.nombre}>{g.id.split('').join('-')}</button>)}
+    <div class="grupo-botones" role="group" aria-label={T.cuerdas} hidden={tipos.length > 1}>
+      {tipos.length === 1 && grupos.map((g) => <button type="button" class="boton" data-grupo={g.id} aria-pressed="false" title={nombreGrupo(g)}>{g.id.split('').join('-')}</button>)}
       {
         grupos.length === 2 && (
-          <button type="button" class="boton" data-grupo="ambos" data-solo="progresion" aria-pressed="false" title="Cambia de grupo de cuerdas entre acordes">
-            Ambos
+          <button type="button" class="boton" data-grupo="ambos" data-solo="progresion" aria-pressed="false" title={T.ambosAyuda}>
+            {T.ambos}
           </button>
         )
       }
     </div>
-    <div class="grupo-botones" role="group" aria-label="Zona donde empieza el primer acorde" data-solo="progresion">
-      <span class="etiqueta">Empezar en</span>
-      <button type="button" class="boton" data-zona="3" aria-pressed="false">Grave</button>
-      <button type="button" class="boton" data-zona="7" aria-pressed="false">Media</button>
-      <button type="button" class="boton" data-zona="11" aria-pressed="false">Aguda</button>
+    <div class="grupo-botones" role="group" aria-label={T.zona} data-solo="progresion">
+      <span class="etiqueta">{T.empezarEn}</span>
+      <button type="button" class="boton" data-zona="3" aria-pressed="false">{T.grave}</button>
+      <button type="button" class="boton" data-zona="7" aria-pressed="false">{T.media}</button>
+      <button type="button" class="boton" data-zona="11" aria-pressed="false">{T.aguda}</button>
     </div>
-    <label class="casilla" data-solo="progresion"><input type="checkbox" data-fundamental /> Raíz en el bajo</label>
+    <label class="casilla" data-solo="progresion"><input type="checkbox" data-fundamental /> {T.fundamental}</label>
   </div>
   <ol class="voicings-drop" data-voicings></ol>
   <div class="botones-audio">
-    <button type="button" data-audio="una" aria-pressed="false">▶ Tocar</button>
-    <button type="button" data-audio="bucle" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Bucle</button>
-    <button type="button" data-detener>■ Detener</button>
+    <button type="button" data-audio="una" aria-pressed="false">{T.tocar}</button>
+    <button type="button" data-audio="bucle" aria-pressed="false" title={T.bucleAyuda}>{T.bucle}</button>
+    <button type="button" data-detener>{I.detener}</button>
   </div>
   <script type="application/json" data-progresiones-drop set:html={datos} />
 </section>
 
 <script>
+  import { formatear, idiomaValido } from '../i18n/idiomas.ts';
+  import { DROP } from '../i18n/estudio/drop.ts';
   import { esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
   import { SOSTENIDOS } from '../lib/audio.ts';
   import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../lib/cliente.ts';
@@ -103,6 +115,7 @@ const grupos = gruposDe(...tipos);
   import { dropProgresion, escaleraInversiones, eventosDrop, type Drop, type IdGrupo } from '../lib/drop.ts';
   import { analizarProgresion, aplicarCambiosProgresiones, parseAcordeGrado, type CambiosProgresiones, type Progresion } from '../lib/progresiones.ts';
 
+  const T = DROP[idiomaValido(document.documentElement.lang)];
   const raiz = document.querySelector<HTMLElement>('[data-ejemplo-drop]')!;
   const clave = raiz.dataset.ejemploDrop!;
   const gruposTipo = raiz.dataset.grupos!.split(',') as IdGrupo[];
@@ -186,13 +199,15 @@ const grupos = gruposDe(...tipos);
         .voicings.map(
           (d, i) => `<li class="voicing-drop" data-indice="${i}">
             <span class="simbolo">${esc(d.simbolo)}</span>
-            <span class="detalle">${esc(d.inversion)} · arriba ${esc(d.arriba)}</span>
+            <span class="detalle">${esc(T.inversionesNombres[d.inversion] ?? d.inversion)} · ${esc(formatear(T.arriba, { grado: d.arriba }))}</span>
             ${diagramaSVG({ trastes: d.trastes, grados: d.grados })}
           </li>`,
         )
         .join('');
     } catch (error) {
-      lista.innerHTML = `<li class="suave">${esc((error as Error).message)}</li>`;
+      // Los avisos de lib/drop.ts están en español; en inglés, el suyo.
+      const mensaje = (error as Error).message;
+      lista.innerHTML = `<li class="suave">${esc(T === DROP.es ? mensaje : T.noCabe)}</li>`;
     }
     guardarJSON(CLAVE, op);
   }
