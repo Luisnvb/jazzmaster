@@ -48,7 +48,7 @@ export const BUSCADOR_ACORDES = textos(
     bloque: '▶ Block chord',
     arpegiado: '▶ Arpeggiated',
     otras: 'Other readings',
-    pie: 'The name depends on the bass: <code>A C E G</code> is Am7, but <code>C A E G</code> reads first as C6 (with Am7/C among the other readings). With no 3rd, the chord is named as a sus chord or flagged as missing it. Names follow the same rules as <a href="{slash}" hreflang="es">Slash chords</a> (in Spanish).',
+    pie: 'The name depends on the bass: <code>A C E G</code> is Am7, but <code>C A E G</code> reads first as C6 (with Am7/C among the other readings). With no 3rd, the chord is named as a sus chord or flagged as missing it. Names follow the same rules as <a href="{slash}">Slash chords</a>.',
     trastes: '6th to 1st string: {trastes}',
     noEntiendo: 'Not understood: {trozos}',
     faltanTrastes: 'Press frets on at least three strings (with three different notes).',

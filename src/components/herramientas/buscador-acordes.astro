@@ -7,7 +7,7 @@
 // lo usan pages/herramientas/buscador-acordes.astro y pages/en/tools/chord-finder.astro.
 import Base from '../../layouts/Base.astro';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
-import { ruta } from '../../lib/rutas.ts';
+import { enlacePagina } from '../../lib/secciones.ts';
 import { TONICAS } from '../../lib/teoria.ts';
 import { formatear, type Idioma } from '../../i18n/idiomas.ts';
 import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
@@ -65,7 +65,7 @@ const I = INTERFAZ[idioma];
       <ul class="otras" data-otras></ul>
     </section>
 
-    <p class="nota-pie" set:html={formatear(T.pie, { slash: ruta('estudio/slash') })} />
+    <p class="nota-pie" set:html={formatear(T.pie, { slash: enlacePagina('estudio/slash', idioma) })} />
   </div>
 </Base>
 
