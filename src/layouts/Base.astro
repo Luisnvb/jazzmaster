@@ -4,6 +4,7 @@ import { archivo, BASE, ruta } from '../lib/rutas.ts';
 import { paginaActual, seccionActual, secciones } from '../lib/secciones.ts';
 import { conPrefijo, formatear, idiomaDeDireccion } from '../i18n/idiomas.ts';
 import { INTERFAZ } from '../i18n/interfaz.ts';
+import { ARCHIVO_MANIFIESTO } from '../i18n/manifiesto.ts';
 import { PASOS } from '../lib/ruta.ts';
 import MenuSecciones from '../components/MenuSecciones.astro';
 
@@ -57,7 +58,8 @@ const enInicio = actual === ruta(conPrefijo(idioma, ''));
     <meta name="robots" content="noindex, nofollow" />
     <!-- COLOR: barra del navegador en el móvil (igual que --fondo en global.css) -->
     <meta name="theme-color" content="#ffffff" />
-    <link rel="manifest" href={archivo('manifest.webmanifest')} />
+    <!-- Manifiesto del idioma de la página: cada idioma se instala como su propia app. -->
+    <link rel="manifest" href={archivo(ARCHIVO_MANIFIESTO[idioma])} />
     <link rel="icon" href={archivo('favicon.png')} type="image/png" />
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
     {equivalente && <link rel="alternate" hreflang={otro} href={equivalente} />}

@@ -1,25 +1,7 @@
-// Manifiesto de la web instalable. Se genera al compilar para que las rutas
-// lleven la base del sitio (en GitHub Pages, /<repositorio>/).
-import { archivo, BASE } from '../lib/rutas.ts';
+// Manifiesto de la web instalable en español. Se genera al compilar para que las rutas
+// lleven la base del sitio (en GitHub Pages, /<repositorio>/). El contenido, en
+// i18n/manifiesto.ts (también el inglés: manifest.en.webmanifest.ts).
+import { BASE } from '../lib/rutas.ts';
+import { respuestaManifiesto } from '../i18n/manifiesto.ts';
 
-export function GET() {
-  const manifiesto = {
-    name: 'JAZZMASTER',
-    short_name: 'JAZZMASTER',
-    description: 'Intervalos, escalas, acordes y repertorio para practicar guitarra.',
-    lang: 'es',
-    start_url: BASE,
-    scope: BASE,
-    display: 'standalone',
-    background_color: '#ffffff', // COLOR: fondo al abrir la app instalada (igual que --fondo)
-    theme_color: '#ffffff', // COLOR: barra del sistema en la app instalada
-    icons: [
-      { src: archivo('iconos/icono-192.png'), sizes: '192x192', type: 'image/png' },
-      { src: archivo('iconos/icono-512.png'), sizes: '512x512', type: 'image/png' },
-      { src: archivo('iconos/icono-maskable-512.png'), sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-    ],
-  };
-  return new Response(JSON.stringify(manifiesto, null, 2), {
-    headers: { 'Content-Type': 'application/manifest+json' },
-  });
-}
+export const GET = () => respuestaManifiesto('es', BASE);
