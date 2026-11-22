@@ -443,6 +443,11 @@ const AYUDAS = [
     font-size: 0.88rem;
     line-height: 1.4;
   }
+  /* Aquí la descripción ocupa todo el ancho del ejercicio, no la columna centrada del
+     texto que fija global.css (de ahí el :root main, para ganarle en especificidad). */
+  :global(:root main) .descripcion {
+    max-width: none;
+  }
   .panel {
     padding: 0.4rem 0.75rem;
     background: var(--superficie);
