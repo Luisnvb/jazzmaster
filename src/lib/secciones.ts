@@ -65,6 +65,12 @@ export const SECCIONES: Seccion[] = [
         "estudio/ritmo",
         "Pulso, subdivisiones, swing y patrones de acompañamiento",
       ),
+      // Su dirección sigue en /herramientas/registro/: las direcciones no dependen de la sección.
+      pagina(
+        "Registro de práctica",
+        "herramientas/registro",
+        "Cronómetro por actividad, minutos por día, por sección y racha",
+      ),
     ],
   ),
   seccion(
@@ -312,11 +318,6 @@ export const SECCIONES: Seccion[] = [
       "Progresiones aleatorias",
       "herramientas/progresiones-aleatorias",
       "Cambios nuevos para leer, acompañar e improvisar, en cualquier tono",
-    ),
-    pagina(
-      "Registro de práctica",
-      "herramientas/registro",
-      "Cronómetro por actividad, minutos por día, por sección y racha",
     ),
     pagina(
       "Apuntes",

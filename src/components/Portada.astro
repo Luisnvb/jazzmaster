@@ -3,10 +3,10 @@
 // guitarra, y debajo una cita al azar (src/data/citas.yaml). En pantalla grande se ven
 // todas en columnas, sin la barra de secciones de la cabecera; en el móvil van
 // plegadas. Las páginas favoritas salen las primeras de cada lista
-// (lib/paginas-favoritas.ts, desde layouts/Base.astro). Bajo Herramientas van el botón
-// del Registro de práctica (empieza, pausa y termina una sesión con la última actividad
-// elegida, lib/registro.ts) y las notas y los documentos favoritos de Apuntes
-// (lib/apuntes.ts). La usan src/pages/index.astro (español) y src/pages/en/index.astro.
+// (lib/paginas-favoritas.ts, desde layouts/Base.astro). Bajo Rutina va el botón del
+// Registro de práctica (empieza, pausa y termina una sesión con la última actividad
+// elegida, lib/registro.ts) y bajo Herramientas, las notas y los documentos favoritos de
+// Apuntes (lib/apuntes.ts). La usan src/pages/index.astro (español) y src/pages/en/index.astro.
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import MenuSecciones from './MenuSecciones.astro';
@@ -38,8 +38,7 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
   <h2 class="visualmente-oculto">{T.secciones}</h2>
   <div class="portada" data-portada>
     <MenuSecciones idioma={idioma} columnas>
-      <div slot="herramientas" class="bajo-herramientas">
-        <div class="registro-rapido" aria-label={T.registroPractica} role="group">
+      <div slot="rutina" class="registro-rapido" aria-label={T.registroPractica} role="group">
           <div data-registro-parado>
             <button type="button" class="boton principal pequeno" data-registro-empezar>{T.registrar}</button>
             <a class="actividad" href={registro} data-registro-ultima title={T.cambiarActividad}></a>
@@ -53,9 +52,8 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
             </div>
           </div>
           <p class="aviso-registro" data-registro-aviso role="status"></p>
-        </div>
-        <div class="favoritos" data-favoritos hidden></div>
       </div>
+      <div slot="herramientas" class="favoritos" data-favoritos hidden></div>
     </MenuSecciones>
   </div>
   <figure class="cita" data-cita hidden>

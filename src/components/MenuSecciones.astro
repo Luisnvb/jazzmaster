@@ -2,8 +2,8 @@
 // Lista de secciones con sus páginas (lib/secciones.ts): el menú que abre la guitarra
 // de la cabecera y el de la portada. Cada sección es un desplegable con sus páginas
 // (las favoritas primero, lib/paginas-favoritas.ts); la de una sola página es un
-// enlace directo. Herramientas puede llevar debajo contenido (slot "herramientas": en
-// la portada, el botón del registro de práctica y los favoritos de Apuntes).
+// enlace directo. Rutina y Herramientas pueden llevar debajo contenido (slots "rutina" y
+// "herramientas": en la portada, el botón del Registro de práctica y los favoritos de Apuntes).
 import { ruta } from '../lib/rutas.ts';
 import { secciones, type Pagina, type Seccion } from '../lib/secciones.ts';
 import { conPrefijo, type Idioma } from '../i18n/idiomas.ts';
@@ -62,6 +62,7 @@ const T = INTERFAZ[idioma];
               ))}
             </ul>
           </details>
+          {s.id === 'rutina' && <slot name="rutina" />}
           {s.id === 'herramientas' && <slot name="herramientas" />}
         </li>
       ),
