@@ -275,6 +275,21 @@ export const SECCIONES: Seccion[] = [
       "Escribe unas notas o márcalas en el mástil y te dice qué acorde forman",
     ),
     pagina(
+      "Buscador de escalas",
+      "herramientas/buscador-escalas",
+      "Qué escalas contienen unas notas, un acorde o una progresión",
+    ),
+    pagina(
+      "Calculadora de intervalos",
+      "herramientas/calculadora-intervalos",
+      "El intervalo exacto entre dos notas y la nota a un intervalo de otra",
+    ),
+    pagina(
+      "Transpositor",
+      "herramientas/transpositor",
+      "Un cifrado a otro tono o para un instrumento en Si♭, Mi♭ o Fa",
+    ),
+    pagina(
       "Metrónomo",
       "herramientas/metronomo",
       "Acentos por pulso, subdivisiones, subida de tempo y compases en silencio",

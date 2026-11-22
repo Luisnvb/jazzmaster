@@ -1,0 +1,277 @@
+---
+// Transpositor (sección Herramientas): pegas un cifrado (compases o una hoja con letra)
+// y sale en otro tono, para un instrumento en Bb, Eb o F, o unos semitonos más arriba o
+// abajo (lib/transpositor.ts). Solo se tocan las líneas de acordes.
+import Base from '../../layouts/Base.astro';
+import { INSTRUMENTOS_TRANSPOSITORES } from '../../lib/transpositor.ts';
+
+const TONOS = ['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+const bonito = (n: string) => n.replace('#', '♯').replace(/(?<=[A-G])b/, '♭');
+---
+
+<Base titulo="Transpositor">
+  <p class="intro">
+    Pega un cifrado: compases con barras (<code>| Dm7 G7 | Cmaj7 |</code>) o una hoja con la letra y los acordes encima. Solo
+    cambian las líneas de acordes; la letra, las barras y los espacios se quedan como están.
+  </p>
+
+  <div class="modos" role="group" aria-label="Cómo transportar">
+    <button type="button" class="boton" data-modo="tonos" aria-pressed="true">De un tono a otro</button>
+    <button type="button" class="boton" data-modo="instrumento" aria-pressed="false">Instrumento transpositor</button>
+    <button type="button" class="boton" data-modo="semitonos" aria-pressed="false">Semitonos</button>
+  </div>
+
+  <div class="opciones">
+    <div class="fila" data-solo="tonos">
+      <label class="campo">De <select data-de>{TONOS.map((t) => <option value={t}>{bonito(t)}</option>)}</select></label>
+      <label class="campo">a <select data-a>{TONOS.map((t) => <option value={t}>{bonito(t)}</option>)}</select></label>
+      <span class="suave" data-detectado></span>
+    </div>
+    <div class="fila" data-solo="instrumento" hidden>
+      <label class="campo">Instrumento
+        <select data-instrumento-transp>{INSTRUMENTOS_TRANSPOSITORES.map((i) => <option value={i.id}>{i.nombre} ({i.ejemplos})</option>)}</select>
+      </label>
+      <div class="grupo-botones" role="group" aria-label="Sentido">
+        <button type="button" class="boton" data-hacia="instrumento" aria-pressed="true">Del sonido real a su parte</button>
+        <button type="button" class="boton" data-hacia="concierto" aria-pressed="false">De su parte al sonido real</button>
+      </div>
+    </div>
+    <div class="fila" data-solo="semitonos" hidden>
+      <button type="button" class="boton" data-semitono="-1" aria-label="Medio tono abajo">−1</button>
+      <strong class="semitonos" data-semitonos-texto>+2</strong>
+      <button type="button" class="boton" data-semitono="1" aria-label="Medio tono arriba">+1</button>
+      <span class="suave">semitonos</span>
+    </div>
+    <label class="campo">Alteraciones
+      <select data-grafia>
+        <option value="auto">Según el tono</option>
+        <option value="bemoles">Siempre bemoles</option>
+        <option value="sostenidos">Siempre sostenidos</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="paneles">
+    <label class="panel">
+      <span class="etiqueta">Original</span>
+      <textarea data-entrada rows="12" spellcheck="false"></textarea>
+    </label>
+    <div class="panel">
+      <span class="etiqueta">Transportado <span class="suave" data-resumen></span></span>
+      <pre class="salida" data-salida aria-live="polite"></pre>
+      <div class="botones">
+        <button type="button" class="boton principal" data-copiar>Copiar</button>
+        <button type="button" class="boton" data-usar>Usar como original</button>
+        <span class="suave" data-aviso role="status"></span>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { intervaloDe } from '../../lib/calculadora-intervalos.ts';
+  import { semitonosGrado } from '../../lib/teoria.ts';
+  import {
+    INSTRUMENTOS_TRANSPOSITORES,
+    detectarTono,
+    transponerTexto,
+    transporteEntreTonos,
+    transporteInstrumento,
+    transporteSemitonos,
+    type Grafia,
+    type Transporte,
+  } from '../../lib/transpositor.ts';
+
+  type Modo = 'tonos' | 'instrumento' | 'semitonos';
+  interface Estado {
+    texto: string;
+    modo: Modo;
+    de: string;
+    a: string;
+    instrumento: string;
+    hacia: 'instrumento' | 'concierto';
+    semitonos: number;
+    grafia: Grafia;
+  }
+  const EJEMPLO = `| Dm7 G7 | Cmaj7 | Cm7 F7 | Bbmaj7 |
+| Bbm7 Eb7 | Abmaj7 | Dm7b5 G7(b9) | Cm6 |
+
+Am7          D7(b9)      Gmaj7
+Fly me to the moon, let me play among the stars`;
+  const CLAVE = 'herramientas:transpositor';
+  const g = leerJSON<Partial<Estado>>(CLAVE) ?? {};
+  const st: Estado = {
+    texto: typeof g.texto === 'string' ? g.texto : EJEMPLO,
+    modo: g.modo === 'instrumento' || g.modo === 'semitonos' ? g.modo : 'tonos',
+    de: g.de ?? 'C',
+    a: g.a ?? 'Eb',
+    instrumento: INSTRUMENTOS_TRANSPOSITORES.some((i) => i.id === g.instrumento) ? g.instrumento! : 'bb',
+    hacia: g.hacia === 'concierto' ? 'concierto' : 'instrumento',
+    semitonos: Number.isInteger(g.semitonos) ? Math.max(-11, Math.min(11, g.semitonos!)) : 2,
+    grafia: g.grafia === 'bemoles' || g.grafia === 'sostenidos' ? g.grafia : 'auto',
+  };
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const entrada = $<HTMLTextAreaElement>('[data-entrada]');
+  const selDe = $<HTMLSelectElement>('[data-de]');
+  const selA = $<HTMLSelectElement>('[data-a]');
+  const selInstr = $<HTMLSelectElement>('[data-instrumento-transp]');
+  const selGrafia = $<HTMLSelectElement>('[data-grafia]');
+  const salida = $('[data-salida]');
+  const aviso = $('[data-aviso]');
+  entrada.value = st.texto;
+  const enLista = (sel: HTMLSelectElement, v: string) => [...sel.options].some((o) => o.value === v);
+  if (!enLista(selDe, st.de)) st.de = 'C';
+  if (!enLista(selA, st.a)) st.a = 'Eb';
+
+  const transporte = (): Transporte => {
+    if (st.modo === 'tonos') return transporteEntreTonos(st.de, st.a);
+    if (st.modo === 'instrumento') return transporteInstrumento(INSTRUMENTOS_TRANSPOSITORES.find((i) => i.id === st.instrumento)!.grado, st.hacia === 'instrumento');
+    return transporteSemitonos(st.semitonos);
+  };
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-modo]')) b.setAttribute('aria-pressed', String(b.dataset.modo === st.modo));
+    for (const el of document.querySelectorAll<HTMLElement>('[data-solo]')) el.hidden = el.dataset.solo !== st.modo;
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-hacia]')) b.setAttribute('aria-pressed', String(b.dataset.hacia === st.hacia));
+    selDe.value = st.de;
+    selA.value = st.a;
+    selInstr.value = st.instrumento;
+    selGrafia.value = st.grafia;
+    $('[data-semitonos-texto]').textContent = `${st.semitonos > 0 ? '+' : ''}${st.semitonos}`;
+
+    const tono = detectarTono(entrada.value);
+    $('[data-detectado]').textContent = tono ? `Parece ${tono.tonica}${tono.menor ? ' menor' : ' mayor'} (por el último acorde)` : '';
+
+    const t = transporte();
+    const n = Number(t.grado.replace(/[b#]/g, ''));
+    const i = intervaloDe(n, semitonosGrado(t.grado));
+    $('[data-resumen]').textContent = t.grado === '1' ? '(sin cambios)' : `(${i.nombre} hacia ${t.direccion === 'arriba' ? 'arriba' : 'abajo'})`;
+    salida.textContent = transponerTexto(entrada.value, t, st.grafia);
+    st.texto = entrada.value;
+    guardarJSON(CLAVE, st);
+  }
+
+  entrada.addEventListener('input', pintar);
+  selDe.addEventListener('change', () => ((st.de = selDe.value), pintar()));
+  selA.addEventListener('change', () => ((st.a = selA.value), pintar()));
+  selInstr.addEventListener('change', () => ((st.instrumento = selInstr.value), pintar()));
+  selGrafia.addEventListener('change', () => ((st.grafia = selGrafia.value as Grafia), pintar()));
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+    const m = el.closest<HTMLButtonElement>('[data-modo]');
+    if (m) return ((st.modo = m.dataset.modo as Modo), pintar());
+    const h = el.closest<HTMLButtonElement>('[data-hacia]');
+    if (h) return ((st.hacia = h.dataset.hacia as Estado['hacia']), pintar());
+    const s = el.closest<HTMLButtonElement>('[data-semitono]');
+    if (s) {
+      st.semitonos = Math.max(-11, Math.min(11, st.semitonos + Number(s.dataset.semitono)));
+      return pintar();
+    }
+  });
+  // Al cargar o pegar un texto nuevo, el tono de partida se pone en el detectado.
+  entrada.addEventListener('paste', () =>
+    setTimeout(() => {
+      const tono = detectarTono(entrada.value);
+      if (tono && enLista(selDe, tono.tonica)) st.de = tono.tonica;
+      pintar();
+    }),
+  );
+  $('[data-copiar]').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(salida.textContent ?? '');
+      aviso.textContent = 'Copiado.';
+    } catch {
+      aviso.textContent = 'No se ha podido copiar: selecciona el texto a mano.';
+    }
+  });
+  $('[data-usar]').addEventListener('click', () => {
+    entrada.value = salida.textContent ?? '';
+    if (st.modo === 'tonos') st.de = st.a;
+    aviso.textContent = '';
+    pintar();
+  });
+
+  pintar();
+</script>
+
+<style>
+  .intro {
+    max-width: var(--ancho-texto);
+  }
+  .modos,
+  .grupo-botones,
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .modos {
+    margin: 0 0 0.75rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.5rem;
+    margin: 0 0 1rem;
+  }
+  .fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+  }
+  .semitonos {
+    min-width: 2.5rem;
+    text-align: center;
+    font-size: 1.3rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .paneles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+  }
+  .panel {
+    display: grid;
+    align-content: start;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+  .etiqueta {
+    font-weight: 700;
+  }
+  textarea,
+  .salida {
+    width: 100%;
+    min-height: 16rem;
+    margin: 0;
+    padding: 0.75rem;
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    box-sizing: border-box;
+  }
+  .salida {
+    overflow-x: auto;
+    white-space: pre;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-left: 0.3rem solid var(--acento);
+    border-radius: var(--radio);
+  }
+</style>
