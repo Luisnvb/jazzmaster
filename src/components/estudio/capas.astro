@@ -1,0 +1,446 @@
+---
+// Mástil por capas (sección Estudio). El texto está en src/data/estudio/capas.md; aquí,
+// el mástil con una zona CAGED y sus capas una sobre otra (lib/capas.ts). En inglés,
+// capas.en.md y i18n/estudio/capas.ts; lo usan pages/estudio/capas.astro y
+// pages/en/study/fretboard-layers.astro.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import Acompanamiento from '../../components/Acompanamiento.astro';
+import * as es from '../../data/estudio/capas.md';
+import * as en from '../../data/estudio/capas.en.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { CUALIDADES_CAPAS, FORMAS_CAGED, nombreCapas } from '../../lib/capas.ts';
+import { ruta } from '../../lib/rutas.ts';
+import { enlacePagina } from '../../lib/secciones.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { CAPAS } from '../../i18n/estudio/capas.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = CAPAS[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+// Páginas a las que se enlaza con el acorde elegido (el script completa la dirección).
+const PAGINAS = {
+  arpegios: enlacePagina('estudio/arpegios', idioma),
+  triadas: enlacePagina('estudio/triadas', idioma),
+  acordes: ruta('acordes'),
+  escalas: ruta('escalas'),
+};
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo={T.titulo}>
+  <SelectorTonica clave="capas" etiqueta={T.raiz}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave="capas" inicial={90} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label={T.titulo}>
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label={T.cualidad}>
+        {CUALIDADES_CAPAS.map((c) => <button type="button" class="boton" data-cualidad={c.id} aria-pressed="false">{nombreCapas(c, idioma)}</button>)}
+      </div>
+      <div class="grupo-botones" role="group" aria-label={T.formaCaged}>
+        <span class="etiqueta">{T.forma}</span>
+        {FORMAS_CAGED.map((f) => <button type="button" class="boton forma" data-forma={f.letra} aria-pressed="false">{f.letra}</button>)}
+        <button type="button" class="boton" data-forma="todo" aria-pressed="false" title={T.todoAyuda}>{T.todoMastil}</button>
+      </div>
+      <button type="button" class="boton" data-sortear title={T.sortearAyuda}>{T.sortear}</button>
+    </div>
+
+    <div class="cabecera-capas">
+      <p class="titulo-capas" data-titulo></p>
+      <p class="enlaces" data-enlaces data-paginas={JSON.stringify(PAGINAS)}></p>
+    </div>
+
+    <ol class="capas" data-capas aria-label={T.capas}></ol>
+
+    <div class="mastil-caja" data-mastil></div>
+
+    <div class="pie">
+      <div class="paso">
+        <button type="button" class="boton" data-paso="-1" title={T.anteriorAyuda}>{T.anterior}</button>
+        <span class="contador" data-contador></span>
+        <button type="button" class="boton" data-paso="1" title={T.siguienteAyuda}>{T.siguiente}</button>
+      </div>
+      <div class="grupo-botones" role="group" aria-label={T.escala} data-escalas></div>
+      <div class="grupo-botones" role="group" aria-label={T.cuerdas} data-voicings></div>
+      <div class="grupo-botones" role="group" aria-label={T.vista}>
+        <button type="button" class="boton" data-acumular aria-pressed="false" title={T.acumularAyuda}>{T.acumular}</button>
+        <button type="button" class="boton" data-rotulo aria-pressed="false" title={T.notasAyuda}>{T.notas}</button>
+      </div>
+    </div>
+    <p class="pista" data-pista></p>
+
+    <div class="botones-audio">
+      <button type="button" data-audio="una" aria-pressed="false">{T.tocarCapa}</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title={T.bucleAyuda}>{T.bucle}</button>
+      <button type="button" data-detener>{I.detener}</button>
+    </div>
+    <Acompanamiento clave="capas" idioma={idioma} />
+    <p class="suave leyenda">{T.leyenda}</p>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import {
+    CUALIDADES_CAPAS,
+    FORMAS_CAGED,
+    capas,
+    cualidadCapas,
+    eventosCapa,
+    mastilCapasSVG,
+    simboloCapas,
+    zonaCaged,
+    type FormaCapas,
+    nombreCapas,
+  } from '../../lib/capas.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { CAPAS } from '../../i18n/estudio/capas.ts';
+
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = CAPAS[idioma];
+  import { conectarAcompanamiento, conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
+  import { parseAcordeGrado } from '../../lib/progresiones.ts';
+  import { DESDE_CUALIDAD, enlaceArpegios, enlaceGrupo, leerDestinoCapas } from '../../lib/enlaces.ts';
+
+  interface Opciones {
+    cualidad: string;
+    forma: FormaCapas;
+    capa: number;
+    acumular: boolean;
+    notas: boolean;
+    /** Escala elegida en cada cualidad (índice). */
+    escalas: Record<string, number>;
+  }
+  const CLAVE = 'capas:opciones';
+  const op: Opciones = { cualidad: 'mayor', forma: 'E', capa: 0, acumular: true, notas: false, escalas: {}, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  // Un enlace (desde el Repertorio, por ejemplo) puede traer cualidad, forma y escala.
+  const pedido = leerDestinoCapas(location.search);
+  if (pedido.cualidad) [op.cualidad, op.capa] = [pedido.cualidad, 0];
+  if (pedido.forma) op.forma = pedido.forma;
+  if (pedido.escala) op.escalas = { ...op.escalas, [op.cualidad]: cualidadCapas(op.cualidad).escalas.findIndex((e) => e.id === pedido.escala) };
+  if (op.forma !== 'todo' && !FORMAS_CAGED.some((f) => f.letra === op.forma)) op.forma = 'E';
+  let raiz = 'C';
+  /** Voicing destacado en la capa actual (tríadas): undefined = todos. No se guarda. */
+  let voicing: string | undefined;
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('capas:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const caja = $('[data-mastil]');
+  const lista = $('[data-capas]');
+
+  const cualidad = () => cualidadCapas(op.cualidad);
+  const escala = () => op.escalas[op.cualidad] ?? 0;
+  const actuales = () => capas(raiz, cualidad(), op.forma, escala(), idioma);
+  const acomp = conectarAcompanamiento(() => ({ raiz, formula: parseAcordeGrado(cualidad().romano).formula }), tempo);
+
+  function pintar(centrar = false) {
+    const c = cualidad();
+    const todas = actuales();
+    op.capa = Math.min(Math.max(op.capa, 0), todas.length - 1);
+    const capa = todas[op.capa];
+    const z = zonaCaged(raiz, op.forma);
+
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-cualidad]')) b.setAttribute('aria-pressed', String(b.dataset.cualidad === c.id));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-forma]')) {
+      b.setAttribute('aria-pressed', String(b.dataset.forma === op.forma));
+      if (b.dataset.forma !== 'todo') b.title = formatear(T.formaDe, { forma: b.dataset.forma!, traste: zonaCaged(raiz, b.dataset.forma as FormaCapas).cejilla });
+    }
+    $('[data-titulo]').innerHTML =
+      `<strong>${esc(simboloCapas(raiz, c))}</strong> · ` + (op.forma === 'todo' ? T.todoMin : formatear(T.formaTrastes, { forma: op.forma, desde: z.desde, hasta: z.hasta }));
+
+    const otras = DESDE_CUALIDAD[c.id];
+    const paginas = JSON.parse($('[data-enlaces]').dataset.paginas!) as Record<string, string>;
+    const sufijo = simboloCapas(raiz, c);
+    $('[data-enlaces]').innerHTML =
+      `<span class="suave">${T.conEsteAcorde}</span> ` +
+      [
+        otras.arpegio && `<a href="${esc(enlaceArpegios(paginas.arpegios, raiz, otras.arpegio))}">${T.arpegio}</a>`,
+        otras.triada && `<a href="${esc(`${paginas.triadas}?tonica=${encodeURIComponent(raiz)}`)}">${T.triadas}</a>`,
+        `<a href="${esc(enlaceGrupo(paginas.acordes, raiz, otras.grupo))}">${T.voicings}</a>`,
+        `<a href="${esc(enlaceGrupo(paginas.escalas, raiz, otras.grupo))}">${formatear(T.escalasPara, { acorde: esc(sufijo) })}</a>`,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+
+    lista.innerHTML = todas
+      .map(
+        (x, k) =>
+          `<li><button type="button" class="chip${k < op.capa ? ' hecha' : ''}" data-capa="${k}" aria-pressed="${k === op.capa}">` +
+          `<span class="numero">${k + 1}</span> ${esc(x.nombre)}</button></li>`,
+      )
+      .join('');
+    $('[data-contador]').textContent = formatear(T.contador, { n: op.capa + 1, total: todas.length });
+    $<HTMLButtonElement>('[data-paso="-1"]').disabled = op.capa === 0;
+    $<HTMLButtonElement>('[data-paso="1"]').disabled = op.capa === todas.length - 1;
+    $('[data-pista]').innerHTML = `<strong>${esc(capa.nombre)}.</strong> ${esc(capa.pista)}`;
+
+    const escalas = $('[data-escalas]');
+    escalas.hidden = capa.id !== 'escala' || c.escalas.length < 2;
+    escalas.innerHTML = c.escalas
+      .map((e, k) => `<button type="button" class="boton" data-escala="${k}" aria-pressed="${k === escala()}">${esc(nombreCapas(e, idioma))}</button>`)
+      .join('');
+    // Un botón por etiqueta (grupo de cuerdas o forma CAGED): en todo el mástil, cada uno reúne varias.
+    const etiquetas = [...new Set(capa.etiquetas)];
+    if (voicing !== undefined && !etiquetas.includes(voicing)) voicing = undefined;
+    const voicings = $('[data-voicings]');
+    voicings.hidden = etiquetas.length < 2;
+    voicings.innerHTML =
+      `<button type="button" class="boton" data-voicing="" aria-pressed="${voicing === undefined}">${T.todas}</button>` +
+      etiquetas
+        .map((e) => `<button type="button" class="boton" data-voicing="${esc(e)}" aria-pressed="${e === voicing}">${esc(e)}</button>`)
+        .join('');
+    $('[data-acumular]').setAttribute('aria-pressed', String(op.acumular));
+    $('[data-rotulo]').setAttribute('aria-pressed', String(op.notas));
+
+    caja.innerHTML = mastilCapasSVG(todas, op.capa, z, op.acumular, op.notas ? 'nota' : 'grado', voicing, idioma);
+    if (centrar) mostrarZona(caja);
+    guardarJSON(CLAVE, op);
+    acomp.actualizar();
+  }
+
+  const azar = <T,>(xs: readonly T[]) => xs[Math.floor(Math.random() * xs.length)];
+
+  function sortear() {
+    op.cualidad = azar(CUALIDADES_CAPAS).id;
+    op.forma = azar(FORMAS_CAGED).letra;
+    op.capa = 0;
+    const tonicas = [...document.querySelectorAll<HTMLButtonElement>('[data-tonica]')];
+    // Cambiar la tónica repinta; si sale la misma, se repinta aquí.
+    const nueva = azar(tonicas);
+    if (nueva.dataset.tonica !== raiz) nueva.click();
+    else pintar(true);
+  }
+
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button');
+    if (!b) return;
+    const d = b.dataset;
+    if (d.cualidad) op.cualidad = d.cualidad;
+    else if (d.forma) op.forma = d.forma as FormaCapas;
+    else if (d.capa) [op.capa, voicing] = [Number(d.capa), undefined];
+    else if (d.paso) [op.capa, voicing] = [op.capa + Number(d.paso), undefined];
+    else if (d.voicing !== undefined) voicing = d.voicing || undefined;
+    else if (d.escala) op.escalas = { ...op.escalas, [op.cualidad]: Number(d.escala) };
+    else if ('acumular' in d) op.acumular = !op.acumular;
+    else if ('rotulo' in d) op.notas = !op.notas;
+    else if ('sortear' in d) return sortear();
+    else return;
+    pintar(Boolean(d.forma || d.cualidad));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if ((e.target as Element).closest('input, select, textarea, [contenteditable]')) return;
+    const paso = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!paso) return;
+    const n = actuales().length;
+    const nueva = Math.min(Math.max(op.capa + paso, 0), n - 1);
+    if (nueva === op.capa) return;
+    e.preventDefault();
+    op.capa = nueva;
+    voicing = undefined;
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    if (boton.dataset.audio === 'acompanar') return acomp.reproduccion();
+    const capa = actuales()[op.capa];
+    const { eventos, pasos, duracion } = eventosCapa(capa, tempo(), voicing);
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      for (const x of caja.querySelectorAll('.sonando')) x.classList.remove('sonando');
+      for (const n of pasos[k]?.notas ?? []) caja.querySelector(`.nota[data-midi="${n.midi}"][data-cuerda="${n.cuerda}"]`)?.classList.add('sonando');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => marcar(pasos.findIndex((p) => t >= p.inicio && t < p.fin)),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    raiz = t;
+    pintar(true);
+  });
+  pintar(true);
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones[hidden] {
+    display: none;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .grupo-botones .forma {
+    min-width: 2.6rem;
+    padding: 0;
+  }
+  .cabecera-capas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 1.5rem;
+    margin: 0 0 0.4rem;
+  }
+  .titulo-capas {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .enlaces {
+    margin: 0;
+    font-size: 0.88rem;
+  }
+
+  /* Las capas, como fichas numeradas: las ya vistas, marcadas; la actual, rellena. */
+  .capas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0 0 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+  .capas :global(.chip) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.15rem 0.6rem 0.15rem 0.2rem;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--texto);
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .capas :global(.chip:hover) {
+    border-color: var(--acento);
+  }
+  .capas :global(.chip .numero) {
+    display: inline-grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 50%;
+    background: var(--superficie-2);
+  }
+  .capas :global(.chip.hecha .numero) {
+    background: var(--acento-suave); /* COLOR: capas ya vistas */
+    color: var(--acento);
+  }
+  .capas :global(.chip[aria-pressed='true']) {
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  .capas :global(.chip[aria-pressed='true'] .numero) {
+    background: var(--sobre-acento);
+    color: var(--acento);
+  }
+
+  /* El mástil no cabe en el móvil: se desplaza en horizontal dentro de su caja. */
+  .mastil-caja {
+    overflow-x: auto;
+    padding: 0.25rem 0.5rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .mastil-caja :global(.nota.anterior) {
+    opacity: 0.28;
+  }
+  .mastil-caja :global(.forma) {
+    fill: none;
+    stroke: var(--acento); /* COLOR: línea que une las notas de cada tríada o acorde */
+    stroke-width: 3;
+    stroke-linejoin: round;
+    opacity: 0.55;
+  }
+
+  .pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 0.5rem;
+  }
+  .paso {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    white-space: nowrap;
+  }
+  @media (max-width: 40rem) {
+    .contador {
+      min-width: 0;
+    }
+    .cabecera-capas .enlaces {
+      font-size: 0.82rem;
+    }
+  }
+  .contador {
+    min-width: 6.5rem;
+    text-align: center;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .pista {
+    min-height: 1.5em;
+    margin: 0.4rem 0 0;
+    font-size: 0.92rem;
+  }
+  .ejemplo :global(.botones-audio) {
+    margin-top: 0.5rem;
+  }
+  .leyenda {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+    max-width: 48rem;
+  }
+</style>

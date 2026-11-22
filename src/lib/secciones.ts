@@ -378,3 +378,12 @@ export const seccionActual = (actual: string, idioma: Idioma = "es"): Seccion | 
   const p = paginaActual(actual, idioma);
   return p && secciones(idioma).find((s) => s.partes.includes(p));
 };
+
+/**
+ * Dirección de una página (por su dirección española, 'estudio/ciclos') en un idioma: la
+ * inglesa si existe; si no, la española.
+ */
+export function enlacePagina(direccion: string, idioma: Idioma): string {
+  const en = idioma === "en" ? PAGINAS_EN[direccion.replace(/^\/+|\/+$/g, "")]?.direccion : undefined;
+  return ruta(en ? conPrefijo("en", en) : direccion);
+}

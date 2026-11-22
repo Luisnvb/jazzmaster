@@ -22,9 +22,9 @@ export const SECCIONES_EN: Record<string, { nombre: string; lema: string }> = {
 
 export const PAGINAS_EN: Record<string, PaginaEn> = {
   ruta: { nombre: 'Learning path', lema: 'Seven stages through the site, from the foundations to the modern sound' },
-  'estudio/rutina': { nombre: 'Practice routine', lema: 'One note and one quality; repertoire in one position' },
-  'estudio/capas': { nombre: 'Fretboard in layers', lema: 'Root, triads, arpeggio, pentatonic, scale and chord in one CAGED zone' },
-  'estudio/ritmo': { nombre: 'Rhythm', lema: 'Pulse, subdivisions, swing and comping patterns' },
+  'estudio/rutina': { nombre: 'Practice routine', lema: 'One note and one quality; repertoire in one position', direccion: 'study/routine' },
+  'estudio/capas': { nombre: 'Fretboard in layers', lema: 'Root, triads, arpeggio, pentatonic, scale and chord in one CAGED zone', direccion: 'study/fretboard-layers' },
+  'estudio/ritmo': { nombre: 'Rhythm', lema: 'Pulse, subdivisions, swing and comping patterns', direccion: 'study/rhythm' },
   intervalos: { nombre: 'Intervals', lema: 'Cards, audio and ear trainer' },
   'estudio/oido-armonico': { nombre: 'Harmonic ear', lema: 'Chord quality trainer, degree chains and progressions' },
   'estudio/dictado': { nombre: 'Melodic dictation', lema: 'Call and response: play back the phrase in the next bar' },

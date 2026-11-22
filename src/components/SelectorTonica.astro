@@ -1,5 +1,7 @@
 ---
 import { TONICAS } from '../lib/teoria.ts';
+import type { Idioma } from '../i18n/idiomas.ts';
+import { INTERFAZ } from '../i18n/interfaz.ts';
 
 interface Props {
   /** Clave con la que se recuerda la elección (una por sección). */
@@ -7,9 +9,11 @@ interface Props {
   etiqueta?: string;
   /** false: sin los botones de tónica (solo la barra con los controles extra). */
   conTonica?: boolean;
+  /** Idioma de la etiqueta por defecto. */
+  idioma?: Idioma;
 }
 
-const { clave, etiqueta = 'Tónica', conTonica = true } = Astro.props;
+const { clave, idioma = 'es', etiqueta = INTERFAZ[idioma].tonica, conTonica = true } = Astro.props;
 // Controles extra de la página (arpegio, sonido…) que van en la misma barra fija.
 const conExtra = Astro.slots.has('default');
 const inicial = 'C';

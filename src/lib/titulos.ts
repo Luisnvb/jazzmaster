@@ -5,11 +5,14 @@
 
 /** Palabra de cifrado con minúsculas que importan. */
 export function esCifrado(palabra: string): boolean {
+  // Las entidades HTML (&#39; de un apóstrofo) no cuentan: «Today&#39;s» no es cifrado.
+  palabra = palabra.replace(/&#?\w+;/g, '');
   if (!/[a-z]/.test(palabra)) return false;
   return /\d|[–#♭♯°ø]/.test(palabra) || /^[A-G][b#]$/.test(palabra) || /^b?(ii|iii|iv|vi|vii)$/.test(palabra);
 }
 
-const PALABRA = /[^\s()[\],.:;¿?¡!·]+/g;
+// Una entidad HTML (&#39;) forma parte de la palabra: su «;» no la corta.
+const PALABRA = /(?:&#?\w+;|[^\s()[\],.:;¿?¡!·])+/g;
 const TITULO = /(<h[1-4]\b[^>]*>|<[^>]+class="[^"]*\btitulo-seccion\b[^"]*"[^>]*>)([\s\S]*?)(<\/(?:h[1-4]|p)>)/g;
 
 /** Marca el cifrado del texto (ya escapado) de un trozo de HTML, sin tocar las etiquetas. */

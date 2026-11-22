@@ -4,26 +4,54 @@
 // conectarAcompanamiento (lib/cliente.ts), que le dice qué acorde suena.
 import { INSTRUMENTOS } from '../lib/audio.ts';
 import { ESTILOS_ACOMPANAMIENTO } from '../lib/acompanamiento.ts';
+import { textos, type Idioma } from '../i18n/idiomas.ts';
+import { nombreSonido } from '../i18n/interfaz.ts';
 
 interface Props {
   /** Clave con la que se recuerdan las opciones (una por sección). */
   clave: string;
+  idioma?: Idioma;
 }
-const { clave } = Astro.props;
+const { clave, idioma = 'es' } = Astro.props;
+const T = textos(
+  {
+    acompanamiento: 'Acompañamiento',
+    estilo: 'Estilo',
+    sonido: 'Sonido del acompañamiento',
+    clic: 'Clic en 2 y 4',
+    acompanar: '▶ Acompañar',
+    ayuda: 'El acorde en bucle para tocar encima; sigue al acorde y al tempo que elijas',
+    estilos: Object.fromEntries(ESTILOS_ACOMPANAMIENTO.map((e) => [e.id, [e.nombre, e.descripcion]])) as Record<string, [string, string]>,
+  },
+  {
+    acompanamiento: 'Backing',
+    estilo: 'Style',
+    sonido: 'Backing sound',
+    clic: 'Click on 2 and 4',
+    acompanar: '▶ Play backing',
+    ayuda: 'The chord on a loop to play over; it follows the chord and tempo you choose',
+    estilos: {
+      pedal: ['Pedal', 'Low root and 5, held: to hear every note against the root.'],
+      acorde: ['Chord', 'Full bass and chord, one hit per bar.'],
+      swing: ['Swing', 'Two-beat bass (root and 5) and the chord in a Charleston rhythm, with swung eighths.'],
+      bossa: ['Bossa', 'Bossa bass (root and 5) and the chord on off-beat eighths.'],
+    },
+  },
+)[idioma];
 ---
 
-<div class="acompanamiento" data-acompanamiento data-clave={clave} role="group" aria-label="Acompañamiento">
-  <span class="etiqueta">Acompañamiento</span>
-  <select data-acomp-estilo aria-label="Estilo">
-    {ESTILOS_ACOMPANAMIENTO.map((e) => <option value={e.id} title={e.descripcion}>{e.nombre}</option>)}
+<div class="acompanamiento" data-acompanamiento data-clave={clave} role="group" aria-label={T.acompanamiento}>
+  <span class="etiqueta">{T.acompanamiento}</span>
+  <select data-acomp-estilo aria-label={T.estilo}>
+    {ESTILOS_ACOMPANAMIENTO.map((e) => <option value={e.id} title={T.estilos[e.id]?.[1] ?? e.descripcion}>{T.estilos[e.id]?.[0] ?? e.nombre}</option>)}
   </select>
-  <select data-acomp-instrumento aria-label="Sonido del acompañamiento">
-    {INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}
+  <select data-acomp-instrumento aria-label={T.sonido}>
+    {INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}
   </select>
-  <label class="casilla"><input type="checkbox" data-acomp-metronomo /> Clic en 2 y 4</label>
+  <label class="casilla"><input type="checkbox" data-acomp-metronomo /> {T.clic}</label>
   <span class="botones-audio">
-    <button type="button" data-audio="acompanar" aria-pressed="false" title="El acorde en bucle para tocar encima; sigue al acorde y al tempo que elijas">
-      ▶ Acompañar
+    <button type="button" data-audio="acompanar" aria-pressed="false" title={T.ayuda}>
+      {T.acompanar}
     </button>
   </span>
 </div>

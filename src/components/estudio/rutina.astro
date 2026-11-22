@@ -1,0 +1,202 @@
+---
+// Rutina de práctica (sección Estudio). El texto está en src/data/estudio/rutina.md;
+// aquí se añaden el sorteo de material y el índice. En inglés, rutina.en.md y los textos
+// de i18n/estudio/rutina.ts; lo usan pages/estudio/rutina.astro y pages/en/study/routine.astro.
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import * as es from '../../data/estudio/rutina.md';
+import * as en from '../../data/estudio/rutina.en.md';
+import { porOrden } from '../../lib/orden.ts';
+import { ruta } from '../../lib/rutas.ts';
+import { TONICAS } from '../../lib/teoria.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ } from '../../i18n/interfaz.ts';
+import { RUTINA } from '../../i18n/estudio/rutina.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = RUTINA[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const indice = getHeadings().filter((h) => h.depth === 2);
+// Material para el sorteo: las tónicas, cualidades de grupos.yaml
+// más las tríadas, y las canciones del repertorio.
+const grupos = porOrden(await getCollection('grupos'));
+const datos = JSON.stringify({
+  notas: TONICAS,
+  cualidades: [
+    { nombre: T.triadaMayor, enlace: `${ruta('acordes')}#grupo-maj7` },
+    { nombre: T.triadaMenor, enlace: `${ruta('acordes')}#grupo-m7` },
+    ...grupos.map((g) => ({ nombre: (idioma === 'en' && g.data.en?.nombre) || g.data.nombre, enlace: `${ruta('acordes')}#grupo-${g.id}` })),
+  ],
+  canciones: (await getCollection('repertorio')).map((c) => ({ nombre: c.data.titulo, enlace: ruta(`repertorio/${c.id}`) })),
+}).replace(/</g, '\\u003c');
+---
+
+<Base titulo={T.titulo}>
+  <section class="sorteo" aria-labelledby="sorteo-titulo">
+    <div class="sorteo-cabecera">
+      <h2 id="sorteo-titulo">{T.material}</h2>
+      <button type="button" class="boton principal" data-sortear-todo>{T.sortearTodo}</button>
+    </div>
+    <dl class="sorteo-lista" data-sorteo></dl>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+
+  <script type="application/json" id="datos-sorteo" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { enlacePagina } from '../../lib/secciones.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { RUTINA } from '../../i18n/estudio/rutina.ts';
+
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = RUTINA[idioma];
+
+  interface Opcion {
+    nombre: string;
+    enlace?: string;
+  }
+  const { notas, cualidades, canciones }: { notas: string[]; cualidades: Opcion[]; canciones: Opcion[] } = JSON.parse(
+    document.getElementById('datos-sorteo')!.textContent!,
+  );
+
+  // Cada ciclo enlaza con su página de Estudio.
+  const CICLOS: Opcion[] = T.ciclos.map((nombre) => ({ nombre, enlace: enlacePagina('estudio/ciclos', idioma) }));
+
+  /** Lo que se sortea: etiqueta y opciones posibles. */
+  const APARTADOS: { id: string; etiqueta: string; opciones: Opcion[] }[] = [
+    { id: 'nota', etiqueta: T.nota, opciones: notas.map((n) => ({ nombre: n })) },
+    { id: 'cualidad', etiqueta: T.cualidad, opciones: cualidades },
+    {
+      id: 'posicion',
+      etiqueta: T.posicion,
+      opciones: Array.from({ length: 12 }, (_, i) => ({ nombre: formatear(T.traste, { desde: i + 1, hasta: i + 5 }) })),
+    },
+    {
+      id: 'cuerdas',
+      etiqueta: T.triadasEn,
+      opciones: ['6-5-4', '5-4-3', '4-3-2', '3-2-1', '6-4-3 *', '5-3-2 *', '4-2-1 *'].map((c) => ({
+        nombre: formatear(T.cuerdas, { c: c.replace('*', `(${T.abierta})`) }),
+      })),
+    },
+    { id: 'ciclo', etiqueta: T.ciclo, opciones: CICLOS },
+    { id: 'cancion', etiqueta: T.cancion, opciones: canciones },
+  ];
+
+  // El último sorteo se recuerda en este navegador (índices por apartado).
+  const CLAVE = 'estudio:sorteo';
+  const elegido: Record<string, number> = leerJSON<Record<string, number>>(CLAVE) ?? {};
+  const azar = (n: number, distinto?: number) => {
+    if (n < 2) return 0;
+    let k = Math.floor(Math.random() * n);
+    while (k === distinto) k = Math.floor(Math.random() * n);
+    return k;
+  };
+  const sortear = (id: string) => {
+    const a = APARTADOS.find((x) => x.id === id)!;
+    elegido[id] = azar(a.opciones.length, elegido[id]);
+  };
+
+  const lista = document.querySelector<HTMLElement>('[data-sorteo]')!;
+  function pintar() {
+    lista.innerHTML = APARTADOS.filter((a) => a.opciones.length)
+      .map((a) => {
+        if (!(elegido[a.id] in a.opciones)) elegido[a.id] = azar(a.opciones.length);
+        const o = a.opciones[elegido[a.id]];
+        const valor = o.enlace ? `<a href="${esc(o.enlace)}">${esc(o.nombre)}</a>` : esc(o.nombre);
+        return `<div class="sorteo-item">
+          <dt>${esc(a.etiqueta)}</dt>
+          <dd><span class="valor">${valor}</span>
+            <button type="button" class="otra" data-sortear="${a.id}" aria-label="${esc(formatear(T.sortearOtra, { apartado: a.etiqueta.toLowerCase() }))}" title="${T.otra}">↻</button></dd>
+        </div>`;
+      })
+      .join('');
+    guardarJSON(CLAVE, elegido);
+  }
+
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button');
+    if (!b) return;
+    if (b.hasAttribute('data-sortear-todo')) APARTADOS.forEach((a) => sortear(a.id));
+    else if (b.dataset.sortear) sortear(b.dataset.sortear);
+    else return;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .sorteo {
+    margin: 0 0 1.5rem;
+    padding: 1rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-top: 0.3rem solid var(--acento);
+    border-radius: var(--radio);
+  }
+  .sorteo-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .sorteo-cabecera h2 {
+    margin: 0;
+  }
+  .sorteo-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .sorteo-lista :global(.sorteo-item) {
+    padding: 0.5rem 0.75rem;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .sorteo-lista :global(dt) {
+    font-size: 0.82rem;
+    color: var(--texto-suave);
+  }
+  .sorteo-lista :global(dd) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .sorteo-lista :global(.otra) {
+    flex: 0 0 auto;
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    font: inherit;
+    color: var(--texto-suave);
+    background: none;
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .sorteo-lista :global(.otra:hover) {
+    color: var(--acento);
+    border-color: var(--acento);
+  }
+
+</style>

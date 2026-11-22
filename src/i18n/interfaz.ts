@@ -38,6 +38,9 @@ export const INTERFAZ = textos(
     noCopiado: 'No se ha podido copiar: selecciona el texto a mano.',
     noGuardado: 'No se ha podido guardar (¿almacenamiento lleno o modo privado?).',
     seguro: '¿Seguro? Pulsa otra vez',
+    // Páginas de estudio
+    enEstaPagina: 'En esta página',
+    tonica: 'Tónica',
   },
   {
     inicio: 'Home',
@@ -71,6 +74,8 @@ export const INTERFAZ = textos(
     noCopiado: 'Could not copy: select the text by hand.',
     noGuardado: 'Could not save (storage full or private mode?).',
     seguro: 'Sure? Press again',
+    enEstaPagina: 'On this page',
+    tonica: 'Key',
   },
 );
 

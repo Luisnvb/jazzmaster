@@ -40,12 +40,13 @@ export const PATRONES_RITMO: PatronRitmo[] = [
 ];
 
 /** Nombre de cada celda dentro del pulso, para contar en voz alta. */
-export function etiquetaCelda(division: Division, k: number): string {
+export function etiquetaCelda(division: Division, k: number, idioma: 'es' | 'en' = 'es'): string {
   const sub = k % division;
   if (sub === 0) return String(Math.floor(k / division) + 1);
-  if (division === 2) return 'y';
-  if (division === 3) return sub === 1 ? 'tri' : 'pa';
-  return ['', 'e', 'y', 'a'][sub];
+  const y = idioma === 'en' ? '&' : 'y';
+  if (division === 2) return y;
+  if (division === 3) return idioma === 'en' ? (sub === 1 ? 'trip' : 'let') : sub === 1 ? 'tri' : 'pa';
+  return ['', 'e', y, 'a'][sub];
 }
 
 export const celdasPorCompas = (r: Rejilla) => r.division * r.pulsos;

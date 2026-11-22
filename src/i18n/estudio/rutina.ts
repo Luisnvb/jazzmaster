@@ -1,0 +1,58 @@
+// Textos de la Rutina de práctica (components/estudio/rutina.astro). El texto largo está
+// en src/data/estudio/rutina.md y rutina.en.md.
+import { textos } from '../idiomas.ts';
+
+export const RUTINA = textos(
+  {
+    titulo: 'Rutina de práctica',
+    material: 'Material de hoy',
+    sortearTodo: 'Sortear todo',
+    triadaMayor: 'Tríada mayor',
+    triadaMenor: 'Tríada menor',
+    ciclos: [
+      'Ciclo 2 · la raíz sube por grados (I–ii–iii…)',
+      'Ciclo 3 · la raíz sube por terceras (I–iii–V…)',
+      'Ciclo 4 · la raíz sube una cuarta (ii–V–I)',
+      'Ciclo 5 · la raíz sube una quinta (I–V–ii…)',
+      'Ciclo 6 · la raíz sube una sexta (baja por terceras)',
+      'Ciclo 7 · la raíz sube una séptima (baja por grados)',
+    ],
+    nota: 'Nota',
+    cualidad: 'Cualidad',
+    posicion: 'Posición',
+    traste: 'Traste {desde} (hasta el {hasta})',
+    triadasEn: 'Tríadas en',
+    cuerdas: 'cuerdas {c}',
+    abierta: 'abierta',
+    ciclo: 'Ciclo',
+    cancion: 'Canción',
+    sortearOtra: 'Sortear otra: {apartado}',
+    otra: 'Otra',
+  },
+  {
+    titulo: 'Practice routine',
+    material: "Today's material",
+    sortearTodo: 'Draw everything',
+    triadaMayor: 'Major triad',
+    triadaMenor: 'Minor triad',
+    ciclos: [
+      'Cycle 2 · root moves up by step (I–ii–iii…)',
+      'Cycle 3 · root moves up by thirds (I–iii–V…)',
+      'Cycle 4 · root moves up a fourth (ii–V–I)',
+      'Cycle 5 · root moves up a fifth (I–V–ii…)',
+      'Cycle 6 · root moves up a sixth (down by thirds)',
+      'Cycle 7 · root moves up a seventh (down by step)',
+    ],
+    nota: 'Note',
+    cualidad: 'Quality',
+    posicion: 'Position',
+    traste: 'Fret {desde} (up to {hasta})',
+    triadasEn: 'Triads on',
+    cuerdas: 'strings {c}',
+    abierta: 'open',
+    ciclo: 'Cycle',
+    cancion: 'Tune',
+    sortearOtra: 'Draw another: {apartado}',
+    otra: 'Another',
+  },
+);

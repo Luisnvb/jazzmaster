@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CUALIDADES_CAPAS, FORMAS_CAGED, acordeCaged, capas, cualidadCapas, eventosCapa, mastilCapasSVG, zonaCaged, zonasCaged } from './capas.ts';
+import { CUALIDADES_CAPAS, FORMAS_CAGED, acordeCaged, capas, cualidadCapas, eventosCapa, mastilCapasSVG, nombreCapas, zonaCaged, zonasCaged } from './capas.ts';
 import { parseAcordeGrado } from './progresiones.ts';
 import { TONICAS, notaDeGrado, pitchClass, semitonosGrado } from './teoria.ts';
 
@@ -140,4 +140,15 @@ test('todo el mástil: cada capa en los trastes 0–15, sin zona; las cinco form
   assert.doesNotMatch(svg, /class="zona"/);
   assert.equal(svg.match(/<polyline/g)!.length, cerradas.etiquetas.filter((e) => e === '5-4-3').length);
   assert.equal(eventosCapa(acorde, 120, 'G').pasos.length, 1 + acorde.formas[2].length);
+});
+
+test('en inglés', () => {
+  const lista = capas('C', cualidadCapas('maj7'), 'E', 0, 'en');
+  assert.deepEqual(
+    lista.map((c) => c.nombre),
+    ['Root', 'Close triads', 'Arpeggio', 'Open triads', 'Pentatonic', 'Scale', 'Chord'],
+  );
+  assert.match(lista[5].pista, /^Ionian/);
+  assert.equal(nombreCapas(cualidadCapas('menor'), 'en'), 'Minor');
+  assert.equal(nombreCapas(cualidadCapas('maj7'), 'en'), 'maj7');
 });

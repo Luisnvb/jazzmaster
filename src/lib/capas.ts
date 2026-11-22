@@ -12,6 +12,37 @@ import { formatNota, notaDeGrado, pitchClass, semitonosGrado } from './teoria.ts
 
 const mod = (n: number, m = 12) => ((n % m) + m) % m;
 
+type Idioma = 'es' | 'en';
+
+/** Nombres en inglés de escalas, pentatónicas y cualidades (por id o por nombre español). */
+const EN: Record<string, string> = {
+  jonica: 'Ionian',
+  lidia: 'Lydian',
+  mixolidia: 'Mixolydian',
+  dorica: 'Dorian',
+  eolica: 'Aeolian',
+  frigia: 'Phrygian',
+  locria: 'Locrian',
+  'locria-2': 'Locrian ♮2',
+  'lidia-b7': 'Lydian b7',
+  alterada: 'Altered',
+  disminuida: 'Diminished (whole-half)',
+  tonos: 'Whole tone',
+  'lidia-aum': 'Lydian augmented',
+  'Pentatónica mayor': 'Major pentatonic',
+  'Pentatónica menor': 'Minor pentatonic',
+  'Pentatónica sus': 'Sus pentatonic',
+  'Pentatónica menor b5': 'Minor pentatonic b5',
+  mayor: 'Major',
+  menor: 'Minor',
+  dim: 'Diminished',
+  aum: 'Augmented',
+};
+
+/** Nombre de una escala o cualidad de las capas en un idioma. */
+export const nombreCapas = (x: { id?: string; nombre: string }, idioma: Idioma = 'es') =>
+  idioma === 'en' ? (EN[x.id ?? ''] ?? EN[x.nombre] ?? x.nombre) : x.nombre;
+
 // --- Cualidades ------------------------------------------------------------------------
 
 export interface EscalaCapa {
@@ -239,7 +270,8 @@ function enLaZona(raiz: string, formula: readonly string[], z: ZonaCaged, acorde
  * Las capas de un acorde (`raiz` + cualidad) en una zona CAGED (o en todo el mástil),
  * en el orden en que se practican. `escala` elige entre las escalas de la cualidad.
  */
-export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, escala = 0): Capa[] {
+export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, escala = 0, idioma: Idioma = 'es'): Capa[] {
+  const en = idioma === 'en';
   const a = parseAcordeGrado(cualidad.romano);
   const z = zonaCaged(raiz, letra);
   const todo = letra === 'todo';
@@ -249,8 +281,10 @@ export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, 
 
   res.push({
     id: 'raiz',
-    nombre: 'Raíz',
-    pista: `Todas las ${formatNota(notaDeGrado(raiz, '1'))} ${todo ? 'del mástil' : 'de la zona'}: los puntos de anclaje. Tócalas de grave a agudo diciendo el nombre.`,
+    nombre: en ? 'Root' : 'Raíz',
+    pista: en
+      ? `Every ${formatNota(notaDeGrado(raiz, '1'))} ${todo ? 'on the neck' : 'in the area'}: the anchor points. Play them from low to high, saying the name.`
+      : `Todas las ${formatNota(notaDeGrado(raiz, '1'))} ${todo ? 'del mástil' : 'de la zona'}: los puntos de anclaje. Tócalas de grave a agudo diciendo el nombre.`,
     notas: enLaZona(raiz, ['1'], z),
     formas: [],
     etiquetas: [],
@@ -258,17 +292,23 @@ export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, 
   const cerradas = triadasEnZona(raiz, a, GRUPOS_CERRADAS, z);
   res.push({
     id: 'triadas',
-    nombre: 'Tríadas cerradas',
-    pista: todo
-      ? `${tri.join('-')} en tres cuerdas seguidas, por todo el mástil: en cada grupo de cuerdas, las inversiones suben una tras otra.`
-      : `${tri.join('-')} en tres cuerdas seguidas, sin mover la mano. Di qué grado queda arriba en cada una.`,
+    nombre: en ? 'Close triads' : 'Tríadas cerradas',
+    pista: en
+      ? todo
+        ? `${tri.join('-')} on three adjacent strings, across the whole neck: on each string group, the inversions climb one after another.`
+        : `${tri.join('-')} on three adjacent strings, without moving the hand. Say which degree is on top in each one.`
+      : todo
+        ? `${tri.join('-')} en tres cuerdas seguidas, por todo el mástil: en cada grupo de cuerdas, las inversiones suben una tras otra.`
+        : `${tri.join('-')} en tres cuerdas seguidas, sin mover la mano. Di qué grado queda arriba en cada una.`,
     notas: cerradas.formas.flat(),
     ...cerradas,
   });
   res.push({
     id: 'arpegio',
-    nombre: 'Arpegio',
-    pista: `${a.formula.join('-')} por ${todo ? 'todo el mástil' : 'toda la zona'}: sube y baja, y empieza también desde la 3 y la 5.`,
+    nombre: en ? 'Arpeggio' : 'Arpegio',
+    pista: en
+      ? `${a.formula.join('-')} across ${todo ? 'the whole neck' : 'the whole area'}: go up and down, and also start from the 3 and the 5.`
+      : `${a.formula.join('-')} por ${todo ? 'todo el mástil' : 'toda la zona'}: sube y baja, y empieza también desde la 3 y la 5.`,
     notas: enLaZona(raiz, a.formula, z),
     formas: [],
     etiquetas: [],
@@ -276,16 +316,20 @@ export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, 
   const abiertas = triadasEnZona(raiz, a, GRUPOS_ABIERTAS, z);
   res.push({
     id: 'abiertas',
-    nombre: 'Tríadas abiertas',
-    pista: 'La voz central de la cerrada, una octava arriba, en tres cuerdas con una saltada: 6-4-3, 5-3-2 y 4-2-1, o 6-5-3, 5-4-2 y 4-3-1.',
+    nombre: en ? 'Open triads' : 'Tríadas abiertas',
+    pista: en
+      ? 'The middle voice of the close triad, an octave up, on three strings with one skipped: 6-4-3, 5-3-2 and 4-2-1, or 6-5-3, 5-4-2 and 4-3-1.'
+      : 'La voz central de la cerrada, una octava arriba, en tres cuerdas con una saltada: 6-4-3, 5-3-2 y 4-2-1, o 6-5-3, 5-4-2 y 4-3-1.',
     notas: abiertas.formas.flat(),
     ...abiertas,
   });
   if (cualidad.penta) {
     res.push({
       id: 'pentatonica',
-      nombre: 'Pentatónica',
-      pista: `${cualidad.penta.nombre} (${cualidad.penta.formula.join(' ')}), ${todo ? 'en todo el mástil' : 'con la misma mano que el acorde'}. Las notas del acorde, rellenas.`,
+      nombre: en ? 'Pentatonic' : 'Pentatónica',
+      pista: en
+        ? `${nombreCapas(cualidad.penta, idioma)} (${cualidad.penta.formula.join(' ')}), ${todo ? 'across the whole neck' : 'with the same hand position as the chord'}. Chord tones are filled in.`
+        : `${cualidad.penta.nombre} (${cualidad.penta.formula.join(' ')}), ${todo ? 'en todo el mástil' : 'con la misma mano que el acorde'}. Las notas del acorde, rellenas.`,
       notas: enLaZona(raiz, cualidad.penta.formula, z, a.formula),
       formas: [],
       etiquetas: [],
@@ -294,8 +338,10 @@ export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, 
   const e = cualidad.escalas[Math.min(Math.max(escala, 0), cualidad.escalas.length - 1)];
   res.push({
     id: 'escala',
-    nombre: 'Escala',
-    pista: `${e.nombre} (${e.formula.join(' ')}): ${todo ? 'todo el mástil' : 'la posición entera'}. Las notas del acorde, rellenas; el resto, huecas.`,
+    nombre: en ? 'Scale' : 'Escala',
+    pista: en
+      ? `${nombreCapas(e, idioma)} (${e.formula.join(' ')}): ${todo ? 'the whole neck' : 'the whole position'}. Chord tones filled in; the rest hollow.`
+      : `${e.nombre} (${e.formula.join(' ')}): ${todo ? 'todo el mástil' : 'la posición entera'}. Las notas del acorde, rellenas; el resto, huecas.`,
     notas: enLaZona(raiz, e.formula, z, a.formula),
     formas: [],
     etiquetas: [],
@@ -308,10 +354,14 @@ export function capas(raiz: string, cualidad: CualidadCapas, letra: FormaCapas, 
   });
   res.push({
     id: 'acorde',
-    nombre: 'Acorde',
-    pista: todo
-      ? `${simbolo} con las cinco formas CAGED (${letras.join('-')}), encadenadas a lo largo del mástil: cada una empieza donde acaba la anterior.`
-      : `${simbolo} con la forma de ${letra}: todo lo anterior gira alrededor de este acorde.`,
+    nombre: en ? 'Chord' : 'Acorde',
+    pista: en
+      ? todo
+        ? `${simbolo} with the five CAGED shapes (${letras.join('-')}), chained along the neck: each one starts where the previous one ends.`
+        : `${simbolo} with the ${letra} shape: everything before revolves around this chord.`
+      : todo
+        ? `${simbolo} con las cinco formas CAGED (${letras.join('-')}), encadenadas a lo largo del mástil: cada una empieza donde acaba la anterior.`
+        : `${simbolo} con la forma de ${letra}: todo lo anterior gira alrededor de este acorde.`,
     notas: acordes.flat(),
     formas: acordes,
     etiquetas: letras,
@@ -389,6 +439,7 @@ export function mastilCapasSVG(
   rotulo: Rotulo = 'grado',
   /** Etiqueta de los voicings de la capa actual que se destacan (el resto, atenuado); sin ella, todos. */
   voicing?: string,
+  idioma: Idioma = 'es',
 ): string {
   const ancho = MARGEN_IZQ + ANCHO_TRASTE * (TRASTES + 0.5);
   const alto = MARGEN_SUP + SEP_CUERDA * 5 + MARGEN_INF;
@@ -438,8 +489,9 @@ export function mastilCapasSVG(
         `<text class="grado${texto.length > 2 ? ' largo' : ''}" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${texto}</text></g>`,
     );
   }
-  const zona = z.letra === 'todo' ? 'todo el mástil' : `trastes ${z.desde}–${z.hasta}`;
-  const etiqueta = capa ? `Mástil: ${capa.nombre}, ${zona}` : 'Mástil';
+  const en = idioma === 'en';
+  const zona = z.letra === 'todo' ? (en ? 'whole neck' : 'todo el mástil') : `${en ? 'frets' : 'trastes'} ${z.desde}–${z.hasta}`;
+  const etiqueta = capa ? `${en ? 'Neck' : 'Mástil'}: ${capa.nombre}, ${zona}` : en ? 'Neck' : 'Mástil';
   return `<svg class="mastil capas" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="${etiqueta}" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
 }
 
