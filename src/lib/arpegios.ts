@@ -158,7 +158,7 @@ const MARCAS = [3, 5, 7, 9, 15];
  * Con una zona de posición, `ecos` son otras posiciones (traste inicial) que se
  * dibujan solo con el contorno: dónde se repite el mismo dibujo en una escala simétrica.
  */
-export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'todo' }, ecos: readonly number[] = [], trastes = TRASTES): string {
+export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'todo' }, ecos: readonly number[] = [], trastes = TRASTES, idioma: 'es' | 'en' = 'es'): string {
   const TRASTES_SVG = trastes;
   const ancho = MARGEN_IZQ + ANCHO_TRASTE * (TRASTES_SVG + 0.5);
   const alto = MARGEN_SUP + SEP_CUERDA * 5 + MARGEN_INF;
@@ -210,7 +210,7 @@ export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'to
         `<text class="grado${rotulo.length > 2 ? ' largo' : ''}" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${rotulo}</text></g>`,
     );
   }
-  return `<svg class="mastil" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="Mástil con las notas del arpegio" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
+  return `<svg class="mastil" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="${idioma === 'en' ? 'Neck with the notes' : 'Mástil con las notas del arpegio'}" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
 }
 
 /** Cifrado del acorde (para títulos). */

@@ -7,7 +7,7 @@ import { DESDE_CUALIDAD, DESDE_GRUPO, enlaceArpegios, enlaceCapas, enlaceGrupo, 
 import { parseAcordeGrado } from './progresiones.ts';
 
 const grupos = (parse(readFileSync(new URL('../data/grupos.yaml', import.meta.url), 'utf8')) as { id: string }[]).map((g) => g.id);
-const arpegiosPagina = readFileSync(new URL('../pages/estudio/arpegios.astro', import.meta.url), 'utf8');
+const arpegiosPagina = readFileSync(new URL('../components/estudio/arpegios.astro', import.meta.url), 'utf8');
 
 test('cada grupo de acordes va a una cualidad (y escala) de Mástil por capas y a un arpegio que existen', () => {
   assert.deepEqual(Object.keys(DESDE_GRUPO).sort(), [...grupos].sort());

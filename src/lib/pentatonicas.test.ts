@@ -71,3 +71,9 @@ test('en el mástil: grados sobre el acorde y notas del acorde marcadas', () => 
   assert.equal(g.delAcorde, true);
   assert.equal(notas.find((n) => n.nota === 'A')!.delAcorde, false);
 });
+
+test('nombres de pentatónicas en inglés', () => {
+  const alt = ACORDES_PENTA.find((a) => a.id === '7alt')!.opciones[0];
+  assert.equal(nombrePenta('C', alt, 'en'), 'Gb major');
+  assert.equal(relativa('C', alt, 'en'), 'Eb minor');
+});

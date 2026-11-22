@@ -1,0 +1,510 @@
+---
+// Motivos y desarrollo (sección Estudio). El texto está en src/data/estudio/motivos.md;
+// aquí va el editor de un motivo con sus transformaciones (lib/motivos.ts). En inglés,
+// motivos.en.md e i18n/estudio/motivos.ts; lo usan pages/estudio/motivos.astro y
+// pages/en/study/motifs.astro.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import * as es from '../../data/estudio/motivos.md';
+import * as en from '../../data/estudio/motivos.en.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { ESCALAS_MOTIVO, MOTIVOS_EJEMPLO } from '../../lib/motivos.ts';
+import { formatear, type Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { MOTIVOS } from '../../i18n/estudio/motivos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = MOTIVOS[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo={T.titulo}>
+  <SelectorTonica clave="motivos" idioma={idioma}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave="motivos" inicial={90} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label={T.ejemplo}>
+    <div class="editor">
+      <div class="opciones">
+        <label class="campo">{T.escala}
+          <select data-escala>{ESCALAS_MOTIVO.map((e) => <option value={e.id}>{T.escalas[e.id] ?? e.nombre}</option>)}</select>
+        </label>
+        <label class="campo">{T.partirDe}
+          <select data-ejemplo>
+            <option value="">—</option>
+            {MOTIVOS_EJEMPLO.map((m) => <option value={m.id}>{T.ejemplos[m.id] ?? m.nombre}</option>)}
+          </select>
+        </label>
+        <label class="campo">{T.empiezaEn}
+          <select data-inicio>
+            {Array.from({ length: 8 }, (_, i) => <option value={i}>{i % 2 ? formatear(T.contratiempo, { n: Math.ceil(i / 2) }) : formatear(T.tiempo, { n: i / 2 + 1 })}</option>)}
+          </select>
+        </label>
+        <label class="casilla"><input type="checkbox" data-swing /> Swing</label>
+        <label class="casilla"><input type="checkbox" data-con-acorde /> {T.conAcorde}</label>
+      </div>
+      <ol class="notas-motivo" data-notas></ol>
+      <div class="pie-editor">
+        <button type="button" class="boton" data-anadir>{T.anadir}</button>
+        <span class="suave" data-ocupa></span>
+      </div>
+    </div>
+
+    <div class="botones-audio">
+      <button type="button" data-audio="todas" aria-pressed="false">{T.todas}</button>
+      <button type="button" data-detener>{I.detener}</button>
+    </div>
+    <p class="suave leyenda">{T.leyenda}</p>
+    <ul class="tarjetas-motivo" data-tarjetas></ul>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { MOTIVOS } from '../../i18n/estudio/motivos.ts';
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import {
+    ESCALAS_MOTIVO,
+    MOTIVOS_EJEMPLO,
+    TRANSFORMACIONES,
+    frase,
+    motivoValido,
+    realizar,
+    rolloSVG,
+    secuenciaFrase,
+    type Motivo,
+    type NotaMotivo,
+  } from '../../lib/motivos.ts';
+  import type { Evento } from '../../lib/secuencias.ts';
+
+  interface Estado {
+    escala: string;
+    motivo: Motivo;
+    swing: boolean;
+    acorde: boolean;
+  }
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = MOTIVOS[idioma];
+  const CLAVE = 'motivos:estado';
+  const guardado = leerJSON<Partial<Estado>>(CLAVE) ?? {};
+  const estado: Estado = {
+    escala: 'jonica',
+    swing: true,
+    acorde: true,
+    ...guardado,
+    motivo: guardado.motivo && motivoValido(guardado.motivo) ? guardado.motivo : structuredClone(MOTIVOS_EJEMPLO[0].motivo),
+  };
+  if (!ESCALAS_MOTIVO.some((e) => e.id === estado.escala)) estado.escala = 'jonica';
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('motivos:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selEscala = $<HTMLSelectElement>('[data-escala]');
+  const selEjemplo = $<HTMLSelectElement>('[data-ejemplo]');
+  const selInicio = $<HTMLSelectElement>('[data-inicio]');
+  const casillaSwing = $<HTMLInputElement>('[data-swing]');
+  const casillaAcorde = $<HTMLInputElement>('[data-con-acorde]');
+  const listaNotas = $('[data-notas]');
+  const botonAnadir = $<HTMLButtonElement>('[data-anadir]');
+  const ocupa = $('[data-ocupa]');
+  const tarjetas = $('[data-tarjetas]');
+  selEscala.value = estado.escala;
+  casillaSwing.checked = estado.swing;
+  casillaAcorde.checked = estado.acorde;
+
+  const escala = () => ESCALAS_MOTIVO.find((e) => e.id === estado.escala)!;
+  const ctx = () => ({ tonica, escala: escala() });
+  const largo = (m: Motivo) => m.inicio + m.notas.reduce((s, x) => s + x.pausa + x.dur, 0);
+  const cabe = () => largo(estado.motivo) <= 8;
+
+  const DURACIONES: [number, string][] = [1, 1.5, 2, 3, 4].map((v, i) => [v, T.duraciones[i]]);
+  const PAUSAS: [number, string][] = [
+    [0, '—'],
+    [1, T.duraciones[0]],
+    [2, T.duraciones[2]],
+  ];
+  const opciones = (lista: [number, string][], valor: number) =>
+    lista.map(([v, t]) => `<option value="${v}" ${v === valor ? 'selected' : ''}>${t}</option>`).join('');
+
+  function pintarEditor() {
+    const c = ctx();
+    const posiciones = Array.from({ length: 14 }, (_, i) => i - 3);
+    listaNotas.innerHTML = estado.motivo.notas
+      .map((x, i) => {
+        const nombre = (p: number) => {
+          const r = realizar(c, { p, alt: 0, dur: 1, pausa: 0 });
+          const grado = c.escala.formula[((p % 7) + 7) % 7];
+          return `${grado} · ${r.nota}${p < 0 ? ' ↓' : p >= 7 ? ' ↑' : ''}`;
+        };
+        return `<li class="nota-motivo" data-i="${i}">
+          <span class="numero">${i + 1}</span>
+          <label>${T.nota} <select data-campo="p">${posiciones
+            .map((p) => `<option value="${p}" ${p === x.p ? 'selected' : ''}>${esc(nombre(p))}</option>`)
+            .join('')}</select></label>
+          <label>${T.alteracion} <select data-campo="alt">${(
+            [
+              [-1, '♭'],
+              [0, '—'],
+              [1, '♯'],
+            ] as [number, string][]
+          )
+            .map(([v, t]) => `<option value="${v}" ${v === x.alt ? 'selected' : ''}>${t}</option>`)
+            .join('')}</select></label>
+          <label>${T.duracion} <select data-campo="dur">${opciones(DURACIONES, x.dur)}</select></label>
+          <label>${T.silencioAntes} <select data-campo="pausa">${opciones(PAUSAS, x.pausa)}</select></label>
+          <button type="button" class="boton quitar" data-quitar ${estado.motivo.notas.length <= 2 ? 'disabled' : ''} aria-label="${formatear(T.quitarNota, { n: i + 1 })}" title="${T.quitar}">✕</button>
+        </li>`;
+      })
+      .join('');
+    selInicio.value = String(estado.motivo.inicio);
+    botonAnadir.disabled = estado.motivo.notas.length >= 4;
+    const l = largo(estado.motivo);
+    ocupa.textContent = cabe()
+      ? formatear(T.ocupa, { l })
+      : formatear(T.noCabe, { l });
+    ocupa.classList.toggle('error', !cabe());
+  }
+
+  function pintarTarjetas() {
+    if (!cabe()) {
+      tarjetas.innerHTML = '';
+      return;
+    }
+    const c = ctx();
+    tarjetas.innerHTML = TRANSFORMACIONES.map((t) => {
+      const f = frase(c, estado.motivo, t);
+      const texto = T.transformaciones[t.id] ?? t;
+      return `<li class="tarjeta-motivo" data-t="${t.id}">
+        <div class="cabeza">
+          <h3>${esc(texto.nombre)}</h3>
+          <button type="button" class="boton" data-audio="una" data-transformacion="${t.id}" aria-pressed="false" aria-label="${esc(formatear(T.tocar, { nombre: texto.nombre }))}">▶</button>
+        </div>
+        <p class="suave">${esc(texto.descripcion)}</p>
+        <div class="notas-frase"><span class="original">${f.original.map((x) => esc(x.nota)).join(' ')}</span> → <strong>${f.transformada
+          .map((x) => esc(x.nota))
+          .join(' ')}</strong></div>
+        ${rolloSVG(f.original, f.transformada, f.compases, idioma)}
+      </li>`;
+    }).join('');
+  }
+
+  function pintar() {
+    pintarEditor();
+    pintarTarjetas();
+    guardarJSON(CLAVE, estado);
+  }
+
+  // --- Editor ----------------------------------------------------------------
+  listaNotas.addEventListener('change', (e) => {
+    const sel = e.target as HTMLSelectElement;
+    const i = Number(sel.closest<HTMLElement>('[data-i]')!.dataset.i);
+    const campo = sel.dataset.campo as keyof NotaMotivo;
+    (estado.motivo.notas[i] as unknown as Record<string, number>)[campo] = Number(sel.value);
+    selEjemplo.value = '';
+    pintar();
+  });
+  listaNotas.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest('[data-quitar]');
+    if (!b) return;
+    estado.motivo.notas.splice(Number(b.closest<HTMLElement>('[data-i]')!.dataset.i), 1);
+    selEjemplo.value = '';
+    pintar();
+  });
+  botonAnadir.addEventListener('click', () => {
+    const ultima = estado.motivo.notas[estado.motivo.notas.length - 1];
+    estado.motivo.notas.push({ p: ultima.p + 1, alt: 0, dur: 1, pausa: 0 });
+    selEjemplo.value = '';
+    pintar();
+  });
+  selEjemplo.addEventListener('change', () => {
+    const m = MOTIVOS_EJEMPLO.find((x) => x.id === selEjemplo.value);
+    if (m) estado.motivo = structuredClone(m.motivo);
+    pintar();
+  });
+  selInicio.addEventListener('change', () => ((estado.motivo.inicio = Number(selInicio.value)), pintar()));
+  selEscala.addEventListener('change', () => ((estado.escala = selEscala.value), pintar()));
+  casillaSwing.addEventListener('change', () => ((estado.swing = casillaSwing.checked), guardarJSON(CLAVE, estado)));
+  casillaAcorde.addEventListener('change', () => ((estado.acorde = casillaAcorde.checked), guardarJSON(CLAVE, estado)));
+
+  // --- Audio -----------------------------------------------------------------
+  /** Una tarjeta o todas seguidas; marca la tarjeta y la nota que suenan. */
+  conectarAudio((boton) => {
+    const c = ctx();
+    const ids = boton.dataset.audio === 'todas' ? TRANSFORMACIONES.map((t) => t.id) : [boton.dataset.transformacion!];
+    const eventos: Evento[] = [];
+    const marcas: { id: string; k: number; inicio: number; fin: number }[] = [];
+    const tramos: { id: string; inicio: number; fin: number }[] = [];
+    let t0 = 0;
+    for (const id of ids) {
+      const f = frase(c, estado.motivo, TRANSFORMACIONES.find((t) => t.id === id)!);
+      const notas = [...f.original, ...f.transformada];
+      const s = secuenciaFrase(c, notas, f.compases, tempo(), {
+        swing: estado.swing ? 0.62 : 0.5,
+        acorde: estado.acorde,
+        sostenido: SOSTENIDOS.includes(instrumento()),
+      });
+      eventos.push(...s.eventos.map((e) => ({ ...e, inicio: e.inicio + t0 })));
+      s.tiempos.forEach((x, k) => marcas.push({ id, k, inicio: x.inicio + t0, fin: x.fin + t0 }));
+      tramos.push({ id, inicio: t0, fin: t0 + s.duracion });
+      t0 += s.duracion;
+    }
+    // La tarjeta queda marcada mientras suena su frase (también en los silencios); la nota, solo mientras suena.
+    let marcada: Element[] = [];
+    const marcar = (t: number | null) => {
+      const tramo = t === null ? undefined : tramos.find((x) => t >= x.inicio && t < x.fin);
+      const m = t === null ? undefined : marcas.find((x) => t >= x.inicio && t < x.fin);
+      const tarjeta = tramo ? tarjetas.querySelector(`[data-t="${tramo.id}"]`) : null;
+      const nota = m ? tarjetas.querySelector(`[data-t="${m.id}"] [data-k="${m.k}"]`) : null;
+      const nuevas = [tarjeta, nota].filter((x): x is Element => !!x);
+      for (const el of marcada) if (!nuevas.includes(el)) el.classList.remove('sonando-ahora');
+      for (const el of nuevas) el.classList.add('sonando-ahora');
+      marcada = nuevas;
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion: t0,
+      alProgresar: (t) => marcar(t),
+      alTerminar: () => marcar(null),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .editor {
+    padding: 0.75rem 1rem 0.9rem;
+    margin-bottom: 0.75rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .notas-motivo {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .notas-motivo :global(.nota-motivo) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
+    padding: 0.4rem 0.5rem;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .notas-motivo :global(.numero) {
+    width: 1.6rem;
+    height: 1.6rem;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    color: var(--sobre-acento);
+    background: var(--acento);
+    border-radius: 50%;
+  }
+  .notas-motivo :global(label) {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .notas-motivo :global(select) {
+    width: auto;
+    margin: 0;
+    color: var(--texto);
+  }
+  .notas-motivo :global(.quitar) {
+    margin-left: auto;
+  }
+  /* En el móvil, cada nota en dos filas (nota y alteración; duración y silencio), con la etiqueta encima. */
+  @media (max-width: 40rem) {
+    .notas-motivo :global(.nota-motivo) {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0.4rem 0.5rem;
+    }
+    /* El número arriba y el botón de quitar debajo, en la misma columna, para dejar sitio a los campos. */
+    .notas-motivo :global(.numero) {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: end;
+    }
+    .notas-motivo :global(.quitar) {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: end;
+      width: 1.9rem;
+      min-width: 0;
+      min-height: 1.9rem;
+      margin: 0;
+      padding: 0;
+    }
+    .notas-motivo :global(label) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.15rem;
+      min-width: 0;
+    }
+    .notas-motivo :global(select) {
+      width: 100%;
+      min-width: 0;
+      padding-left: 0.5rem;
+      padding-right: 1.6rem;
+      font-size: 0.92rem;
+    }
+  }
+  .pie-editor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-top: 0.6rem;
+  }
+  .pie-editor :global(.error) {
+    color: var(--mal);
+    font-weight: 700;
+  }
+  .leyenda {
+    margin: 0.5rem 0 0.75rem;
+    font-size: 0.85rem;
+  }
+  .tarjetas-motivo {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 0.6rem;
+  }
+  .tarjetas-motivo :global(.tarjeta-motivo) {
+    display: grid;
+    align-content: start;
+    gap: 0.4rem;
+    padding: 0.7rem 0.85rem 0.8rem;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-tarjeta);
+  }
+  .tarjetas-motivo :global(.tarjeta-motivo.sonando-ahora) {
+    border-color: var(--acento);
+    box-shadow: 0 0 0 1px var(--acento);
+  }
+  .tarjetas-motivo :global(.cabeza) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .tarjetas-motivo :global(h3) {
+    margin: 0;
+    font-size: 1.02rem;
+  }
+  .tarjetas-motivo :global(.cabeza .boton) {
+    min-width: 2.4rem;
+    padding-inline: 0.6rem;
+  }
+  .tarjetas-motivo :global(p) {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+  .tarjetas-motivo :global(.notas-frase) {
+    font-size: 0.92rem;
+  }
+  .tarjetas-motivo :global(.notas-frase .original) {
+    color: var(--texto-suave);
+  }
+  /* Rollo de piano (lib/motivos.ts, rolloSVG). */
+  .tarjetas-motivo :global(.rollo) {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-top: 0.2rem;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .tarjetas-motivo :global(.rollo .barra) {
+    stroke: var(--texto-suave);
+    stroke-width: 1.5;
+  }
+  .tarjetas-motivo :global(.rollo .pulso) {
+    stroke: var(--borde);
+    stroke-width: 1;
+  }
+  .tarjetas-motivo :global(.rollo text) {
+    font-size: 8px;
+    font-weight: 700;
+    fill: var(--texto);
+  }
+  .tarjetas-motivo :global(.rollo .original rect) {
+    fill: var(--texto-suave); /* COLOR: notas del motivo original */
+    opacity: 0.55;
+  }
+  .tarjetas-motivo :global(.rollo .original text) {
+    fill: var(--texto-suave);
+  }
+  .tarjetas-motivo :global(.rollo .transformada rect) {
+    fill: var(--acento); /* COLOR: notas de la transformación */
+  }
+  .tarjetas-motivo :global(.rollo .sonando-ahora rect) {
+    stroke: var(--texto);
+    stroke-width: 1.5;
+    opacity: 1;
+  }
+</style>

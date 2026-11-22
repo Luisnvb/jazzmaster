@@ -1,0 +1,87 @@
+// Textos de Pentatónicas en jazz (components/estudio/pentatonicas.astro). En español, los
+// acordes, los niveles y los sonidos salen de lib/pentatonicas.ts.
+import { ACORDES_PENTA, NIVELES } from '../../lib/pentatonicas.ts';
+import { textos } from '../idiomas.ts';
+
+const acordesEs: Record<string, string> = Object.fromEntries(ACORDES_PENTA.map((a) => [a.id, a.nombre]));
+const sonidosEs: Record<string, string> = Object.fromEntries(ACORDES_PENTA.flatMap((a) => a.opciones.map((o) => [o.id, o.sonido])));
+
+export const PENTATONICAS = textos(
+  {
+    titulo: 'Pentatónicas en jazz',
+    porAcorde: 'Pentatónicas por acorde',
+    acorde: 'Acorde',
+    acordes: acordesEs,
+    paraEste: 'Pentatónicas para este acorde',
+    niveles: NIVELES as Record<string, string>,
+    sonidos: sonidosEs,
+    zona: 'Zona',
+    todo: 'Todo',
+    posicion: 'Posición',
+    unaCuerda: 'Una cuerda',
+    dosCuerdas: 'Dos cuerdas',
+    desde: 'Desde el traste',
+    cuerda: 'Cuerda',
+    cuerdas: 'Cuerdas',
+    y: 'y',
+    figura: 'Figura',
+    figuras: ['Escala (sube y baja)', 'Grupos de 3', 'Grupos de 4', 'Saltando una nota (cuartas)'],
+    conAcorde: 'Con acorde de fondo',
+    leyenda:
+      'Tablatura: la 1ª cuerda arriba. Rellenas, las notas del acorde; en blanco, las tensiones. Los números son grados sobre el acorde, no sobre la pentatónica.',
+    sobre: '<strong>{penta}</strong> sobre <strong>{acorde}</strong>',
+    tocar: '▶ Tocar',
+    bucle: '∞ Bucle',
+    bucleAyuda: 'Suena sin parar hasta pulsar Detener',
+  },
+  {
+    titulo: 'Pentatonics in jazz',
+    porAcorde: 'Pentatonics by chord',
+    acorde: 'Chord',
+    acordes: {
+      maj7: 'Major seventh',
+      m7: 'Minor seventh',
+      '7': 'Dominant',
+      '7sus4': 'Dominant sus4',
+      '7alt': 'Altered dominant',
+      m7b5: 'Half-diminished',
+    },
+    paraEste: 'Pentatonics for this chord',
+    niveles: { dentro: 'Inside', color: 'Tensions', blues: 'Blues', alterado: 'Altered' },
+    sonidos: {
+      'maj7-1': "The chord's own pentatonic: an open 6/9 sound, without the 4 (which clashes with the 3) or the 7.",
+      'maj7-5': 'From the 5: the 7 and the 9 appear and the root disappears. It sounds like maj9, more modern.',
+      'maj7-2': 'From the 9: the three Lydian tensions (9, #11, 13) with the 3 and the 7, without root or 5. For maj7#11.',
+      'm7-1': "The chord's own: the whole chord plus the 11. The sound of blues and rock.",
+      'm7-5': 'From the 5: swaps the b3 for the 9. More open, typical over a long IIm7.',
+      'm7-2': 'From the 9: with the 13 (major 6), the Dorian colour. No b3 or b7: very open, a modal sound.',
+      '7-1': 'The major on the root: 9 and 13 without the b7. The sound of country and early swing.',
+      '7-1m': 'The minor on the root over a major chord: the #9 (the blue b3) against the 3. The sound of the blues.',
+      '7-5m': 'The minor on the 5: b7, 9 and 11 without the 3. It sounds like 7sus4; in a ii–V it is the IIm7 one carrying on over the V.',
+      'sus-b7': 'The major on the b7: the sus chord with the 9. The sus pentatonic par excellence.',
+      'sus-4': 'The major on the 4: adds the 13. A modal, suspended sound, as in Maiden Voyage.',
+      'alt-b5': 'The major on the b5 (in C7, Gb): four altered tensions and the b7. The easiest way to sound "altered".',
+      'alt-s9': 'The minor on the #9 (in C7, Eb): the same five notes as the previous one, thought from another root.',
+      'm7b5-b3': 'The minor on the b3 (in Cø, Eb): the chord without the root, with the Locrian b13 and b9.',
+      'm7b5-4': 'The minor on the 4: the 11 and the b13 without the b5. Softer; useful on the iiø of the minor ii–V.',
+    },
+    zona: 'Area',
+    todo: 'All',
+    posicion: 'Position',
+    unaCuerda: 'One string',
+    dosCuerdas: 'Two strings',
+    desde: 'From fret',
+    cuerda: 'String',
+    cuerdas: 'Strings',
+    y: 'and',
+    figura: 'Figure',
+    figuras: ['Scale (up and down)', 'Groups of 3', 'Groups of 4', 'Skipping a note (fourths)'],
+    conAcorde: 'With background chord',
+    leyenda:
+      'Tab view: 1st string on top. Filled in, the chord tones; hollow, the tensions. The numbers are degrees over the chord, not over the pentatonic.',
+    sobre: '<strong>{penta}</strong> over <strong>{acorde}</strong>',
+    tocar: '▶ Play',
+    bucle: '∞ Loop',
+    bucleAyuda: 'Keeps playing until you press Stop',
+  },
+);

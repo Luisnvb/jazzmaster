@@ -1,0 +1,278 @@
+---
+// Pares de tríadas (sección Estudio). El texto está en src/data/estudio/pares-triadas.md;
+// aquí va el mapa del mástil con las dos tríadas del par (lib/pares-triadas.ts). En inglés,
+// pares-triadas.en.md e i18n/estudio/pares-triadas.ts; lo usan pages/estudio/pares-triadas.astro
+// y pages/en/study/triad-pairs.astro.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import * as es from '../../data/estudio/pares-triadas.md';
+import * as en from '../../data/estudio/pares-triadas.en.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { PARES } from '../../lib/pares-triadas.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { PARES_TRIADAS } from '../../i18n/estudio/pares-triadas.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = PARES_TRIADAS[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const ordinal = (c: number) => (idioma === 'en' ? `${c}${['', 'st', 'nd', 'rd'][c] ?? 'th'}` : `${c}ª`);
+const indice = getHeadings().filter((h) => h.depth === 2);
+const CUERDAS = [6, 5, 4, 3, 2, 1];
+const FIGURAS = ['sube', 'baja', 'alterna', 'escala'].map((v, i) => [v, T.figuras[i]]);
+import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
+---
+
+<Base titulo={T.titulo}>
+  <SelectorTonica clave="estudio-pares" idioma={idioma}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave="estudio-pares" inicial={90} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label={T.mapa}>
+    <div class="opciones">
+      <label class="campo">{T.acorde}
+        <select data-par>{PARES.map((p) => <option value={p.id}>{p.acorde} · {T.pares[p.id]?.escala ?? p.escala}</option>)}</select>
+      </label>
+      <div class="grupo-botones" role="group" aria-label={T.zona}>
+        <button type="button" class="boton" data-zona="todo" aria-pressed="false">{T.todo}</button>
+        <button type="button" class="boton" data-zona="posicion" aria-pressed="false">{T.posicion}</button>
+        <button type="button" class="boton" data-zona="cuerda" aria-pressed="false">{T.unaCuerda}</button>
+        <button type="button" class="boton" data-zona="dos-cuerdas" aria-pressed="false">{T.dosCuerdas}</button>
+      </div>
+      <label class="campo" data-solo="posicion">{T.desde}
+        <select data-desde>{Array.from({ length: ULTIMA_POSICION }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
+      </label>
+      <label class="campo" data-solo="cuerda">{T.cuerda}
+        <select data-cuerda>{CUERDAS.map((c) => <option value={6 - c}>{ordinal(c)}</option>)}</select>
+      </label>
+      <label class="campo" data-solo="dos-cuerdas">{T.cuerdas}
+        <select data-dos-cuerdas>{CUERDAS.slice(0, 5).map((c) => <option value={6 - c}>{ordinal(c)} {T.y} {ordinal(c - 1)}</option>)}</select>
+      </label>
+      <label class="campo">{T.figura}
+        <select data-figura>{FIGURAS.map(([v, n]) => <option value={v}>{n}</option>)}</select>
+      </label>
+      <label class="casilla"><input type="checkbox" data-pedal /> {T.pedal}</label>
+    </div>
+    <p class="titulo-escala" data-titulo></p>
+    <div class="mastil-caja" data-mastil></div>
+    <p class="suave nota-par" data-nota></p>
+    <p class="suave leyenda">{T.leyenda}</p>
+    <div class="botones-audio">
+      <button type="button" data-audio="una" aria-pressed="false">{T.tocar}</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title={T.bucleAyuda}>{T.bucle}</button>
+      <button type="button" data-detener>{I.detener}</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+
+</Base>
+
+<script>
+  import { idiomaValido } from '../../i18n/idiomas.ts';
+  import { PARES_TRIADAS } from '../../i18n/estudio/pares-triadas.ts';
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { eventosArpegio, mastilSVG, recorrido, type NotaMastil, type Zona, posicionValida } from '../../lib/arpegios.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica, mostrarZona } from '../../lib/cliente.ts';
+  import { PARES, letrasTriada, lineaPar, nombreTriada, notasPar, type Figura, type Triada } from '../../lib/pares-triadas.ts';
+  import { parseNota, pitchClass } from '../../lib/teoria.ts';
+
+  interface Opciones {
+    par: string;
+    zona: Zona['tipo'];
+    desde: number;
+    cuerda: number;
+    dosCuerdas: number;
+    figura: Figura | 'escala';
+    pedal: boolean;
+  }
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = PARES_TRIADAS[idioma];
+  const CLAVE = 'estudio-pares:opciones';
+  const op: Opciones = {
+    par: 'lidio',
+    zona: 'posicion',
+    desde: 7,
+    cuerda: 5,
+    dosCuerdas: 4,
+    figura: 'sube',
+    pedal: false,
+    ...leerJSON<Partial<Opciones>>(CLAVE),
+  };
+  op.desde = posicionValida(op.desde);
+  if (!PARES.some((p) => p.id === op.par)) op.par = PARES[0].id;
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('estudio-pares:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selects = {
+    par: $<HTMLSelectElement>('[data-par]'),
+    desde: $<HTMLSelectElement>('[data-desde]'),
+    cuerda: $<HTMLSelectElement>('[data-cuerda]'),
+    dosCuerdas: $<HTMLSelectElement>('[data-dos-cuerdas]'),
+    figura: $<HTMLSelectElement>('[data-figura]'),
+  };
+  const casillaPedal = $<HTMLInputElement>('[data-pedal]');
+  for (const [k, sel] of Object.entries(selects)) sel.value = String(op[k as keyof typeof selects]);
+  casillaPedal.checked = op.pedal;
+  const caja = $('[data-mastil]');
+  const titulo = $('[data-titulo]');
+  const nota = $('[data-nota]');
+
+  const par = () => PARES.find((p) => p.id === op.par)!;
+  const zona = (): Zona =>
+    op.zona === 'posicion'
+      ? { tipo: 'posicion', desde: op.desde }
+      : op.zona === 'cuerda'
+        ? { tipo: 'cuerda', cuerda: op.cuerda }
+        : op.zona === 'dos-cuerdas'
+          ? { tipo: 'dos-cuerdas', cuerda: op.dosCuerdas }
+          : { tipo: 'todo' };
+  const notas = () => notasPar(tonica, par());
+
+  const triada = (letra: string, t: Triada) =>
+    `<span class="triada">${letra}: <strong>${esc(nombreTriada(tonica, t))}</strong> (${esc(letrasTriada(tonica, t).join(' '))} · ${esc(t.notas.join(' '))})</span>`;
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) b.setAttribute('aria-pressed', String(b.dataset.zona === op.zona));
+    for (const el of document.querySelectorAll<HTMLElement>('[data-solo]')) el.hidden = el.dataset.solo !== op.zona;
+    const p = par();
+    const texto = T.pares[p.id] ?? p;
+    titulo.innerHTML = `<strong>${esc(tonica)}${esc(p.acorde)}</strong> · ${esc(texto.escala)} ${triada('A', p.a)} ${triada('B', p.b)}`;
+    nota.textContent = texto.nota;
+    caja.innerHTML = mastilSVG(notas(), zona(), [], undefined, idioma);
+    mostrarZona(caja);
+    guardarJSON(CLAVE, op);
+  }
+
+  for (const [k, sel] of Object.entries(selects)) {
+    sel.addEventListener('change', () => {
+      const v = sel.value;
+      (op as unknown as Record<string, unknown>)[k] = ['desde', 'cuerda', 'dosCuerdas'].includes(k) ? Number(v) : v;
+      pintar();
+    });
+  }
+  casillaPedal.addEventListener('change', () => {
+    op.pedal = casillaPedal.checked;
+    guardarJSON(CLAVE, op);
+  });
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button[data-zona]');
+    if (!b) return;
+    op.zona = b.dataset.zona as Zona['tipo'];
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const n = notas();
+    const z = zona();
+    let lista: NotaMastil[] = op.figura === 'escala' ? recorrido(n, z, '1') : lineaPar(n, z, op.figura);
+    // Si en la zona no caben tres notas seguidas de cada tríada, suena la escala.
+    if (lista.length === 0) lista = recorrido(n, z, '1');
+    // La raíz del acorde como pedal, entre E2 y D#3 (el registro más grave de la guitarra).
+    const pedal = op.pedal ? 40 + ((pitchClass(parseNota(tonica)) - 4 + 12) % 12) : undefined;
+    const { eventos, duracion } = eventosArpegio(lista, tempo(), false, pedal);
+    const paso = duracion / (lista.length + 2);
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      caja.querySelector('.sonando')?.classList.remove('sonando');
+      const x = lista[k];
+      if (x) caja.querySelector(`.nota[data-midi="${x.midi}"][data-cuerda="${x.cuerda}"]`)?.classList.add('sonando');
+    };
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => boton.dataset.audio === 'bucle',
+      alProgresar: (t) => marcar(Math.min(lista.length - 1, Math.floor(t / paso))),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .titulo-escala {
+    margin: 0 0 0.4rem;
+    font-size: 1.1rem;
+  }
+  /* El mástil no cabe en el móvil: se desplaza en horizontal dentro de su caja. */
+  .mastil-caja {
+    overflow-x: auto;
+    padding: 0.25rem 0.5rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  /* Las tríadas se pintan desde el script: el estilo con ámbito no les llega. */
+  .titulo-escala :global(.triada) {
+    margin-left: 1rem;
+    font-size: 1rem;
+  }
+  /* En el móvil, cada tríada en su línea para que no se corte a mitad. */
+  @media (max-width: 40rem) {
+    .titulo-escala :global(.triada) {
+      display: block;
+      margin-left: 0;
+    }
+  }
+  .nota-par {
+    margin: 0 0 0.6rem;
+  }
+  .leyenda {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+  }
+</style>

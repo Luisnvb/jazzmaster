@@ -125,7 +125,10 @@ function raizSencilla(raiz: string, o: OpcionPenta): Nota {
 /** Nombre de la pentatónica sobre una raíz: ('C', alt-b5) → 'Gb mayor'. */
 export const raizPenta = (raiz: string, o: OpcionPenta) => formatNota(raizSencilla(raiz, o));
 
-export const nombrePenta = (raiz: string, o: OpcionPenta) => `${raizPenta(raiz, o)} ${o.tipo}`;
+const TIPO_EN = { mayor: 'major', menor: 'minor' } as const;
+
+export const nombrePenta = (raiz: string, o: OpcionPenta, idioma: 'es' | 'en' = 'es') =>
+  `${raizPenta(raiz, o)} ${idioma === 'en' ? TIPO_EN[o.tipo] : o.tipo}`;
 
 /** Letras de la pentatónica, deletreadas desde su propia raíz (Gb Ab Bb Db Eb). */
 export function letrasPenta(raiz: string, o: OpcionPenta): string[] {
@@ -134,9 +137,12 @@ export function letrasPenta(raiz: string, o: OpcionPenta): string[] {
 }
 
 /** La relativa (mismas notas): la mayor de X es la menor de su 6; la menor de X, la mayor de su b3. */
-export function relativa(raiz: string, o: OpcionPenta): string {
+export function relativa(raiz: string, o: OpcionPenta, idioma: 'es' | 'en' = 'es'): string {
   const r = raizSencilla(raiz, o);
-  return o.tipo === 'mayor' ? `${formatNota(notaDeGrado(r, '6'))} menor` : `${formatNota(notaDeGrado(r, 'b3'))} mayor`;
+  const en = idioma === 'en';
+  return o.tipo === 'mayor'
+    ? `${formatNota(notaDeGrado(r, '6'))} ${en ? 'minor' : 'menor'}`
+    : `${formatNota(notaDeGrado(r, 'b3'))} ${en ? 'major' : 'mayor'}`;
 }
 
 /** Si un grado de la pentatónica es tensión: no es nota del acorde. */

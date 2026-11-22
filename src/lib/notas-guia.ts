@@ -104,12 +104,13 @@ export function lineasGuia(tonica: string, compases: readonly AcordeGrado[][], a
 }
 
 /** Cómo se mueve una voz, en palabras cortas: =, ↓½, ↑1, ↓3ª… */
-export function textoPaso(paso: number | null): string {
+export function textoPaso(paso: number | null, idioma: 'es' | 'en' = 'es'): string {
   if (paso === null) return '';
   if (paso === 0) return '=';
   const flecha = paso < 0 ? '↓' : '↑';
   const n = Math.abs(paso);
-  const nombre = n === 1 ? '½' : n === 2 ? '1' : n <= 4 ? '3ª' : n === 5 ? '4ª' : n === 6 ? '4ª aum.' : `${n} st`;
+  const en = idioma === 'en';
+  const nombre = n === 1 ? '½' : n === 2 ? '1' : n <= 4 ? (en ? '3rd' : '3ª') : n === 5 ? (en ? '4th' : '4ª') : n === 6 ? (en ? 'aug. 4th' : '4ª aum.') : `${n} st`;
   return flecha + nombre;
 }
 

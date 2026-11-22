@@ -202,7 +202,7 @@ export function motivoValido(m: Motivo): boolean {
  * vertical. El original va en gris y la transformación en el color de acento.
  * Cada nota lleva data-k (orden en la frase completa) para marcarla al sonar.
  */
-export function rolloSVG(original: readonly NotaReal[], transformada: readonly NotaReal[], compases: number): string {
+export function rolloSVG(original: readonly NotaReal[], transformada: readonly NotaReal[], compases: number, idioma: 'es' | 'en' = 'es'): string {
   const todas = [...original, ...transformada];
   const alto = Math.max(...todas.map((x) => x.midi)) + 2;
   const bajo = Math.min(...todas.map((x) => x.midi)) - 1;
@@ -222,7 +222,7 @@ export function rolloSVG(original: readonly NotaReal[], transformada: readonly N
     const w = Math.max(4, x.dur * cx - 2);
     return `<g class="${clase}" data-k="${k}"><rect x="${x0}" y="${y(x.midi) - fy + 1}" width="${w}" height="${fy * 2 - 2}" rx="2" /><text x="${x0 + 1}" y="${y(x.midi) - fy - 1}">${x.nota}</text></g>`;
   };
-  return `<svg class="rollo" viewBox="0 0 ${ancho} ${altura}" role="img" aria-label="Original y transformación en el tiempo">
+  return `<svg class="rollo" viewBox="0 0 ${ancho} ${altura}" role="img" aria-label="${idioma === 'en' ? 'Original and transformation over time' : 'Original y transformación en el tiempo'}">
     ${lineas.join('')}
     ${original.map((x, k) => nota(x, k, 'original')).join('')}
     ${transformada.map((x, k) => nota(x, original.length + k, 'transformada')).join('')}
