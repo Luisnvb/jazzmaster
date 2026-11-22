@@ -1,0 +1,359 @@
+---
+// Lectura a primera vista (sección Estudio). El texto está en src/data/estudio/lectura.md;
+// aquí va el ejercicio: una nota en el pentagrama y se toca en el mástil (lib/lectura.ts).
+// En inglés, lectura.en.md e i18n/estudio/lectura.ts; lo usan pages/estudio/lectura.astro y
+// pages/en/study/sight-reading.astro.
+import Base from '../../layouts/Base.astro';
+import * as es from '../../data/estudio/lectura.md';
+import * as en from '../../data/estudio/lectura.en.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { LECTURA } from '../../i18n/estudio/lectura.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = LECTURA[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const indice = getHeadings().filter((h) => h.depth === 2);
+const CUERDAS = [6, 5, 4, 3, 2, 1];
+const ordinal = (c: number) => (idioma === 'en' ? `${c}${['', 'st', 'nd', 'rd'][c] ?? 'th'}` : `${c}ª`);
+---
+
+<Base titulo={T.titulo}>
+  <section class="ejemplo" aria-label={T.ejemplo}>
+    <div class="opciones">
+      <div class="grupo-botones" role="group" aria-label={T.zona}>
+        <span class="etiqueta">{T.zona}</span>
+        <button type="button" class="boton" data-zona="todo" aria-pressed="false">{T.todo}</button>
+        <button type="button" class="boton" data-zona="posicion" aria-pressed="false">{T.posicion}</button>
+        <button type="button" class="boton" data-zona="cuerda" aria-pressed="false">{T.cuerdaUna}</button>
+      </div>
+      <label class="campo" data-solo="posicion">{T.desde}
+        <select data-desde>{Array.from({ length: ULTIMA_POSICION }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
+      </label>
+      <label class="campo" data-solo="cuerda">{T.cuerda}
+        <select data-cuerda>{CUERDAS.map((c) => <option value={6 - c}>{ordinal(c)}</option>)}</select>
+      </label>
+      <label class="campo">{T.notas}
+        <select data-alteraciones>{Object.entries(T.alteraciones).map(([v, n]) => <option value={v}>{n}</option>)}</select>
+      </label>
+      <label class="campo">{I.sonido}
+        <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+      </label>
+    </div>
+
+    <div class="lectura">
+      <div class="caja-pentagrama" data-pentagrama></div>
+      <div class="panel">
+        <p class="mensaje" data-mensaje aria-live="polite">{T.pulsa}</p>
+        <div class="botones-audio">
+          <button type="button" data-escuchar>{T.escuchar}</button>
+          <button type="button" data-no-se>{T.noSe}</button>
+          <button type="button" class="principal" data-siguiente>{T.siguiente}</button>
+        </div>
+        <label class="casilla"><input type="checkbox" data-auto /> {T.auto}</label>
+        <p class="marcador" data-marcador></p>
+      </div>
+    </div>
+
+    <div class="mastil-caja" data-mastil></div>
+    <p class="suave leyenda">{T.leyenda}</p>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { tocar } from '../../lib/audio.ts';
+  import { mastilSVG, posicionValida, TRASTES, type NotaMastil, type Zona } from '../../lib/arpegios.ts';
+  import { conectarInstrumento, mostrarZona } from '../../lib/cliente.ts';
+  import { corregir, nombreEscrito, nombreSonoro, nuevaNota, pentagramaSVG, posiciones, type Alteraciones, type NotaLeida } from '../../lib/lectura.ts';
+  import { AFINACION } from '../../lib/secuencias.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { LECTURA } from '../../i18n/estudio/lectura.ts';
+
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = LECTURA[idioma];
+
+  interface Opciones {
+    zona: 'todo' | 'posicion' | 'cuerda';
+    desde: number;
+    cuerda: number;
+    alteraciones: Alteraciones;
+    auto: boolean;
+  }
+  const CLAVE = 'estudio-lectura:opciones';
+  const op: Opciones = { zona: 'posicion', desde: 5, cuerda: 0, alteraciones: 'naturales', auto: true, ...leerJSON<Partial<Opciones>>(CLAVE) };
+  op.desde = posicionValida(op.desde);
+  if (!['todo', 'posicion', 'cuerda'].includes(op.zona)) op.zona = 'posicion';
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const instrumento = conectarInstrumento('estudio-lectura:sonido');
+  const caja = $('[data-mastil]');
+  const mensaje = $('[data-mensaje]');
+  const marcador = $('[data-marcador]');
+  const selDesde = $<HTMLSelectElement>('[data-desde]');
+  const selCuerda = $<HTMLSelectElement>('[data-cuerda]');
+  const selAlt = $<HTMLSelectElement>('[data-alteraciones]');
+  const casillaAuto = $<HTMLInputElement>('[data-auto]');
+  selDesde.value = String(op.desde);
+  selCuerda.value = String(op.cuerda);
+  selAlt.value = op.alteraciones;
+  casillaAuto.checked = op.auto;
+
+  const zona = (): Zona =>
+    op.zona === 'posicion' ? { tipo: 'posicion', desde: op.desde } : op.zona === 'cuerda' ? { tipo: 'cuerda', cuerda: op.cuerda } : { tipo: 'trastes', desde: 0, hasta: 12 };
+
+  let nota: NotaLeida | null = null;
+  /** Ya respondida (acierto o «No lo sé»): el mástil muestra la solución. */
+  let resuelta = false;
+  let fallos: { cuerda: number; traste: number }[] = [];
+  let inicio = 0;
+  let siguienteProgramada = 0;
+  const cuenta = { aciertos: 0, intentos: 0, racha: 0, tiempo: 0 };
+
+  function pintarMastil() {
+    const huecos: NotaMastil[] = [];
+    for (let c = 0; c < 6; c++) for (let t = 0; t <= TRASTES; t++) huecos.push({ cuerda: c, traste: t, midi: AFINACION[c] + t, grado: '', nota: '', rotulo: '', clase: 'hueco-nota' });
+    const marcadas: NotaMastil[] = [];
+    const nombre = nota ? `${nota.letra}${nota.alteracion === '#' ? '♯' : nota.alteracion === 'b' ? '♭' : ''}` : '';
+    if (nota && resuelta) {
+      for (const p of posiciones(nota.midi)) marcadas.push({ ...p, midi: nota.midi, grado: '', nota: '', rotulo: nombre, clase: 'correcta', atenuada: false });
+    }
+    for (const f of fallos) marcadas.push({ ...f, midi: AFINACION[f.cuerda] + f.traste, grado: '', nota: '', rotulo: '✕', clase: 'fallada', atenuada: false });
+    const ocupadas = new Set(marcadas.map((m) => `${m.cuerda}-${m.traste}`));
+    caja.innerHTML = mastilSVG([...huecos.filter((h) => !ocupadas.has(`${h.cuerda}-${h.traste}`)), ...marcadas], zona());
+  }
+
+  function pintarMarcador() {
+    const media = cuenta.aciertos ? (cuenta.tiempo / cuenta.aciertos).toFixed(1).replace('.', T.coma) : '–';
+    marcador.innerHTML = formatear(T.marcador, { aciertos: cuenta.aciertos, intentos: cuenta.intentos, racha: cuenta.racha, media });
+  }
+
+  function nueva() {
+    clearTimeout(siguienteProgramada);
+    nota = nuevaNota(zona(), op.alteraciones, nota);
+    resuelta = false;
+    fallos = [];
+    inicio = performance.now();
+    $('[data-pentagrama]').innerHTML = pentagramaSVG(nota, idioma);
+    mensaje.textContent = T.pulsa;
+    mensaje.className = 'mensaje';
+    pintarMastil();
+    mostrarZona(caja);
+  }
+
+  const sonar = (midi: number) => void tocar([{ midi, inicio: 0, duracion: 1.2 }], undefined, instrumento());
+
+  function pintarOpciones() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) b.setAttribute('aria-pressed', String(b.dataset.zona === op.zona));
+    for (const el of document.querySelectorAll<HTMLElement>('[data-solo]')) el.hidden = el.dataset.solo !== op.zona;
+    guardarJSON(CLAVE, op);
+  }
+  const cambiarOpciones = () => {
+    pintarOpciones();
+    nueva();
+  };
+
+  caja.addEventListener('click', (e) => {
+    const g = (e.target as Element).closest<SVGGElement>('.nota');
+    if (!g || !nota || resuelta) return;
+    const cuerda = Number(g.dataset.cuerda);
+    const traste = Number(g.dataset.midi) - AFINACION[cuerda];
+    sonar(AFINACION[cuerda] + traste);
+    const r = corregir(nota, cuerda, traste);
+    if (r === 'acierto') {
+      const segundos = (performance.now() - inicio) / 1000;
+      resuelta = true;
+      if (!fallos.length) {
+        cuenta.aciertos++;
+        cuenta.racha++;
+        cuenta.tiempo += segundos;
+      }
+      cuenta.intentos++;
+      mensaje.textContent = formatear(T.acierto, {
+        bien: fallos.length ? T.ahoraSi : T.bien,
+        escrita: nombreEscrito(nota),
+        sonora: nombreSonoro(nota),
+        tiempo: fallos.length ? '' : ` (${segundos.toFixed(1).replace('.', T.coma)} s)`,
+      });
+      mensaje.className = fallos.length ? 'mensaje' : 'mensaje bien';
+      if (op.auto && !fallos.length) siguienteProgramada = window.setTimeout(nueva, 1200);
+    } else {
+      if (!fallos.length) cuenta.racha = 0;
+      fallos.push({ cuerda, traste });
+      mensaje.textContent = r === 'octava' ? T.octava : T.noEsa;
+      mensaje.className = 'mensaje mal';
+    }
+    pintarMastil();
+    pintarMarcador();
+  });
+
+  $('[data-no-se]').addEventListener('click', () => {
+    if (!nota || resuelta) return;
+    resuelta = true;
+    cuenta.intentos++;
+    cuenta.racha = 0;
+    mensaje.textContent = formatear(T.solucion, { escrita: nombreEscrito(nota), sonora: nombreSonoro(nota) });
+    mensaje.className = 'mensaje';
+    sonar(nota.midi);
+    pintarMastil();
+    pintarMarcador();
+  });
+  $('[data-escuchar]').addEventListener('click', () => nota && sonar(nota.midi));
+  $('[data-siguiente]').addEventListener('click', nueva);
+  casillaAuto.addEventListener('change', () => ((op.auto = casillaAuto.checked), guardarJSON(CLAVE, op)));
+  selDesde.addEventListener('change', () => ((op.desde = Number(selDesde.value)), cambiarOpciones()));
+  selCuerda.addEventListener('change', () => ((op.cuerda = Number(selCuerda.value)), cambiarOpciones()));
+  selAlt.addEventListener('change', () => ((op.alteraciones = selAlt.value as Alteraciones), cambiarOpciones()));
+  for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) {
+    b.addEventListener('click', () => ((op.zona = b.dataset.zona as Opciones['zona']), cambiarOpciones()));
+  }
+
+  pintarOpciones();
+  pintarMarcador();
+  nueva();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .grupo-botones .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  .lectura {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-bottom: 1rem;
+  }
+  .caja-pentagrama {
+    flex: 0 0 auto;
+    width: min(100%, 20rem);
+    padding: 0.25rem 0.5rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .caja-pentagrama :global(.pentagrama) {
+    display: block;
+    width: 100%;
+  }
+  .caja-pentagrama :global(.linea) {
+    stroke: var(--texto);
+    stroke-width: 1.2;
+  }
+  .caja-pentagrama :global(.clave) {
+    font-family: 'Noto Music', 'Segoe UI Symbol', 'Apple Symbols', 'Bravura', serif;
+    font-size: 74px;
+    fill: var(--texto);
+  }
+  .caja-pentagrama :global(.cabeza) {
+    fill: var(--texto);
+  }
+  .caja-pentagrama :global(.hueco) {
+    fill: var(--superficie);
+  }
+  .caja-pentagrama :global(.alteracion) {
+    font-family: 'Segoe UI Symbol', 'Apple Symbols', 'Noto Music', serif;
+    font-size: 26px;
+    fill: var(--texto);
+  }
+  .panel {
+    flex: 1 1 20rem;
+    min-width: 0;
+  }
+  .mensaje {
+    min-height: 3em;
+    margin: 0 0 0.75rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .mensaje.bien {
+    color: var(--acento); /* COLOR: acierto */
+  }
+  .mensaje.mal {
+    color: var(--texto-suave);
+  }
+  .marcador {
+    margin: 0.75rem 0 0;
+  }
+  .mastil-caja {
+    overflow-x: auto;
+    padding: 0.25rem 0.5rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .mastil-caja :global(.nota) {
+    cursor: pointer;
+  }
+  .mastil-caja :global(.nota.hueco-nota circle) {
+    fill: transparent;
+  }
+  .mastil-caja :global(.nota.hueco-nota:hover circle) {
+    fill: var(--acento-suave); /* COLOR: traste bajo el ratón */
+  }
+  .mastil-caja :global(.nota.correcta circle) {
+    fill: var(--acento); /* COLOR: dónde está la nota */
+  }
+  .mastil-caja :global(.nota.correcta .grado) {
+    fill: var(--sobre-acento);
+  }
+  .mastil-caja :global(.nota.fallada circle) {
+    fill: var(--fondo);
+    stroke: var(--texto-suave);
+    stroke-width: 1.5;
+  }
+  .mastil-caja :global(.nota.fallada .grado) {
+    fill: var(--texto-suave);
+  }
+  .leyenda {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
+  }
+</style>

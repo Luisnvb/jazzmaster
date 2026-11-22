@@ -239,7 +239,7 @@ function simbolo(g: Golpe, x: number, y: number, ligado?: string): string {
  * alternada y economy; en la de economy se marcan los golpes que cambian. Una
  * línea fina separa los pulsos; `porFila` huecos por renglón.
  */
-export function tabSVG(notas: readonly NotaTab[], subdivision: number, porFila: number): string {
+export function tabSVG(notas: readonly NotaTab[], subdivision: number, porFila: number, idioma: 'es' | 'en' = 'es'): string {
   const alt = golpes(notas, 'alternada');
   const eco = golpes(notas, 'economy');
   const total = huecos(notas.length, subdivision);
@@ -277,5 +277,5 @@ export function tabSVG(notas: readonly NotaTab[], subdivision: number, porFila: 
       );
     }
   }
-  return `<svg class="tab-pua" viewBox="0 0 ${ancho} ${filas * altoFila}" width="${Math.round(ancho * 1.5)}" height="${Math.round(filas * altoFila * 1.5)}" role="img" aria-label="Tablatura con los golpes de púa" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
+  return `<svg class="tab-pua" viewBox="0 0 ${ancho} ${filas * altoFila}" width="${Math.round(ancho * 1.5)}" height="${Math.round(filas * altoFila * 1.5)}" role="img" aria-label="${idioma === 'en' ? 'Tab with the pick strokes' : 'Tablatura con los golpes de púa'}" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
 }

@@ -112,6 +112,8 @@ const progresiones = defineCollection({
     orden,
     nombre: z.string(),
     descripcion: z.string().optional(),
+    // Versión inglesa (oído armónico en /en/…).
+    en: z.object({ nombre: z.string(), descripcion: z.string().optional() }).optional(),
     pulsos: z.number().int().min(1).max(12).optional(),
     compases: z.array(acordeGrado).min(1),
   }),

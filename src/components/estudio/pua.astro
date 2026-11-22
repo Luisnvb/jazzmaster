@@ -1,0 +1,352 @@
+---
+// Técnica de púa (sección Estudio). El texto está en src/data/estudio/pua.md; aquí van
+// los ejercicios en tablatura con los golpes de púa y el metrónomo con subida de tempo (lib/pua.ts).
+// En inglés, pua.en.md e i18n/estudio/pua.ts; lo usan pages/estudio/pua.astro y
+// pages/en/study/picking.astro.
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import * as es from '../../data/estudio/pua.md';
+import * as en from '../../data/estudio/pua.en.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { EJERCICIOS } from '../../lib/pua.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { PUA } from '../../i18n/estudio/pua.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = PUA[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const indice = getHeadings().filter((h) => h.depth === 2);
+const SUBDIVISIONES = [2, 3, 4, 6].map((v, i) => [v, T.subdivisiones[i]] as const);
+const PASOS = [0, 2, 4, 5, 10];
+const CADA = [1, 2, 4, 8];
+const HASTA = Array.from({ length: 19 }, (_, i) => 60 + i * 10);
+---
+
+<Base titulo={T.titulo}>
+  <SelectorTonica clave="estudio-pua" idioma={idioma}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave="estudio-pua" inicial={70} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-label={T.ejercicios}>
+    <div class="grupo-botones" role="group" aria-label={T.ejercicio}>
+      <span class="etiqueta">{T.ejercicio}</span>
+      {EJERCICIOS.map((e) => <button type="button" class="boton" data-ejercicio={e.id} aria-pressed="false">{T.ejerciciosPorId[e.id]?.[0] ?? e.nombre}</button>)}
+    </div>
+    <p class="descripcion" data-descripcion></p>
+
+    <div class="opciones">
+      <label class="campo">{T.notasPorPulso}
+        <select data-subdivision>{SUBDIVISIONES.map(([v, n]) => <option value={v}>{n}</option>)}</select>
+      </label>
+      <label class="casilla"><input type="checkbox" data-metronomo /> {T.metronomo}</label>
+      <label class="casilla"><input type="checkbox" data-cuenta /> {T.cuenta}</label>
+    </div>
+
+    <div class="caja-tab" data-tab></div>
+    <p class="suave leyenda">{T.leyenda}</p>
+
+    <ul class="datos" data-datos></ul>
+
+    <div class="opciones subida">
+      <span class="etiqueta">{T.subida}</span>
+      <label class="campo">{T.subir}
+        <select data-paso>{PASOS.map((p) => <option value={p}>{p === 0 ? T.nada : `${p} BPM`}</option>)}</select>
+      </label>
+      <label class="campo">{T.cada}
+        <select data-cada>{CADA.map((c) => <option value={c}>{c === 1 ? `1 ${T.vuelta}` : `${c} ${T.vueltas}`}</option>)}</select>
+      </label>
+      <label class="campo">{T.hasta}
+        <select data-hasta>{HASTA.map((h) => <option value={h}>{h} BPM</option>)}</select>
+      </label>
+    </div>
+    <p class="estado" data-estado aria-live="polite"></p>
+    <div class="botones-audio">
+      <button type="button" data-audio="una" aria-pressed="false">{T.una}</button>
+      <button type="button" data-audio="bucle" aria-pressed="false" title={T.bucleAyuda}>{T.bucle}</button>
+      <button type="button" data-audio="subida" aria-pressed="false">{T.subidaBoton}</button>
+      <button type="button" data-detener>{I.detener}</button>
+    </div>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { EJERCICIOS, cambiosDeCuerda, eventosPua, golpes, marcaEn, numeroGolpes, planSubida, tabSVG, type Tecnica } from '../../lib/pua.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { PUA } from '../../i18n/estudio/pua.ts';
+
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = PUA[idioma];
+
+  interface Opciones {
+    ejercicio: string;
+    subdivision: number;
+    metronomo: boolean;
+    cuenta: boolean;
+    paso: number;
+    cada: number;
+    hasta: number;
+  }
+  const CLAVE = 'estudio-pua:opciones';
+  const op: Opciones = {
+    ejercicio: EJERCICIOS[0].id,
+    subdivision: EJERCICIOS[0].subdivision,
+    metronomo: true,
+    cuenta: true,
+    paso: 5,
+    cada: 2,
+    hasta: 120,
+    ...leerJSON<Partial<Opciones>>(CLAVE),
+  };
+  if (!EJERCICIOS.some((e) => e.id === op.ejercicio)) op.ejercicio = EJERCICIOS[0].id;
+  if (![2, 3, 4, 6].includes(op.subdivision)) op.subdivision = 4;
+
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('estudio-pua:sonido');
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const caja = $('[data-tab]');
+  const estado = $('[data-estado]');
+  const selects = {
+    subdivision: $<HTMLSelectElement>('[data-subdivision]'),
+    paso: $<HTMLSelectElement>('[data-paso]'),
+    cada: $<HTMLSelectElement>('[data-cada]'),
+    hasta: $<HTMLSelectElement>('[data-hasta]'),
+  };
+  const casillas = { metronomo: $<HTMLInputElement>('[data-metronomo]'), cuenta: $<HTMLInputElement>('[data-cuenta]') };
+  for (const [k, sel] of Object.entries(selects)) sel.value = String(op[k as keyof typeof selects]);
+  for (const [k, c] of Object.entries(casillas)) c.checked = op[k as keyof typeof casillas];
+
+  const ejercicio = () => EJERCICIOS.find((e) => e.id === op.ejercicio)!;
+  const notas = () => ejercicio().notas(tonica);
+  const NOMBRES: Record<Tecnica, string> = { alternada: 'Alternada', economy: 'Economy' };
+
+  function plan(): number[] {
+    return planSubida(tempo(), op.paso, op.cada, op.hasta);
+  }
+  function describirPlan() {
+    const p = plan();
+    const ultimo = p[p.length - 1];
+    if (op.paso === 0 || ultimo === p[0]) return formatear(T.planFijo, { n: p.length, vueltas: p.length === 1 ? T.vuelta : T.vueltas, bpm: p[0] });
+    return formatear(T.plan, { desde: p[0], hasta: ultimo, paso: op.paso, cada: op.cada === 1 ? T.vuelta : `${op.cada} ${T.vueltas}`, n: p.length });
+  }
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-ejercicio]')) b.setAttribute('aria-pressed', String(b.dataset.ejercicio === op.ejercicio));
+    $('[data-descripcion]').textContent = T.ejerciciosPorId[ejercicio().id]?.[1] ?? ejercicio().descripcion;
+    const n = notas();
+    caja.innerHTML = tabSVG(n, op.subdivision, op.subdivision * Math.floor(24 / op.subdivision), idioma);
+    $('[data-datos]').innerHTML = (['alternada', 'economy'] as Tecnica[])
+      .map((t) => {
+        const gs = golpes(n, t);
+        const c = cambiosDeCuerda(n, gs);
+        const impar = t === 'alternada' && numeroGolpes(gs) % 2 === 1 ? T.impar : '';
+        return `<li><strong>${esc(T.tecnicas[t])}:</strong> ${formatear(T.datos, { golpes: numeroGolpes(gs), impar, dentro: c.dentro, fuera: c.fuera, barridos: c.barridos })}</li>`;
+      })
+      .join('');
+    estado.textContent = describirPlan();
+    guardarJSON(CLAVE, op);
+  }
+
+  for (const [k, sel] of Object.entries(selects)) {
+    sel.addEventListener('change', () => {
+      (op as unknown as Record<string, number>)[k] = Number(sel.value);
+      pintar();
+    });
+  }
+  for (const [k, c] of Object.entries(casillas)) {
+    c.addEventListener('change', () => ((op as unknown as Record<string, boolean>)[k] = c.checked, guardarJSON(CLAVE, op)));
+  }
+  $('[data-tempo]').addEventListener('input', () => (estado.textContent = describirPlan()));
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLButtonElement>('button[data-ejercicio]');
+    if (!b) return;
+    op.ejercicio = b.dataset.ejercicio!;
+    op.subdivision = ejercicio().subdivision;
+    selects.subdivision.value = String(op.subdivision);
+    pintar();
+  });
+
+  conectarAudio((boton) => {
+    const modo = boton.dataset.audio;
+    const tempos = modo === 'subida' ? plan() : [tempo()];
+    const { eventos, duracion, marcas } = eventosPua(notas(), op.subdivision, tempos, {
+      metronomo: op.metronomo,
+      cuenta: op.cuenta && modo !== 'bucle',
+    });
+    let marcada = -2;
+    const marcar = (i: number) => {
+      if (i === marcada) return;
+      marcada = i;
+      caja.querySelector('.col.sonando')?.classList.remove('sonando');
+      if (i >= 0) caja.querySelector(`.col[data-i="${i}"]`)?.classList.add('sonando');
+    };
+    let ultimoTexto = '';
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => modo === 'bucle',
+      alProgresar: (t) => {
+        const m = marcaEn(marcas, t);
+        if (!m) return;
+        marcar(m.nota);
+        const texto =
+          m.vuelta < 0
+            ? formatear(T.cuentaEstado, { bpm: m.tempo })
+            : modo === 'subida'
+              ? formatear(T.ahoraVuelta, { bpm: m.tempo, n: m.vuelta + 1, total: tempos.length })
+              : formatear(T.ahora, { bpm: m.tempo });
+        if (texto !== ultimoTexto) estado.textContent = ultimoTexto = texto;
+      },
+      alTerminar: () => {
+        marcar(-1);
+        estado.textContent = describirPlan();
+      },
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.5rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .etiqueta {
+    margin-right: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .descripcion {
+    margin: 0.6rem 0 0.9rem;
+    line-height: 1.5;
+  }
+  .opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .opciones.subida {
+    gap: 0.5rem 1rem;
+    margin: 1rem 0 0.25rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+  }
+  /* En el móvil, la tablatura se desplaza en horizontal dentro de su caja. */
+  .caja-tab {
+    overflow-x: auto;
+    padding: 0.5rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .caja-tab :global(.tab-pua) {
+    display: block;
+    max-width: none;
+  }
+  .caja-tab :global(.linea),
+  .caja-tab :global(.pulso) {
+    stroke: var(--texto-suave);
+    stroke-width: 1;
+  }
+  .caja-tab :global(.pulso) {
+    stroke: var(--borde);
+    stroke-dasharray: 2 3;
+  }
+  .caja-tab :global(.barra) {
+    stroke: var(--texto);
+    stroke-width: 1.5;
+  }
+  .caja-tab :global(.rot) {
+    font: 700 11px var(--fuente);
+    fill: var(--texto-suave);
+  }
+  .caja-tab :global(.tapa) {
+    fill: var(--superficie);
+  }
+  .caja-tab :global(.traste) {
+    font: 700 13px var(--fuente);
+    fill: var(--texto);
+  }
+  .caja-tab :global(.golpe) {
+    fill: none;
+    stroke: var(--texto);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+  .caja-tab :global(.lig) {
+    font: italic 700 12px var(--fuente);
+    fill: var(--texto-suave);
+  }
+  .caja-tab :global(.eco.distinto .golpe) {
+    stroke: var(--acento); /* COLOR: golpe de economy distinto del de la alternada */
+  }
+  .caja-tab :global(.fondo-col) {
+    fill: transparent;
+  }
+  .caja-tab :global(.col.sonando .fondo-col) {
+    fill: var(--acento-suave); /* COLOR: nota que suena en la tablatura */
+  }
+  .caja-tab :global(.col.sonando .tapa) {
+    fill: var(--acento-suave);
+  }
+  .leyenda {
+    margin: 0.5rem 0 0.25rem;
+    font-size: 0.85rem;
+  }
+  .datos {
+    margin: 0.5rem 0 0;
+    padding-left: 1.2rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .estado {
+    margin: 0.25rem 0 0.5rem;
+    font-weight: 700;
+    min-height: 1.5em;
+  }
+</style>

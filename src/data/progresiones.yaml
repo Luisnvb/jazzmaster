@@ -8,92 +8,110 @@
 #              I/3 (1.ª inversión, C/E en Do), I/5 (2.ª, C/G), V7/7 (3.ª, G7/F).
 #              En un acorde menor, /3 es su tercera menor (IVm/3 → Dm/F en La).
 #   pulsos:    opcional, pulsos por compás (4 por defecto).
+#   en:        nombre y descripción en la versión inglesa.
 #
 # Ojo: los textos con # van entre comillas (en YAML, " #" empieza un comentario).
 
 - id: ii-v-i-mayor
   nombre: 'ii–V–I mayor'
   descripcion: 'La cadencia básica del jazz.'
+  en: { nombre: 'ii–V–I major', descripcion: 'The basic jazz cadence.' }
   compases: ['IIm7', 'V7', 'Imaj7', 'Imaj7']
 
 - id: ii-v-i-menor
   nombre: 'ii–V–i menor'
   descripcion: 'Semidisminuido, dominante alterado y tónica menor.'
+  en: { nombre: 'ii–V–i minor', descripcion: 'Half-diminished, altered dominant and minor tonic.' }
   compases: ['IIm7b5', 'V7alt', 'Im6', 'Im6']
 
 - id: ii-v-corto
   nombre: 'ii–V–I en dos compases'
   descripcion: 'El ii y el V comparten compás, como en tantos standards.'
+  en: { nombre: 'ii–V–I in two bars', descripcion: 'The ii and the V share a bar, as in so many standards.' }
   compases: ['IIm7 V7', 'Imaj7']
 
 - id: turnaround
   nombre: 'Turnaround I–vi–ii–V'
   descripcion: 'Para volver al principio de la forma.'
+  en: { nombre: 'Turnaround I–vi–ii–V', descripcion: 'To get back to the top of the form.' }
   compases: ['Imaj7 VIm7', 'IIm7 V7']
 
 - id: turnaround-dominantes
   nombre: 'Turnaround III–VI–II–V'
   descripcion: 'Turnaround con dominantes secundarios.'
+  en: { nombre: 'Turnaround III–VI–II–V', descripcion: 'Turnaround with secondary dominants.' }
   compases: ['IIIm7 VI7', 'IIm7 V7', 'Imaj7', 'Imaj7']
 
 - id: cadena-dominantes
   nombre: 'Cadena de dominantes'
   descripcion: 'Dominantes encadenados por quintas hasta la tónica.'
+  en: { nombre: 'Chain of dominants', descripcion: 'Dominants chained by fifths down to the tonic.' }
   compases: ['III7', 'VI7', 'II7', 'V7', 'Imaj7']
 
 - id: sustitucion-tritonal
   nombre: 'Sustitución tritonal'
   descripcion: 'El V7 se cambia por el dominante a un tritono: bII7.'
+  en: { nombre: 'Tritone substitution', descripcion: 'The V7 is replaced by the dominant a tritone away: bII7.' }
   compases: ['IIm7', 'bII7', 'Imaj7', 'Imaj7']
 
 - id: backdoor
   nombre: 'ii–V por la puerta de atrás'
   descripcion: 'IVm7 y bVII7 resolviendo a la tónica.'
+  en: { nombre: 'Backdoor ii–V', descripcion: 'IVm7 and bVII7 resolving to the tonic.' }
   compases: ['IVm7', 'bVII7', 'Imaj7', 'Imaj7']
 
 - id: blues-basico
   nombre: 'Blues básico'
   descripcion: 'Blues de 12 compases con I7, IV7 y V7.'
+  en: { nombre: 'Basic blues', descripcion: '12-bar blues with I7, IV7 and V7.' }
   compases: ['I7', 'IV7', 'I7', 'I7', 'IV7', 'IV7', 'I7', 'I7', 'V7', 'IV7', 'I7', 'V7']
 
 - id: blues-jazz
   nombre: 'Blues de jazz'
   descripcion: 'Blues de 12 compases con ii–V y disminuido de paso.'
+  en: { nombre: 'Jazz blues', descripcion: '12-bar blues with ii–Vs and a passing diminished chord.' }
   compases: ['I7', 'IV7', 'I7', 'Vm7 I7', 'IV7', '#IV°7', 'I7', 'VI7alt', 'IIm7', 'V7', 'I7 VI7', 'IIm7 V7']
 
 - id: blues-bird
   nombre: 'Bird blues'
   descripcion: 'Blues de Charlie Parker (Blues for Alice): ii–V que bajan por el ciclo hasta el IIm7.'
+  en: { nombre: 'Bird blues', descripcion: 'Charlie Parker''s blues (Blues for Alice): ii–Vs moving down the cycle to IIm7.' }
   compases: ['Imaj7', 'VIIm7b5 III7b9', 'VIm7 II7', 'Vm7 I7', 'IV7', 'IVm7 bVII7', 'IIIm7 VI7', 'bIIIm7 bVI7', 'IIm7', 'V7', 'Imaj7 VI7', 'IIm7 V7']
 
 - id: blues-menor
   nombre: 'Blues menor'
   descripcion: 'Blues menor de 12 compases.'
+  en: { nombre: 'Minor blues', descripcion: '12-bar minor blues.' }
   compases: ['Im7', 'Im7', 'Im7', 'Im7', 'IVm7', 'IVm7', 'Im7', 'Im7', 'bVI7', 'V7alt', 'Im7', 'V7alt']
 
 - id: rhythm-changes-a
   nombre: 'Rhythm changes (A)'
   descripcion: 'La A de I Got Rhythm.'
+  en: { nombre: 'Rhythm changes (A)', descripcion: 'The A section of I Got Rhythm.' }
   compases: ['Imaj7 VIm7', 'IIm7 V7', 'Imaj7 VIm7', 'IIm7 V7', 'Imaj7 I7', 'IVmaj7 #IV°7', 'IIIm7 VI7', 'IIm7 V7']
 
 - id: rhythm-changes-b
   nombre: 'Rhythm changes (puente)'
   descripcion: 'Dominantes por quintas, dos compases cada uno.'
+  en: { nombre: 'Rhythm changes (bridge)', descripcion: 'Dominants by fifths, two bars each.' }
   compases: ['III7', 'III7', 'VI7', 'VI7', 'II7', 'II7', 'V7', 'V7']
 
 - id: coltrane-ciclo
   nombre: 'Ciclo de terceras mayores (Coltrane)'
   descripcion: 'Tres tonalidades a distancia de 3ª mayor (I, bVI, III), cada una con su dominante.'
+  en: { nombre: 'Cycle of major thirds (Coltrane)', descripcion: 'Three keys a major third apart (I, bVI, III), each with its dominant.' }
   compases: ['Imaj7 bIII7', 'bVImaj7 VII7', 'IIImaj7 V7', 'Imaj7']
 
 - id: coltrane-ii-v
   nombre: 'ii–V–I con cambios de Coltrane'
   descripcion: 'El ii–V–I de siempre, con el ciclo de terceras entre el IIm7 y el I (como en Countdown).'
+  en: { nombre: 'ii–V–I with Coltrane changes', descripcion: 'The usual ii–V–I, with the cycle of thirds between IIm7 and I (as in Countdown).' }
   compases: ['IIm7 bIII7', 'bVImaj7 VII7', 'IIImaj7 V7', 'Imaj7']
 
 - id: giant-steps
   nombre: 'Giant Steps'
   descripcion: 'Los 16 compases de John Coltrane (1959), con la tónica en el primer acorde (el original empieza en B).'
+  en: { nombre: 'Giant Steps', descripcion: 'John Coltrane''s 16 bars (1959), with the tonic on the first chord (the original starts in B).' }
   compases:
     ['Imaj7 bIII7', 'bVImaj7 VII7', 'IIImaj7', 'bVIIm7 bIII7', 'bVImaj7 VII7', 'IIImaj7 V7', 'Imaj7', '#IVm7 VII7',
      'IIImaj7', 'bVIIm7 bIII7', 'bVImaj7', 'IIm7 V7', 'Imaj7', '#IVm7 VII7', 'IIImaj7', 'IIm7 V7']
@@ -103,67 +121,80 @@
 - id: cadencia-perfecta
   nombre: 'Cadencia perfecta I–IV–V–I'
   descripcion: 'Subdominante, dominante y tónica: el final de casi todo.'
+  en: { nombre: 'Authentic cadence I–IV–V–I', descripcion: 'Subdominant, dominant and tonic: the ending of almost everything.' }
   compases: ['I', 'IV', 'V7', 'I']
 
 - id: cadencia-plagal
   nombre: 'Cadencia plagal (Amén)'
   descripcion: 'IV–I, el final de los himnos.'
+  en: { nombre: 'Plagal cadence (Amen)', descripcion: 'IV–I, the ending of hymns.' }
   compases: ['I', 'IV', 'IV', 'I']
 
 - id: cadencia-rota
   nombre: 'Cadencia rota'
   descripcion: 'La dominante no va a la tónica sino al vi.'
+  en: { nombre: 'Deceptive cadence', descripcion: 'The dominant goes not to the tonic but to vi.' }
   compases: ['I', 'IV', 'V7', 'VIm']
 
 - id: semicadencia
   nombre: 'Semicadencia'
   descripcion: 'La frase queda en suspenso sobre la dominante.'
+  en: { nombre: 'Half cadence', descripcion: 'The phrase is left hanging on the dominant.' }
   compases: ['I', 'IIm', 'I', 'V']
 
 - id: cadencia-picarda
   nombre: 'Cadencia picarda'
   descripcion: 'En menor, pero acaba en la tónica mayor.'
+  en: { nombre: 'Picardy third', descripcion: 'In minor, but it ends on the major tonic.' }
   compases: ['Im', 'IVm', 'V7', 'I']
 
 - id: circulo-quintas-diatonico
   nombre: 'Círculo de quintas diatónico'
   descripcion: 'Secuencia barroca: todos los grados de la escala, bajando por quintas.'
+  en: { nombre: 'Diatonic circle of fifths', descripcion: 'Baroque sequence: every degree of the scale, moving down by fifths.' }
   compases: ['I', 'IV', 'VII°', 'IIIm', 'VIm', 'IIm', 'V', 'I']
 
 - id: circulo-quintas-menor
   nombre: 'Círculo de quintas en menor'
   descripcion: 'La misma secuencia en modo menor (Autumn Leaves la usa).'
+  en: { nombre: 'Circle of fifths in minor', descripcion: 'The same sequence in minor (Autumn Leaves uses it).' }
   compases: ['Im', 'IVm', 'bVII', 'bIII', 'bVI', 'II°', 'V7', 'Im']
 
 - id: pachelbel
   nombre: 'Canon de Pachelbel'
   descripcion: 'El bajo de ocho notas del Canon en Re.'
+  en: { nombre: 'Pachelbel''s Canon', descripcion: 'The eight-note bass of the Canon in D.' }
   compases: ['I V', 'VIm IIIm', 'IV I', 'IV V']
 
 - id: andaluza
   nombre: 'Cadencia andaluza'
   descripcion: 'Bajo descendente i–VII–VI–V del flamenco y el lamento barroco.'
+  en: { nombre: 'Andalusian cadence', descripcion: 'Descending i–VII–VI–V bass from flamenco and the baroque lament.' }
   compases: ['Im', 'bVII', 'bVI', 'V']
 
 - id: folia
   nombre: 'La Folía'
   descripcion: 'El bajo de la Folía de España (Corelli, Vivaldi…), en 3/4.'
+  en: { nombre: 'La Folia', descripcion: 'The bass of the Folia of Spain (Corelli, Vivaldi…), in 3/4.' }
   pulsos: 3
   compases: ['Im', 'V', 'Im', 'bVII', 'bIII', 'bVII', 'Im', 'V', 'Im', 'V', 'Im', 'bVII', 'bIII', 'bVII', 'Im V', 'Im']
 
 - id: romanesca
   nombre: 'Romanesca'
   descripcion: 'Bajo del Renacimiento (Greensleeves usa una variante).'
+  en: { nombre: 'Romanesca', descripcion: 'Renaissance bass (Greensleeves uses a variant).' }
   compases: ['bIII', 'bVII', 'Im', 'V', 'bIII', 'bVII', 'Im V', 'Im']
 
 - id: monte
   nombre: 'Secuencia de Monte'
   descripcion: 'Sube un tono: cada acorde con su dominante secundario.'
+  en: { nombre: 'Monte sequence', descripcion: 'Rises by a whole step: each chord with its secondary dominant.' }
   compases: ['I7 IV', 'II7 V']
 
 - id: fonte
   nombre: 'Secuencia de Fonte'
   descripcion: 'Baja un tono: ii con su dominante y después I con el suyo.'
+  en: { nombre: 'Fonte sequence', descripcion: 'Falls by a whole step: ii with its dominant and then I with its own.' }
   compases: ['VI7 IIm', 'V7 I']
 
 # --- Con inversiones ---
@@ -171,24 +202,29 @@
 - id: cadencia-64
   nombre: 'Cadencia con 6/4 cadencial'
   descripcion: 'La tónica en segunda inversión (I/5) retrasa la dominante antes del final.'
+  en: { nombre: 'Cadential 6/4', descripcion: 'The tonic in second inversion (I/5) delays the dominant before the ending.' }
   compases: ['I', 'IV', 'I/5 V7', 'I']
 
 - id: cadencia-frigia
   nombre: 'Cadencia frigia'
   descripcion: 'En menor: iv en primera inversión y el bajo baja un semitono hasta la dominante.'
+  en: { nombre: 'Phrygian cadence', descripcion: 'In minor: iv in first inversion and the bass falls a half step to the dominant.' }
   compases: ['Im', 'IVm/3', 'V', 'V']
 
 - id: bajo-descendente
   nombre: 'Bajo descendente por grados'
   descripcion: 'El bajo baja la escala nota a nota gracias a las inversiones (como el Aria de Bach).'
+  en: { nombre: 'Stepwise descending bass', descripcion: 'The bass walks down the scale note by note thanks to inversions (like Bach''s Air).' }
   compases: ['I V/3', 'VIm IIIm/3', 'IV I/3', 'IIm V']
 
 - id: lamento
   nombre: 'Bajo de lamento'
   descripcion: 'En menor, el bajo desciende de la tónica a la dominante.'
+  en: { nombre: 'Lament bass', descripcion: 'In minor, the bass descends from the tonic to the dominant.' }
   compases: ['Im', 'V/3', 'bVII', 'IV/3', 'bVI', 'V']
 
 - id: tercera-inversion
   nombre: 'Dominante en tercera inversión'
   descripcion: 'V7/7: la séptima en el bajo baja a la tercera de la tónica (I/3).'
+  en: { nombre: 'Dominant in third inversion', descripcion: 'V7/7: the seventh in the bass falls to the third of the tonic (I/3).' }
   compases: ['I', 'V7/7', 'I/3', 'IV', 'V7', 'I']

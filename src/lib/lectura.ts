@@ -108,7 +108,7 @@ const X_NOTA = 140;
 const yEscalon = (e: number) => Y_BASE - (e * SEP) / 2;
 
 /** Pentagrama en clave de sol con la nota (redonda), sus líneas adicionales y su alteración. */
-export function pentagramaSVG(n: NotaLeida | null): string {
+export function pentagramaSVG(n: NotaLeida | null, idioma: 'es' | 'en' = 'es'): string {
   const partes: string[] = [];
   for (let k = 0; k <= 8; k += 2) partes.push(`<line class="linea" x1="8" y1="${yEscalon(k)}" x2="${ANCHO - 8}" y2="${yEscalon(k)}"/>`);
   partes.push(`<text class="clave" x="14" y="${yEscalon(2)}" dominant-baseline="alphabetic">𝄞</text>`);
@@ -123,6 +123,7 @@ export function pentagramaSVG(n: NotaLeida | null): string {
     );
     if (n.alteracion) partes.push(`<text class="alteracion" x="${X_NOTA - 24}" y="${y}" text-anchor="middle" dominant-baseline="central">${n.alteracion === '#' ? '♯' : '♭'}</text>`);
   }
-  const titulo = n ? `Pentagrama con la nota ${nombreEscrito(n)}` : 'Pentagrama vacío';
+  const titulo =
+    idioma === 'en' ? (n ? `Staff with the note ${nombreEscrito(n)}` : 'Empty staff') : n ? `Pentagrama con la nota ${nombreEscrito(n)}` : 'Pentagrama vacío';
   return `<svg class="pentagrama" viewBox="0 0 ${ANCHO} ${ALTO}" role="img" aria-label="${titulo}" xmlns="http://www.w3.org/2000/svg">${partes.join('')}</svg>`;
 }

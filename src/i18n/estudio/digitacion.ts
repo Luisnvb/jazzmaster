@@ -1,0 +1,56 @@
+// Textos de Digitación y posiciones (components/estudio/digitacion.astro).
+import { SISTEMAS } from '../../lib/digitacion.ts';
+import { textos } from '../idiomas.ts';
+
+export const DIGITACION = textos(
+  {
+    titulo: 'Digitación y posiciones',
+    comparador: 'Comparador de digitaciones',
+    escala: 'Escala',
+    escalas: {} as Record<string, string>,
+    queSeVe: 'Qué se ve en cada nota',
+    enCadaNota: 'En cada nota',
+    dedo: 'Dedo',
+    grado: 'Grado',
+    sistema: 'Sistema',
+    sistemas: SISTEMAS as Record<string, string>,
+    forma: 'Forma',
+    tocar: '▶ Tocar {lado}',
+    leyenda:
+      'Tablatura: la 1ª cuerda arriba. Dedos: 1 índice, 2 medio, 3 anular, 4 meñique (0, al aire). Con borde discontinuo, los estiramientos; con borde grueso, la nota donde la mano cambia de sitio. Atenuadas, las demás notas de la escala.',
+    seguidas: '▶ A y B seguidas',
+    posicion: 'Posición {n} (índice en el traste {n})',
+    desde: 'Desde el {grado} ({nota} en la 6ª)',
+    trastes: 'Trastes',
+    notasPorCuerda: 'Notas por cuerda',
+    notas: 'Notas',
+    deA: '{n}, de {grave} a {aguda}',
+    estiramientos: 'Estiramientos',
+    cambios: 'Cambios de posición',
+  },
+  {
+    titulo: 'Fingering and positions',
+    comparador: 'Fingering comparison',
+    escala: 'Scale',
+    escalas: { mayor: 'major', 'menor-melodica': 'melodic minor', 'menor-armonica': 'harmonic minor' },
+    queSeVe: 'What each note shows',
+    enCadaNota: 'On each note',
+    dedo: 'Finger',
+    grado: 'Degree',
+    sistema: 'System',
+    sistemas: { posicion: 'Fixed position (one finger per fret)', tres: 'Three notes per string' },
+    forma: 'Shape',
+    tocar: '▶ Play {lado}',
+    leyenda:
+      'Tab view: 1st string on top. Fingers: 1 index, 2 middle, 3 ring, 4 little (0, open). Dashed border: stretches; thick border: the note where the hand shifts. Dimmed: the other notes of the scale.',
+    seguidas: '▶ A and B in a row',
+    posicion: 'Position {n} (index on fret {n})',
+    desde: 'From the {grado} ({nota} on the 6th string)',
+    trastes: 'Frets',
+    notasPorCuerda: 'Notes per string',
+    notas: 'Notes',
+    deA: '{n}, from {grave} to {aguda}',
+    estiramientos: 'Stretches',
+    cambios: 'Position shifts',
+  },
+);

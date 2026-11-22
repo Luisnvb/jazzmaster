@@ -11,6 +11,8 @@ export interface Progresion {
   pulsos?: number;
   /** Un texto por compás, con los acordes separados por espacios: ['IIm7 V7', 'Imaj7']. */
   compases: string[];
+  /** Nombre y descripción en la versión inglesa (se conservan al editar y al exportar). */
+  en?: { nombre: string; descripcion?: string };
 }
 
 /** Ediciones locales: id → progresión cambiada o nueva, o null si se ha borrado. */
@@ -224,6 +226,7 @@ export function progresionesAYaml(lista: readonly Progresion[]): string {
       `- id: ${p.id}`,
       `  nombre: ${q(p.nombre)}`,
       p.descripcion ? `  descripcion: ${q(p.descripcion)}` : '',
+      p.en ? `  en: { nombre: ${q(p.en.nombre)}${p.en.descripcion ? `, descripcion: ${q(p.en.descripcion)}` : ''} }` : '',
       p.pulsos && p.pulsos !== 4 ? `  pulsos: ${p.pulsos}` : '',
       `  compases: [${p.compases.map(q).join(', ')}]`,
     ]

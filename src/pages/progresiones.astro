@@ -11,6 +11,7 @@ const progresiones = porOrden(await getCollection('progresiones')).map(({ id, da
   id,
   nombre: data.nombre,
   ...(data.descripcion ? { descripcion: data.descripcion } : {}),
+  ...(data.en ? { en: data.en } : {}),
   ...(data.pulsos ? { pulsos: data.pulsos } : {}),
   compases: data.compases,
 }));
@@ -219,7 +220,9 @@ const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
     }
     const p = leerFormulario();
     const id = editandoId ?? `local-${Date.now().toString(36)}`;
-    guardar({ ...cambios, [id]: { ...p, id } });
+    // La versión inglesa no se edita aquí: se conserva la que tuviera.
+    const en = editandoId ? porId(editandoId).en : undefined;
+    guardar({ ...cambios, [id]: { ...p, ...(en ? { en } : {}), id } });
   });
 
   document.querySelector('[data-cancelar]')!.addEventListener('click', () => dialogo.close());
