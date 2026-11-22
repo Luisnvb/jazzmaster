@@ -1,17 +1,9 @@
 ---
-// Transcripción (sección Estudio). Solo texto: está en src/data/estudio/transcripcion.md.
-import Base from '../../layouts/Base.astro';
-import { Content, getHeadings } from '../../data/estudio/transcripcion.md';
-
-const indice = getHeadings().filter((h) => h.depth === 2);
+// Transcripción (sección Repertorio). Solo texto: src/data/estudio/transcripcion.md (en inglés, transcripcion.en.md,
+// en /en/study/transcription/).
+import SoloTexto from '../../components/estudio/SoloTexto.astro';
+import * as es from '../../data/estudio/transcripcion.md';
+import * as en from '../../data/estudio/transcripcion.en.md';
 ---
 
-<Base titulo="Transcripción">
-  <nav class="indice" aria-label="En esta página">
-    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
-  </nav>
-
-  <article class="texto-estudio">
-    <Content />
-  </article>
-</Base>
+<SoloTexto idioma="es" titulo="Transcripción" es={es} en={en} />

@@ -1,0 +1,29 @@
+---
+// Página de estudio que es solo texto (Aprender un standard, Transcripción): el índice y
+// el Markdown del idioma. La página pasa los dos módulos (.md y .en.md) y el título.
+import Base from '../../layouts/Base.astro';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ } from '../../i18n/interfaz.ts';
+
+type Texto = typeof import('*.md');
+
+interface Props {
+  idioma: Idioma;
+  titulo: string;
+  es: Texto;
+  en: Texto;
+}
+const { idioma, titulo, es, en } = Astro.props;
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+const indice = getHeadings().filter((h) => h.depth === 2);
+---
+
+<Base titulo={titulo}>
+  <nav class="indice" aria-label={INTERFAZ[idioma].enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+</Base>

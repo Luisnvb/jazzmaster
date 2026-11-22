@@ -1,0 +1,505 @@
+---
+// Formas de los standards (sección Estudio). El texto está en src/data/estudio/formas.md;
+// aquí, el mapa de secciones y el cifrado por compases de cada forma (lib/estructuras.ts),
+// con los temas del Repertorio pasados a grados para tocarlos en cualquier tonalidad. En
+// inglés, formas.en.md e i18n/estudio/formas.ts (también las formas, por id); lo usan
+// pages/estudio/formas.astro y pages/en/study/forms.astro.
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../../components/SelectorTonica.astro';
+import Tempo from '../../components/Tempo.astro';
+import * as es from '../../data/estudio/formas.md';
+import * as en from '../../data/estudio/formas.en.md';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { validarCmb } from '../../lib/cmb.ts';
+import { FORMAS as FORMAS_ES, compasesDeCifrado, totalCompases, type Forma } from '../../lib/estructuras.ts';
+import { ruta } from '../../lib/rutas.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { EJEMPLOS_EN, FORMAS_EN, FORMAS_TEXTOS } from '../../i18n/estudio/formas.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = FORMAS_TEXTOS[idioma];
+const I = INTERFAZ[idioma];
+const { Content, getHeadings } = idioma === 'en' ? en : es;
+// En inglés, los textos de cada forma y ejemplo (las letras y los compases son los mismos).
+const FORMAS: Forma[] =
+  idioma === 'en'
+    ? FORMAS_ES.map((f) => ({
+        ...f,
+        ...FORMAS_EN[f.id],
+        nombre: FORMAS_EN[f.id]?.nombre ?? f.nombre,
+        standards: FORMAS_EN[f.id]?.standards ?? f.standards,
+        ejemplos: f.ejemplos.map((e) => {
+          const t = EJEMPLOS_EN[e.id];
+          if (!t) return e;
+          return { ...e, nombre: t.nombre ?? e.nombre, nota: t.nota, secciones: e.secciones.map((s, i) => ({ ...s, papel: t.papeles[i] ?? s.papel })) };
+        }),
+      }))
+    : FORMAS_ES;
+
+const indice = getHeadings().filter((h) => h.depth === 2);
+const cifrados = await getCollection('cifrados');
+const canciones = await getCollection('repertorio');
+
+// Los temas del Repertorio toman los compases de su cifrado.
+const formas = FORMAS.map((f) => ({
+  ...f,
+  ejemplos: f.ejemplos.map((e) => {
+    if (!e.cancion) return { ...e, compases: e.compases!, enlace: null, titulo: null };
+    const cifrado = cifrados.find((c) => c.id === e.cancion);
+    const cancion = canciones.find((c) => c.id === e.cancion);
+    if (!cifrado || !cancion) throw new Error(`lib/estructuras.ts: no está la canción "${e.cancion}" en el Repertorio.`);
+    const compases = compasesDeCifrado(validarCmb(cifrado.data), e.tonica);
+    if (compases.length !== totalCompases(e.secciones)) {
+      throw new Error(`lib/estructuras.ts: ${e.cancion} tiene ${compases.length} compases y sus secciones suman ${totalCompases(e.secciones)}.`);
+    }
+    return { ...e, compases, enlace: ruta(`repertorio/${e.cancion}`), titulo: cancion.data.titulo };
+  }),
+}));
+const datos = JSON.stringify(formas).replace(/</g, '\\u003c');
+---
+
+<Base titulo={T.titulo}>
+  <SelectorTonica clave="formas" idioma={idioma}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave="formas" inicial={140} />
+  </SelectorTonica>
+
+  <section class="ejemplo" aria-labelledby="titulo-formas">
+    <h2 id="titulo-formas">{T.secciones}</h2>
+    <div class="grupo-botones" role="group" aria-label={T.forma}>
+      {formas.map((f) => <button type="button" class="boton" data-forma={f.id} aria-pressed="false">{f.nombre}</button>)}
+    </div>
+    <p class="descripcion" data-descripcion></p>
+    <div class="grupo-botones" role="group" aria-label={T.ejemplo} data-ejemplos></div>
+
+    <div class="ficha">
+      <h3 data-titulo></h3>
+      <p class="suave" data-nota></p>
+      <p class="acciones-ficha" data-acciones></p>
+    </div>
+
+    <ol class="mapa" data-mapa aria-label={T.mapa}></ol>
+
+    <div class="controles">
+      <div class="botones-audio">
+        <button type="button" data-audio="forma" aria-pressed="false">{T.tocar}</button>
+        <button type="button" data-detener>{I.detener}</button>
+      </div>
+      <div class="grupo-botones" role="group" aria-label={T.opciones}>
+        <button type="button" class="boton" data-opcion="metronomo" aria-pressed="false" title={T.metronomoAyuda}>{T.metronomo}</button>
+        <button type="button" class="boton" data-opcion="bucle" aria-pressed="false" title={T.corosAyuda}>{T.coros}</button>
+        <button type="button" class="boton" data-opcion="ocultar" aria-pressed="false" title={T.ocultarAyuda}>{T.ocultar}</button>
+        <button type="button" class="boton" data-opcion="seguir" aria-pressed="false" title={T.seguirAyuda}>{T.seguir}</button>
+      </div>
+    </div>
+    <p class="posicion" data-posicion>{T.pulsaTocar}</p>
+
+    <div class="cifrado-forma" data-cifrado></div>
+
+    <p class="standards"><strong>{T.otros}</strong> <span data-standards></span></p>
+  </section>
+
+  <nav class="indice" aria-label={I.enEstaPagina}>
+    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+  </nav>
+
+  <article class="texto-estudio">
+    <Content />
+  </article>
+
+  <script type="application/json" id="datos-formas" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { indiceLetra, inicios, nombresSecciones, ubicar, type Ejemplo, type Forma } from '../../lib/estructuras.ts';
+  import { analizarProgresion, secuenciaProgresion, simboloEn } from '../../lib/progresiones.ts';
+  import { parseNota, pitchClass } from '../../lib/teoria.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { FORMAS_TEXTOS } from '../../i18n/estudio/formas.ts';
+
+  const T = FORMAS_TEXTOS[idiomaValido(document.documentElement.lang)];
+
+  type EjemploPagina = Ejemplo & { compases: string[]; enlace: string | null; titulo: string | null };
+  type FormaPagina = Omit<Forma, 'ejemplos'> & { ejemplos: EjemploPagina[] };
+
+  const formas: FormaPagina[] = JSON.parse(document.getElementById('datos-formas')!.textContent!);
+
+  interface Opciones {
+    forma: string;
+    ejemplo: string;
+    metronomo: boolean;
+    bucle: boolean;
+    ocultar: boolean;
+    seguir: boolean;
+  }
+  const CLAVE = 'formas:opciones';
+  const op: Opciones = {
+    forma: formas[0].id,
+    ejemplo: formas[0].ejemplos[0].id,
+    metronomo: false,
+    bucle: false,
+    ocultar: false,
+    seguir: true,
+    ...leerJSON<Partial<Opciones>>(CLAVE),
+  };
+  let tonica = 'C';
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('formas:sonido');
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const mapa = $('[data-mapa]');
+  const cifrado = $('[data-cifrado]');
+  const posicion = $('[data-posicion]');
+
+  const forma = () => formas.find((f) => f.id === op.forma) ?? formas[0];
+  const ejemplo = () => {
+    const f = forma();
+    return f.ejemplos.find((e) => e.id === op.ejemplo) ?? f.ejemplos[0];
+  };
+  const mismaTonica = (a: string, b: string) => pitchClass(parseNota(a)) === pitchClass(parseNota(b));
+
+  /** Pasa el selector de tónica a la tonalidad original del ejemplo. */
+  function irATonica(t: string) {
+    const boton =
+      document.querySelector<HTMLButtonElement>(`[data-tonica="${t}"]`) ??
+      [...document.querySelectorAll<HTMLButtonElement>('[data-tonica]')].find((b) => mismaTonica(b.dataset.tonica!, t));
+    boton?.click();
+  }
+
+  function pintar() {
+    const f = forma();
+    const e = ejemplo();
+    op.forma = f.id;
+    op.ejemplo = e.id;
+
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-forma]')) b.setAttribute('aria-pressed', String(b.dataset.forma === f.id));
+    $('[data-descripcion]').innerHTML = `<strong>${esc(f.esquema)}.</strong> ${esc(f.descripcion)}`;
+    const lista = $('[data-ejemplos]');
+    lista.hidden = f.ejemplos.length < 2;
+    lista.innerHTML = f.ejemplos
+      .map((x) => `<button type="button" class="boton" data-ejemplo="${x.id}" aria-pressed="${x.id === e.id}">${esc(x.nombre)}</button>`)
+      .join('');
+
+    $('[data-titulo]').textContent = e.nombre;
+    $('[data-nota]').textContent = e.nota;
+    const original = mismaTonica(tonica, e.tonica)
+      ? `<span class="suave">${formatear(T.original, { tonica: esc(e.tonica) })}</span>`
+      : `<button type="button" class="boton" data-original>${formatear(T.volverOriginal, { tonica: esc(e.tonica) })}</button>`;
+    $('[data-acciones]').innerHTML =
+      original + (e.enlace ? ` <a class="boton" href="${e.enlace}">${T.abrirRepertorio}</a>` : '');
+
+    // Mapa: un bloque por sección, de ancho proporcional a sus compases.
+    const nombres = nombresSecciones(e.secciones);
+    const ini = inicios(e.secciones);
+    mapa.innerHTML = e.secciones
+      .map(
+        (s, i) => `<li class="bloque letra-${indiceLetra(s.letra)}" style="--compases:${s.compases}" data-seccion="${i}">
+          <span class="letra">${esc(nombres[i])}</span>
+          <span class="rango">${ini[i] + 1}–${ini[i] + s.compases}</span>
+        </li>`,
+      )
+      .join('');
+
+    // Cifrado: cada sección con su papel y sus compases de cuatro en cuatro.
+    const compases = analizarProgresion(e.compases);
+    cifrado.classList.toggle('oculto', op.ocultar);
+    cifrado.innerHTML = e.secciones
+      .map((s, i) => {
+        const celdas = compases
+          .slice(ini[i], ini[i] + s.compases)
+          .map((acordes, j) => {
+            const n = ini[i] + j;
+            return `<div class="compas" data-compas="${n}" style="--n:${acordes.length}">
+              <span class="numero">${n + 1}</span>
+              <span class="acordes">${acordes.map((a) => `<span class="acorde" title="${esc(a.texto)}">${esc(simboloEn(tonica, a))}</span>`).join('')}</span>
+            </div>`;
+          })
+          .join('');
+        return `<section class="seccion-forma letra-${indiceLetra(s.letra)}" data-seccion="${i}">
+          <h4><span class="letra">${esc(nombres[i])}</span> <span class="suave">${formatear(T.rango, { desde: ini[i] + 1, hasta: ini[i] + s.compases })}</span></h4>
+          <p class="papel">${esc(s.papel)}</p>
+          <div class="compases">${celdas}</div>
+        </section>`;
+      })
+      .join('');
+
+    $('[data-standards]').textContent = f.standards.join(', ') + '.';
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-opcion]')) b.setAttribute('aria-pressed', String(op[b.dataset.opcion as keyof Opciones]));
+    guardarJSON(CLAVE, op);
+  }
+
+  // Al cambiar de forma o de ejemplo, se pasa a su tonalidad original (repinta al cambiar la tónica).
+  function elegir(cambio: Partial<Opciones>) {
+    Object.assign(op, cambio);
+    const e = ejemplo();
+    if (!mismaTonica(tonica, e.tonica)) irATonica(e.tonica);
+    else pintar();
+  }
+
+  document.addEventListener('click', (ev) => {
+    const el = ev.target as Element;
+    const bf = el.closest<HTMLButtonElement>('[data-forma]');
+    if (bf) return elegir({ forma: bf.dataset.forma!, ejemplo: '' });
+    const be = el.closest<HTMLButtonElement>('[data-ejemplo]');
+    if (be) return elegir({ ejemplo: be.dataset.ejemplo! });
+    if (el.closest('[data-original]')) return irATonica(ejemplo().tonica);
+    const bo = el.closest<HTMLButtonElement>('[data-opcion]');
+    if (bo) {
+      const k = bo.dataset.opcion as 'metronomo' | 'bucle' | 'ocultar' | 'seguir';
+      op[k] = !op[k];
+      if (k === 'seguir' && !op.seguir) marcar(-1);
+      pintar();
+    }
+  });
+
+  let marcado = -1;
+  function marcar(compas: number) {
+    if (compas === marcado) return;
+    marcado = compas;
+    for (const x of document.querySelectorAll('.sonando-ahora')) x.classList.remove('sonando-ahora');
+    if (compas < 0 || !op.seguir) return;
+    const { seccion } = ubicar(ejemplo().secciones, compas);
+    cifrado.querySelector(`[data-compas="${compas}"]`)?.classList.add('sonando-ahora');
+    mapa.querySelector(`[data-seccion="${seccion}"]`)?.classList.add('sonando-ahora');
+    cifrado.querySelector(`.seccion-forma[data-seccion="${seccion}"]`)?.classList.add('sonando-ahora');
+  }
+
+  conectarAudio(() => {
+    const e = ejemplo();
+    const compases = analizarProgresion(e.compases);
+    const nombres = nombresSecciones(e.secciones);
+    const { eventos, tramos, duracion } = secuenciaProgresion(tonica, compases, tempo(), e.pulsos ?? 4, {
+      metronomo: op.metronomo,
+      sostenido: SOSTENIDOS.includes(instrumento()),
+    });
+    let coro = 1;
+    let anterior = -1;
+    let texto = '';
+    return {
+      eventos,
+      instrumento: instrumento(),
+      duracion,
+      bucle: () => op.bucle,
+      alProgresar: (t) => {
+        if (t < anterior) coro++; // empieza otra vuelta del bucle
+        anterior = t;
+        const tramo = tramos.find((x) => t >= x.inicio && t < x.fin);
+        const compas = tramo ? tramo.compas : -1;
+        marcar(compas);
+        if (compas < 0) return;
+        const { seccion, enSeccion } = ubicar(e.secciones, compas);
+        const nuevo = op.seguir
+          ? formatear(T.posicion, { coro, seccion: nombres[seccion], n: enSeccion + 1, total: e.secciones[seccion].compases, k: compas + 1, todos: compases.length })
+          : formatear(T.coro, { coro });
+        if (nuevo !== texto) posicion.textContent = texto = nuevo;
+      },
+      alTerminar: () => {
+        marcar(-1);
+        posicion.textContent = coro > 1 ? formatear(T.coroN, { n: coro }) : T.pulsaTocar;
+      },
+    };
+  });
+
+  conectarTonica((t) => {
+    tonica = t;
+    pintar();
+  });
+  pintar();
+</script>
+
+<style>
+  .ejemplo {
+    margin: 0 0 1.75rem;
+  }
+  .ejemplo h2 {
+    margin: 0 0 0.75rem;
+  }
+  .grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .grupo-botones[hidden] {
+    display: none;
+  }
+  .descripcion {
+    margin: 0.8rem 0;
+  }
+  .ficha {
+    margin: 1rem 0 0.8rem;
+  }
+  .ficha h3 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  .ficha p {
+    margin: 0.3rem 0 0;
+    max-width: 48rem;
+  }
+  .acciones-ficha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .acciones-ficha :global(a.boton) {
+    text-decoration: none;
+  }
+
+  /* Colores de las letras: A en blanco con borde, B clara, C rellena, D a rayas. */
+  .letra-0 {
+    --fondo-letra: var(--fondo); /* COLOR: sección A de la forma */
+    --texto-letra: var(--acento);
+  }
+  .letra-1 {
+    --fondo-letra: var(--acento-suave); /* COLOR: sección B de la forma */
+    --texto-letra: var(--texto);
+  }
+  .letra-2 {
+    --fondo-letra: var(--acento); /* COLOR: sección C de la forma */
+    --texto-letra: var(--sobre-acento);
+  }
+  .letra-3 {
+    --fondo-letra: repeating-linear-gradient(135deg, var(--acento-suave) 0 0.4rem, var(--fondo) 0.4rem 0.8rem); /* COLOR: sección D de la forma */
+    --texto-letra: var(--texto);
+  }
+
+  .mapa {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .mapa :global(.bloque) {
+    flex: var(--compases) 1 0;
+    min-width: 0;
+    display: grid;
+    justify-items: center;
+    padding: 0.4rem 0.2rem;
+    border: 2px solid var(--acento);
+    border-radius: var(--radio);
+    background: var(--fondo-letra);
+    color: var(--texto-letra);
+  }
+  .mapa :global(.letra) {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  .mapa :global(.rango) {
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .mapa :global(.bloque.sonando-ahora) {
+    outline: 3px solid var(--texto);
+    outline-offset: 2px;
+  }
+
+  .controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.5rem;
+  }
+  .controles .botones-audio {
+    margin: 0;
+  }
+  .posicion {
+    min-height: 1.5em;
+    margin: 0.6rem 0 1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cifrado-forma {
+    display: grid;
+    gap: 1rem;
+  }
+  .cifrado-forma :global(.seccion-forma) {
+    padding-left: 0.75rem;
+    border-left: 4px solid var(--borde);
+  }
+  .cifrado-forma :global(.seccion-forma.sonando-ahora) {
+    border-left-color: var(--acento);
+  }
+  .cifrado-forma :global(h4) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .cifrado-forma :global(h4 .letra) {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.2em;
+    padding: 0.05rem 0.4rem;
+    border: 2px solid var(--acento);
+    border-radius: var(--radio);
+    background: var(--fondo-letra);
+    color: var(--texto-letra);
+    font-size: 1rem;
+  }
+  .cifrado-forma :global(.papel) {
+    margin: 0.3rem 0 0.5rem;
+    max-width: 48rem;
+    font-size: 0.88rem;
+  }
+  .cifrado-forma :global(.compases) {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: 52rem;
+    border-left: 1px solid var(--texto-suave);
+  }
+  .cifrado-forma :global(.compas) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 3.1rem;
+    padding: 0.9rem 0.3rem 0.35rem;
+    border-right: 1px solid var(--texto-suave);
+    border-bottom: 1px solid var(--borde);
+  }
+  .cifrado-forma :global(.compas.sonando-ahora) {
+    background: var(--acento-suave);
+  }
+  .cifrado-forma :global(.numero) {
+    position: absolute;
+    top: 0.15rem;
+    left: 0.3rem;
+    font-size: 0.68rem;
+    color: var(--texto-suave);
+  }
+  .cifrado-forma :global(.acordes) {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: 0.25rem;
+  }
+  .cifrado-forma :global(.acorde) {
+    flex: 1 1 0;
+    min-width: 0;
+    font-weight: 700;
+    font-size: clamp(0.78rem, calc(1.05rem - (var(--n, 1) - 1) * 0.15rem), 1.05rem);
+    overflow-wrap: anywhere;
+  }
+  /* Ocultar acordes: quedan la forma y los números de compás. */
+  .cifrado-forma.oculto :global(.acordes) {
+    visibility: hidden;
+  }
+  .standards {
+    margin: 1rem 0 0;
+    max-width: 48rem;
+    font-size: 0.9rem;
+  }
+</style>

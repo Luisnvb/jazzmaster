@@ -1,17 +1,9 @@
 ---
-// Aprender un standard (sección Estudio). Solo texto: está en src/data/estudio/aprender-standard.md.
-import Base from '../../layouts/Base.astro';
-import { Content, getHeadings } from '../../data/estudio/aprender-standard.md';
-
-const indice = getHeadings().filter((h) => h.depth === 2);
+// Aprender un standard (sección Repertorio). Solo texto: src/data/estudio/aprender-standard.md (en inglés, aprender-standard.en.md,
+// en /en/study/learning-a-standard/).
+import SoloTexto from '../../components/estudio/SoloTexto.astro';
+import * as es from '../../data/estudio/aprender-standard.md';
+import * as en from '../../data/estudio/aprender-standard.en.md';
 ---
 
-<Base titulo="Aprender un standard">
-  <nav class="indice" aria-label="En esta página">
-    {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
-  </nav>
-
-  <article class="texto-estudio">
-    <Content />
-  </article>
-</Base>
+<SoloTexto idioma="es" titulo="Aprender un standard" es={es} en={en} />
