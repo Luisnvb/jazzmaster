@@ -16,87 +16,91 @@ const opciones = (prefijo: string) =>
 ---
 
 <Base titulo="Registro de práctica">
-  <section class="cronometro tarjeta" aria-labelledby="cronometro-titulo">
-    <h2 id="cronometro-titulo">Cronómetro</h2>
-    <div class="campos">
-      <label class="bloque">Qué practicas
-        <select data-actividad>
-          {opciones('…').map((g) => <optgroup label={g.etiqueta}>{g.opciones.map((o) => <option value={o.valor}>{o.texto}</option>)}</optgroup>)}
-        </select>
-      </label>
-      <label class="bloque" data-otra hidden>Actividad
-        <input data-otra-texto maxlength="80" autocomplete="off" placeholder="Tocar con el grupo, repertorio de la boda…" />
-      </label>
-      <label class="bloque">Nota (opcional)
-        <input data-nota maxlength="200" autocomplete="off" placeholder="Drop 2 en Bb a 120, cuesta la 3ª inversión" />
-      </label>
-    </div>
-    <div class="reloj" data-reloj aria-live="off">0:00:00</div>
-    <div class="botones">
-      <button type="button" class="boton principal" data-empezar>▶ Empezar</button>
-      <button type="button" class="boton" data-pausar hidden>❚❚ Pausar</button>
-      <button type="button" class="boton principal" data-terminar hidden>■ Terminar y guardar</button>
-      <button type="button" class="boton" data-descartar hidden>Descartar</button>
-    </div>
-    <p class="aviso" data-aviso role="status"></p>
-  </section>
-
-  <section aria-labelledby="resumen-titulo">
-    <h2 id="resumen-titulo">Resumen</h2>
-    <div class="cifras">
-      <div class="cifra"><span class="etiqueta">Hoy</span><strong data-hoy>0 s</strong></div>
-      <div class="cifra"><span class="etiqueta">Últimos 7 días</span><strong data-semana>0 s</strong></div>
-      <div class="cifra"><span class="etiqueta">Últimos 30 días</span><strong data-mes>0 s</strong></div>
-      <div class="cifra"><span class="etiqueta">Racha</span><strong data-racha>0 días</strong></div>
-    </div>
-
-    <h3>Minutos por día <span class="suave">(últimos 14)</span></h3>
-    <div class="grafico" data-grafico role="list" aria-label="Minutos practicados en los últimos 14 días"></div>
-
-    <h3>Por sección <span class="suave">(últimos 30 días)</span></h3>
-    <ul class="reparto" data-reparto></ul>
-    <p class="vacio" data-sin-reparto hidden>Aún no hay sesiones en este tiempo.</p>
-  </section>
-
-  <section aria-labelledby="sesiones-titulo">
-    <h2 id="sesiones-titulo">Sesiones</h2>
-    <details class="a-mano">
-      <summary>Añadir una sesión a mano</summary>
-      <form class="formulario" data-a-mano>
-        <label class="bloque">Día <input type="date" name="dia" required /></label>
-        <label class="bloque">Minutos <input type="number" name="minutos" min="1" max="600" value="30" required /></label>
-        <label class="bloque">Qué
-          <select name="actividad">
-            {opciones('').map((g) => <optgroup label={g.etiqueta}>{g.opciones.map((o) => <option value={o.valor}>{o.texto}</option>)}</optgroup>)}
+  <div class="centrada">
+    <section class="cronometro tarjeta" aria-labelledby="cronometro-titulo">
+      <h2 id="cronometro-titulo">Cronómetro</h2>
+      <div class="campos">
+        <label class="bloque">Qué practicas
+          <select data-actividad>
+            {opciones('…').map((g) => <optgroup label={g.etiqueta}>{g.opciones.map((o) => <option value={o.valor}>{o.texto}</option>)}</optgroup>)}
           </select>
         </label>
-        <label class="bloque">Nota <input name="nota" maxlength="200" autocomplete="off" /></label>
-        <button type="submit" class="boton principal">Añadir</button>
-      </form>
-    </details>
-    <ul class="sesiones" data-sesiones></ul>
-    <p class="vacio" data-sin-sesiones hidden>Aún no hay sesiones. Empieza el cronómetro o añade una a mano.</p>
-    <button type="button" class="boton" data-mas hidden>Ver más</button>
+        <label class="bloque" data-otra hidden>Actividad
+          <input data-otra-texto maxlength="80" autocomplete="off" placeholder="Tocar con el grupo, repertorio de la boda…" />
+        </label>
+        <label class="bloque">Nota (opcional)
+          <input data-nota maxlength="200" autocomplete="off" placeholder="Drop 2 en Bb a 120, cuesta la 3ª inversión" />
+        </label>
+      </div>
+      <div class="reloj" data-reloj aria-live="off">0:00:00</div>
+      <div class="botones">
+        <button type="button" class="boton principal" data-empezar>▶ Empezar</button>
+        <button type="button" class="boton" data-pausar hidden>❚❚ Pausar</button>
+        <button type="button" class="boton principal" data-terminar hidden>■ Terminar y guardar</button>
+        <button type="button" class="boton" data-descartar hidden>Descartar</button>
+      </div>
+      <p class="aviso" data-aviso role="status"></p>
+    </section>
 
-    <h3>Copia de seguridad</h3>
-    <p class="suave">El registro vive en este navegador. Exporta una copia para guardarla o llevarla a otro; al importarla se une a lo que ya haya.</p>
-    <div class="botones">
-      <button type="button" class="boton" data-exportar>Exportar registro</button>
-      <button type="button" class="boton" data-importar>Importar registro</button>
-    </div>
-  </section>
+    <section aria-labelledby="resumen-titulo">
+      <h2 id="resumen-titulo">Resumen</h2>
+      <div class="cifras">
+        <div class="cifra"><span class="etiqueta">Hoy</span><strong data-hoy>0 s</strong></div>
+        <div class="cifra"><span class="etiqueta">Últimos 7 días</span><strong data-semana>0 s</strong></div>
+        <div class="cifra"><span class="etiqueta">Últimos 30 días</span><strong data-mes>0 s</strong></div>
+        <div class="cifra"><span class="etiqueta">Racha</span><strong data-racha>0 días</strong></div>
+      </div>
 
-  <script type="application/json" id="datos-registro" set:html={datos} />
+      <h3>Minutos por día <span class="suave">(últimos 14)</span></h3>
+      <div class="grafico" data-grafico role="list" aria-label="Minutos practicados en los últimos 14 días"></div>
+
+      <h3>Por sección <span class="suave">(últimos 30 días)</span></h3>
+      <ul class="reparto" data-reparto></ul>
+      <p class="vacio" data-sin-reparto hidden>Aún no hay sesiones en este tiempo.</p>
+    </section>
+
+    <section aria-labelledby="sesiones-titulo">
+      <h2 id="sesiones-titulo">Sesiones</h2>
+      <details class="a-mano">
+        <summary>Añadir una sesión a mano</summary>
+        <form class="formulario" data-a-mano>
+          <label class="bloque">Día <input type="date" name="dia" required /></label>
+          <label class="bloque">Minutos <input type="number" name="minutos" min="1" max="600" value="30" required /></label>
+          <label class="bloque">Qué
+            <select name="actividad">
+              {opciones('').map((g) => <optgroup label={g.etiqueta}>{g.opciones.map((o) => <option value={o.valor}>{o.texto}</option>)}</optgroup>)}
+            </select>
+          </label>
+          <label class="bloque">Nota <input name="nota" maxlength="200" autocomplete="off" /></label>
+          <button type="submit" class="boton principal">Añadir</button>
+        </form>
+      </details>
+      <ul class="sesiones" data-sesiones></ul>
+      <p class="vacio" data-sin-sesiones hidden>Aún no hay sesiones. Empieza el cronómetro o añade una a mano.</p>
+      <button type="button" class="boton" data-mas hidden>Ver más</button>
+
+      <h3>Copia de seguridad</h3>
+      <p class="suave">El registro vive en este navegador. Exporta una copia para guardarla o llevarla a otro; al importarla se une a lo que ya haya.</p>
+      <div class="botones">
+        <button type="button" class="boton" data-exportar>Exportar registro</button>
+        <button type="button" class="boton" data-importar>Importar registro</button>
+      </div>
+    </section>
+
+    <script type="application/json" id="datos-registro" set:html={datos} />
+  </div>
 </Base>
 
 <script>
   import { descargar, elegirArchivo, esc, guardarJSON, leerJSON, borrar } from '../../lib/almacen.ts';
   import { nuevoId } from '../../lib/apuntes.ts';
   import {
+    actividadDeValor,
     alternarPausa,
     cerrarSesion,
     diaDe,
     duracion,
+    empezarSesion,
     enCursoValido,
     ordenarSesiones,
     racha,
@@ -130,10 +134,7 @@ const opciones = (prefijo: string) =>
   let visibles = 30;
 
   /** La actividad elegida: [sección, nombre]. */
-  const elegida = (valor = selActividad.value, libre = otraTexto.value): [string, string] => {
-    const [seccion, pagina] = valor.split('|');
-    return seccion === 'otra' ? ['otra', libre.trim() || 'Otra'] : [seccion, pagina];
-  };
+  const elegida = (valor = selActividad.value, libre = otraTexto.value) => actividadDeValor(valor, libre);
   const valorDe = (seccion: string, actividad: string) => (seccion === 'otra' ? 'otra|' : `${seccion}|${actividad}`);
 
   // Lo último elegido, para la próxima vez.
@@ -182,8 +183,7 @@ const opciones = (prefijo: string) =>
 
   $('[data-empezar]').addEventListener('click', () => {
     const ahora = Date.now();
-    const [seccion, actividad] = elegida();
-    enCurso = { desde: ahora, acumulado: 0, empezada: ahora, seccion, actividad, nota: nota.value };
+    enCurso = empezarSesion(ahora, elegida(), nota.value);
     aviso.textContent = '';
     guardarEnCurso();
     pintarCronometro();
@@ -373,6 +373,11 @@ const opciones = (prefijo: string) =>
 </script>
 
 <style>
+  /* Toda la herramienta en una columna centrada en la página. */
+  .centrada {
+    max-width: 44rem;
+    margin: 0 auto;
+  }
   section + section {
     margin-top: 2rem;
   }

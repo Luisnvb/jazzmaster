@@ -8,66 +8,68 @@ import { BPM_MAX, BPM_MIN, PULSOS_MAX, SUBDIVISIONES } from '../../lib/metronomo
 ---
 
 <Base titulo="Metrónomo">
-  <section class="metronomo" aria-label="Metrónomo">
-    <div class="tempo-grande">
-      <button type="button" class="boton" data-sumar="-5" aria-label="Bajar 5 BPM">−5</button>
-      <button type="button" class="boton" data-sumar="-1" aria-label="Bajar 1 BPM">−1</button>
-      <div class="cifra-tempo">
-        <strong data-bpm-texto>100</strong>
-        <span>BPM</span>
+  <div class="centrada">
+    <section class="metronomo" aria-label="Metrónomo">
+      <div class="tempo-grande">
+        <button type="button" class="boton" data-sumar="-5" aria-label="Bajar 5 BPM">−5</button>
+        <button type="button" class="boton" data-sumar="-1" aria-label="Bajar 1 BPM">−1</button>
+        <div class="cifra-tempo">
+          <strong data-bpm-texto>100</strong>
+          <span>BPM</span>
+        </div>
+        <button type="button" class="boton" data-sumar="1" aria-label="Subir 1 BPM">+1</button>
+        <button type="button" class="boton" data-sumar="5" aria-label="Subir 5 BPM">+5</button>
       </div>
-      <button type="button" class="boton" data-sumar="1" aria-label="Subir 1 BPM">+1</button>
-      <button type="button" class="boton" data-sumar="5" aria-label="Subir 5 BPM">+5</button>
-    </div>
-    <input class="deslizador" type="range" min={BPM_MIN} max={BPM_MAX} step="1" value="100" aria-label="Tempo" data-bpm />
+      <input class="deslizador" type="range" min={BPM_MIN} max={BPM_MAX} step="1" value="100" aria-label="Tempo" data-bpm />
 
-    <div class="pulsos" data-pulsos aria-label="Pulsos del compás: pulsa uno para cambiar su acento"></div>
-    <p class="leyenda suave">Pulsa un pulso para cambiarlo: <span class="muestra fuerte"></span> acento · <span class="muestra debil"></span> normal · <span class="muestra mudo"></span> en silencio</p>
+      <div class="pulsos" data-pulsos aria-label="Pulsos del compás: pulsa uno para cambiar su acento"></div>
+      <p class="leyenda suave">Pulsa un pulso para cambiarlo: <span class="muestra fuerte"></span> acento · <span class="muestra debil"></span> normal · <span class="muestra mudo"></span> en silencio</p>
 
-    <div class="botones-audio principal">
-      <button type="button" data-audio="metronomo" aria-pressed="false">▶ Empezar</button>
-      <button type="button" data-detener>■ Parar</button>
-      <button type="button" class="boton" data-tap title="Pulsa al ritmo (o la tecla T) para marcar el tempo">Marcar tempo (tap)</button>
-      <span class="estado" data-estado aria-live="polite"></span>
-    </div>
+      <div class="botones-audio principal">
+        <button type="button" data-audio="metronomo" aria-pressed="false">▶ Empezar</button>
+        <button type="button" data-detener>■ Parar</button>
+        <button type="button" class="boton" data-tap title="Pulsa al ritmo (o la tecla T) para marcar el tempo">Marcar tempo (tap)</button>
+        <span class="estado" data-estado aria-live="polite"></span>
+      </div>
 
-    <div class="ajustes">
-      <fieldset>
-        <legend>Compás</legend>
-        <label class="campo">Pulsos
-          <select data-num-pulsos>{Array.from({ length: PULSOS_MAX }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
-        </label>
-        <div class="grupo-botones" role="group" aria-label="Subdivisión">
-          {SUBDIVISIONES.map((s) => <button type="button" class="boton" data-subdivision={s.id} aria-pressed="false">{s.nombre}</button>)}
-        </div>
-        <label class="campo" data-solo-corcheas>Swing <input type="range" min="50" max="75" step="1" data-swing /> <span data-swing-texto></span></label>
-        <div class="grupo-botones" role="group" aria-label="Acentos rápidos">
-          <span class="etiqueta">Acentos</span>
-          <button type="button" class="boton" data-patron="uno">En el 1</button>
-          <button type="button" class="boton" data-patron="dos-cuatro">En 2 y 4</button>
-          <button type="button" class="boton" data-patron="iguales">Todos iguales</button>
-        </div>
-      </fieldset>
+      <div class="ajustes">
+        <fieldset>
+          <legend>Compás</legend>
+          <label class="campo">Pulsos
+            <select data-num-pulsos>{Array.from({ length: PULSOS_MAX }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
+          </label>
+          <div class="grupo-botones" role="group" aria-label="Subdivisión">
+            {SUBDIVISIONES.map((s) => <button type="button" class="boton" data-subdivision={s.id} aria-pressed="false">{s.nombre}</button>)}
+          </div>
+          <label class="campo" data-solo-corcheas>Swing <input type="range" min="50" max="75" step="1" data-swing /> <span data-swing-texto></span></label>
+          <div class="grupo-botones" role="group" aria-label="Acentos rápidos">
+            <span class="etiqueta">Acentos</span>
+            <button type="button" class="boton" data-patron="uno">En el 1</button>
+            <button type="button" class="boton" data-patron="dos-cuatro">En 2 y 4</button>
+            <button type="button" class="boton" data-patron="iguales">Todos iguales</button>
+          </div>
+        </fieldset>
 
-      <fieldset>
-        <legend><label><input type="checkbox" data-subida-activa /> Subida progresiva</label></legend>
-        <p class="frase">
-          Subir <input type="number" min="1" max="40" data-subida="paso" aria-label="BPM que sube" /> BPM cada
-          <input type="number" min="1" max="64" data-subida="cada" aria-label="Compases entre subidas" /> compases, hasta
-          <input type="number" min={BPM_MIN} max={BPM_MAX} data-subida="hasta" aria-label="Tempo final" /> BPM.
-        </p>
-      </fieldset>
+        <fieldset>
+          <legend><label><input type="checkbox" data-subida-activa /> Subida progresiva</label></legend>
+          <p class="frase">
+            Subir <input type="number" min="1" max="40" data-subida="paso" aria-label="BPM que sube" /> BPM cada
+            <input type="number" min="1" max="64" data-subida="cada" aria-label="Compases entre subidas" /> compases, hasta
+            <input type="number" min={BPM_MIN} max={BPM_MAX} data-subida="hasta" aria-label="Tempo final" /> BPM.
+          </p>
+        </fieldset>
 
-      <fieldset>
-        <legend><label><input type="checkbox" data-silencio-activo /> Compases en silencio</label></legend>
-        <p class="frase">
-          Suenan <input type="number" min="1" max="16" data-silencio="suenan" aria-label="Compases que suenan" /> y callan
-          <input type="number" min="1" max="16" data-silencio="callan" aria-label="Compases en silencio" /> compases: sigue el pulso
-          tú solo y comprueba si llegas a tiempo al volver el clic.
-        </p>
-      </fieldset>
-    </div>
-  </section>
+        <fieldset>
+          <legend><label><input type="checkbox" data-silencio-activo /> Compases en silencio</label></legend>
+          <p class="frase">
+            Suenan <input type="number" min="1" max="16" data-silencio="suenan" aria-label="Compases que suenan" /> y callan
+            <input type="number" min="1" max="16" data-silencio="callan" aria-label="Compases en silencio" /> compases: sigue el pulso
+            tú solo y comprueba si llegas a tiempo al volver el clic.
+          </p>
+        </fieldset>
+      </div>
+    </section>
+  </div>
 </Base>
 
 <script>
@@ -249,6 +251,11 @@ import { BPM_MAX, BPM_MIN, PULSOS_MAX, SUBDIVISIONES } from '../../lib/metronomo
 </script>
 
 <style>
+  /* Toda la herramienta en una columna centrada en la página. */
+  .centrada {
+    max-width: 44rem;
+    margin: 0 auto;
+  }
   .metronomo {
     max-width: 44rem;
   }

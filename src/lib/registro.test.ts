@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  actividadDeValor,
+  empezarSesion,
+  ultimaActividad,
   alternarPausa,
   cerrarSesion,
   diaDe,
@@ -88,4 +91,13 @@ test('formatos de duración', () => {
   assert.equal(duracion(65 * 60), '1 h 05 min');
   assert.equal(reloj(452), '0:07:32');
   assert.equal(reloj(3600 * 2 + 5), '2:00:05');
+});
+
+test('actividad elegida y sesión nueva', () => {
+  assert.deepEqual(actividadDeValor('acordes|Drop 2'), ['acordes', 'Drop 2']);
+  assert.deepEqual(actividadDeValor('otra|', ' Bolo del viernes '), ['otra', 'Bolo del viernes']);
+  assert.deepEqual(actividadDeValor('otra|'), ['otra', 'Otra']);
+  assert.deepEqual(ultimaActividad({ valor: 'rutina|Ritmo', libre: '' }), ['rutina', 'Ritmo']);
+  assert.deepEqual(ultimaActividad(null), ['otra', 'Otra']);
+  assert.deepEqual(empezarSesion(5, ['acordes', 'Drop 2']), { desde: 5, acumulado: 0, empezada: 5, seccion: 'acordes', actividad: 'Drop 2', nota: '' });
 });

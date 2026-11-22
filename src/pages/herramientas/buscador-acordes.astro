@@ -11,59 +11,61 @@ import { TONICAS } from '../../lib/teoria.ts';
 ---
 
 <Base titulo="Buscador de acordes">
-  <div class="modos" role="group" aria-label="Cómo buscar">
-    <button type="button" class="boton" data-modo="notas" aria-pressed="true">Escribir notas</button>
-    <button type="button" class="boton" data-modo="mastil" aria-pressed="false">En el mástil</button>
-  </div>
+  <div class="centrada">
+    <div class="modos" role="group" aria-label="Cómo buscar">
+      <button type="button" class="boton" data-modo="notas" aria-pressed="true">Escribir notas</button>
+      <button type="button" class="boton" data-modo="mastil" aria-pressed="false">En el mástil</button>
+    </div>
 
-  <p class="intro" data-solo-modo="notas">
-    Escribe las notas del acorde de grave a agudo, separadas por espacios o comas: la primera es el <strong>bajo</strong>.
-    Valen <code>C Eb G Bb</code>, <code>do mib sol sib</code> o <code>c, d#, f♯</code>. También puedes ir pulsando las notas.
-  </p>
-  <p class="intro" data-solo-modo="mastil" hidden>
-    Pulsa un traste en cada cuerda que suene (0 es la cuerda al aire, a la izquierda de la cejuela); pulsarlo otra vez la
-    apaga. El <strong>bajo</strong> es la nota más grave.
-  </p>
+    <p class="intro" data-solo-modo="notas">
+      Escribe las notas del acorde de grave a agudo, separadas por espacios o comas: la primera es el <strong>bajo</strong>.
+      Valen <code>C Eb G Bb</code>, <code>do mib sol sib</code> o <code>c, d#, f♯</code>. También puedes ir pulsando las notas.
+    </p>
+    <p class="intro" data-solo-modo="mastil" hidden>
+      Pulsa un traste en cada cuerda que suene (0 es la cuerda al aire, a la izquierda de la cejuela); pulsarlo otra vez la
+      apaga. El <strong>bajo</strong> es la nota más grave.
+    </p>
 
-  <section class="buscador" aria-label="Buscador">
-    <div data-solo-modo="mastil" hidden>
-      <div class="mastil-caja" data-mastil></div>
-      <div class="acciones-mastil">
-        <span class="suave" data-trastes-texto></span>
-        <button type="button" class="boton" data-limpiar-mastil>Limpiar mástil</button>
+    <section class="buscador" aria-label="Buscador">
+      <div data-solo-modo="mastil" hidden>
+        <div class="mastil-caja" data-mastil></div>
+        <div class="acciones-mastil">
+          <span class="suave" data-trastes-texto></span>
+          <button type="button" class="boton" data-limpiar-mastil>Limpiar mástil</button>
+        </div>
       </div>
-    </div>
-    <div class="entrada" data-solo-modo="notas">
-      <label class="campo" for="notas">Notas</label>
-      <input id="notas" type="text" autocomplete="off" spellcheck="false" placeholder="C E G Bb" data-notas />
-      <button type="button" class="boton" data-borrar>Borrar</button>
-    </div>
-    <div class="teclas" role="group" aria-label="Añadir o quitar notas" data-solo-modo="notas">
-      {TONICAS.map((t) => <button type="button" class="boton" data-nota={t} aria-pressed="false">{t}</button>)}
-    </div>
+      <div class="entrada" data-solo-modo="notas">
+        <label class="campo" for="notas">Notas</label>
+        <input id="notas" type="text" autocomplete="off" spellcheck="false" placeholder="C E G Bb" data-notas />
+        <button type="button" class="boton" data-borrar>Borrar</button>
+      </div>
+      <div class="teclas" role="group" aria-label="Añadir o quitar notas" data-solo-modo="notas">
+        {TONICAS.map((t) => <button type="button" class="boton" data-nota={t} aria-pressed="false">{t}</button>)}
+      </div>
 
-    <div class="caja-resultado">
-      <div class="resultado" data-resultado aria-live="polite"></div>
-      <div class="diagrama-voicing" data-diagrama hidden></div>
-    </div>
-    <div class="botones-audio">
-      <label>Sonido
-        <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
-      </label>
-      <button type="button" data-audio="bloque" aria-pressed="false">▶ En bloque</button>
-      <button type="button" data-audio="arpegio" aria-pressed="false">▶ Arpegiado</button>
-      <button type="button" data-detener>■ Detener</button>
-    </div>
+      <div class="caja-resultado">
+        <div class="resultado" data-resultado aria-live="polite"></div>
+        <div class="diagrama-voicing" data-diagrama hidden></div>
+      </div>
+      <div class="botones-audio">
+        <label>Sonido
+          <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+        </label>
+        <button type="button" data-audio="bloque" aria-pressed="false">▶ En bloque</button>
+        <button type="button" data-audio="arpegio" aria-pressed="false">▶ Arpegiado</button>
+        <button type="button" data-detener>■ Detener</button>
+      </div>
 
-    <h2 class="titulo-otras" data-otras-titulo hidden>Otras lecturas</h2>
-    <ul class="otras" data-otras></ul>
-  </section>
+      <h2 class="titulo-otras" data-otras-titulo hidden>Otras lecturas</h2>
+      <ul class="otras" data-otras></ul>
+    </section>
 
-  <p class="nota-pie">
-    El nombre depende del bajo: <code>A C E G</code> es Am7, pero <code>C A E G</code> se lee antes como C6 (y Am7/C queda
-    entre las otras lecturas). Sin 3ª, el acorde se nombra como sus o se avisa de que falta. Los nombres siguen las mismas
-    reglas que <a href={ruta('estudio/slash')}>Acordes slash</a>.
-  </p>
+    <p class="nota-pie">
+      El nombre depende del bajo: <code>A C E G</code> es Am7, pero <code>C A E G</code> se lee antes como C6 (y Am7/C queda
+      entre las otras lecturas). Sin 3ª, el acorde se nombra como sus o se avisa de que falta. Los nombres siguen las mismas
+      reglas que <a href={ruta('estudio/slash')}>Acordes slash</a>.
+    </p>
+  </div>
 </Base>
 
 <script>
@@ -230,6 +232,11 @@ import { TONICAS } from '../../lib/teoria.ts';
 </script>
 
 <style>
+  /* Toda la herramienta en una columna centrada en la página. */
+  .centrada {
+    max-width: 52rem;
+    margin: 0 auto;
+  }
   .intro,
   .nota-pie {
     max-width: var(--ancho-texto);

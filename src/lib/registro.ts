@@ -160,3 +160,29 @@ export function reloj(segundos: number): string {
   const s = Math.floor(segundos);
   return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
+
+/**
+ * La actividad de un valor de los selectores del registro ('acordes|Drop 2' u 'otra|',
+ * con su texto libre): [sección, nombre].
+ */
+export function actividadDeValor(valor: string, libre = ''): [string, string] {
+  const [seccion, pagina] = valor.split('|');
+  if (!seccion || seccion === 'otra' || !pagina) return ['otra', libre.trim() || 'Otra'];
+  return [seccion, pagina];
+}
+
+/** La última actividad elegida en el registro (registro:ultima), o «Otra» si no hay. */
+export function ultimaActividad(x: unknown): [string, string] {
+  const u = (typeof x === 'object' && x ? x : {}) as { valor?: unknown; libre?: unknown };
+  return actividadDeValor(typeof u.valor === 'string' ? u.valor : 'otra|', typeof u.libre === 'string' ? u.libre : '');
+}
+
+/** Un cronómetro nuevo, corriendo desde `ahora`. */
+export const empezarSesion = (ahora: number, [seccion, actividad]: [string, string], nota = ''): EnCurso => ({
+  desde: ahora,
+  acumulado: 0,
+  empezada: ahora,
+  seccion,
+  actividad,
+  nota,
+});
