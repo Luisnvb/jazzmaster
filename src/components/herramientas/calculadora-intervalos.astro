@@ -1,0 +1,316 @@
+---
+// Calculadora de intervalos (sección Herramientas): el intervalo entre dos notas, con
+// su nombre exacto según la escritura, su inversión y sus enarmónicos; la nota que queda
+// a un intervalo de otra; y la tabla de intervalos desde una nota
+// (lib/calculadora-intervalos.ts). El carácter y las canciones de referencia salen de
+// intervalos.yaml (en inglés, su campo `en`). Textos en i18n/calculadora-intervalos.ts; lo
+// usan pages/herramientas/calculadora-intervalos.astro y pages/en/tools/interval-calculator.astro.
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { GRADOS_CALCULADORA, intervaloDe, nombreIntervalo } from '../../lib/calculadora-intervalos.ts';
+import { porOrden } from '../../lib/orden.ts';
+import { ruta } from '../../lib/rutas.ts';
+import { LETRAS, semitonosGrado } from '../../lib/teoria.ts';
+import { formatear, type Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { CALCULADORA } from '../../i18n/calculadora-intervalos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = CALCULADORA[idioma];
+const I = INTERFAZ[idioma];
+
+const NOTAS = LETRAS.flatMap((l) => [`${l}b`, l, `${l}#`]);
+const referencias = porOrden(await getCollection('intervalos')).map(({ data }) => {
+  const en = idioma === 'en' ? data.en : undefined;
+  return {
+    semitonos: data.semitonos,
+    caracter: en?.caracter ?? data.caracter,
+    ascendente: en?.ascendente ?? data.ascendente,
+    descendente: en?.descendente ?? data.descendente,
+  };
+});
+const datos = JSON.stringify(referencias).replace(/</g, '\\u003c');
+const opcionIntervalo = (g: string) => nombreIntervalo(intervaloDe(Number(g.replace(/[b#]/g, '')), semitonosGrado(g)), idioma);
+const bonito = (n: string) => n.replace('#', '♯').replace(/(?<=[A-G])b/, '♭');
+---
+
+<Base titulo={T.titulo}>
+  <div class="sonido">
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+  </div>
+
+  <div class="columnas">
+    <section class="tarjeta" aria-labelledby="entre-titulo">
+      <h2 id="entre-titulo">{T.entre}</h2>
+      <div class="fila">
+        <label class="campo">{T.de} <select data-a>{NOTAS.map((n) => <option value={n}>{bonito(n)}</option>)}</select></label>
+        <label class="campo">{T.a} <select data-b>{NOTAS.map((n) => <option value={n}>{bonito(n)}</option>)}</select></label>
+        <div class="grupo-botones" role="group" aria-label={T.direccion}>
+          <button type="button" class="boton" data-dir-entre="arriba" aria-pressed="true">{T.subiendo}</button>
+          <button type="button" class="boton" data-dir-entre="abajo" aria-pressed="false">{T.bajando}</button>
+        </div>
+      </div>
+      <div class="resultado" data-entre aria-live="polite"></div>
+      <div class="botones-audio">
+        <button type="button" data-audio="entre-melodico" aria-pressed="false">{T.melodico}</button>
+        <button type="button" data-audio="entre-armonico" aria-pressed="false">{T.armonico}</button>
+      </div>
+    </section>
+
+    <section class="tarjeta" aria-labelledby="desde-titulo">
+      <h2 id="desde-titulo">{T.notaA}</h2>
+      <div class="fila">
+        <label class="campo">{T.desde} <select data-desde>{NOTAS.map((n) => <option value={n}>{bonito(n)}</option>)}</select></label>
+        <label class="campo">{T.una} <select data-intervalo>{GRADOS_CALCULADORA.map((g) => <option value={g}>{opcionIntervalo(g)} ({g})</option>)}</select></label>
+        <div class="grupo-botones" role="group" aria-label={T.direccion}>
+          <button type="button" class="boton" data-dir-desde="arriba" aria-pressed="true">{T.haciaArriba}</button>
+          <button type="button" class="boton" data-dir-desde="abajo" aria-pressed="false">{T.haciaAbajo}</button>
+        </div>
+      </div>
+      <div class="resultado" data-desde-resultado aria-live="polite"></div>
+      <div class="botones-audio">
+        <button type="button" data-audio="desde-melodico" aria-pressed="false">{T.melodico}</button>
+        <button type="button" data-audio="desde-armonico" aria-pressed="false">{T.armonico}</button>
+      </div>
+    </section>
+  </div>
+
+  <section aria-labelledby="tabla-titulo">
+    <h2 id="tabla-titulo">{T.tabla} <span data-tabla-nota>C</span></h2>
+    <div class="tabla-caja">
+      <table class="tabla">
+        <thead><tr><th scope="col">{T.intervalo}</th><th scope="col">{T.grado}</th><th scope="col">{T.semitonos}</th><th scope="col">{T.arriba}</th><th scope="col">{T.abajo}</th></tr></thead>
+        <tbody data-tabla></tbody>
+      </table>
+    </div>
+    <p class="suave" set:html={formatear(T.pie, { intervalos: ruta('intervalos') })} />
+  </section>
+
+  <script type="application/json" id="datos-intervalos" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { tocar } from '../../lib/audio.ts';
+  import { GRADOS_CALCULADORA, enarmonicos, intervaloDe, intervaloEntre, inversion, nombreIntervalo, notaA, type Intervalo } from '../../lib/calculadora-intervalos.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { CALCULADORA } from '../../i18n/calculadora-intervalos.ts';
+
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = CALCULADORA[idioma];
+  const nombre = (i: Intervalo) => nombreIntervalo(i, idioma);
+  import { conectarAudio, conectarInstrumento } from '../../lib/cliente.ts';
+  import { secuenciaIntervalo, type ModoIntervalo } from '../../lib/secuencias.ts';
+  import { semitonosGrado } from '../../lib/teoria.ts';
+
+  interface Referencia {
+    semitonos: number;
+    caracter: string;
+    ascendente: string[];
+    descendente: string[];
+  }
+  const referencias: Referencia[] = JSON.parse(document.getElementById('datos-intervalos')!.textContent!);
+  const CLAVE = 'herramientas:intervalos';
+  const op = { a: 'C', b: 'E', dirEntre: 'arriba', desde: 'C', intervalo: '5', dirDesde: 'arriba', ...leerJSON<Record<string, string>>(CLAVE) };
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const selA = $<HTMLSelectElement>('[data-a]');
+  const selB = $<HTMLSelectElement>('[data-b]');
+  const selDesde = $<HTMLSelectElement>('[data-desde]');
+  const selIntervalo = $<HTMLSelectElement>('[data-intervalo]');
+  const instrumento = conectarInstrumento('herramientas:intervalos-sonido');
+  const valida = (sel: HTMLSelectElement, v: string, defecto: string) => ([...sel.options].some((o) => o.value === v) ? v : defecto);
+  selA.value = op.a = valida(selA, op.a, 'C');
+  selB.value = op.b = valida(selB, op.b, 'E');
+  selDesde.value = op.desde = valida(selDesde, op.desde, 'C');
+  selIntervalo.value = op.intervalo = valida(selIntervalo, op.intervalo, '5');
+
+  const bonito = (n: string) =>
+    n.replace(/([A-G])##/g, '$1𝄪').replace(/([A-G])#/g, '$1♯').replace(/([A-G])bb/g, '$1𝄫').replace(/([A-G])b/g, '$1♭');
+  const deGrado = (g: string) => intervaloDe(Number(g.replace(/[b#]/g, '')), semitonosGrado(g));
+
+  /** Carácter y canciones del intervalo (si es de una octava o menos). */
+  function referencia(i: Intervalo, direccion: string): string {
+    const r = referencias.find((x) => x.semitonos === i.semitonos);
+    if (!r) return '';
+    const canciones = direccion === 'arriba' ? r.ascendente : r.descendente;
+    return `<p class="caracter">${esc(r.caracter)}</p>${canciones.length ? `<p class="suave canciones">${formatear(T.cancionesInicio, { canciones: canciones.map(esc).join(', ') })}</p>` : ''}`;
+  }
+
+  /** El intervalo de la primera sección: si baja, es el que va de la segunda nota (abajo) a la primera. */
+  const intervaloEntreActual = () => (op.dirEntre === 'arriba' ? intervaloEntre(op.a, op.b, op.a === op.b) : intervaloEntre(op.b, op.a, op.a === op.b));
+
+  function pintar() {
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-dir-entre]')) b.setAttribute('aria-pressed', String(b.dataset.dirEntre === op.dirEntre));
+    for (const b of document.querySelectorAll<HTMLButtonElement>('[data-dir-desde]')) b.setAttribute('aria-pressed', String(b.dataset.dirDesde === op.dirDesde));
+
+    const i = intervaloEntreActual();
+    const otros = enarmonicos(i);
+    $('[data-entre]').innerHTML = `
+      <div class="nombre">${esc(nombre(i))}</div>
+      <div class="detalle">${formatear(T.detalleEntre, { a: esc(bonito(op.a)), b: esc(bonito(op.b)), direccion: op.dirEntre === 'arriba' ? T.subiendoMin : T.bajandoMin, grado: esc(i.grado), n: i.semitonos })}</div>
+      <dl class="datos">
+        <div><dt>${T.inversion}</dt><dd>${esc(nombre(inversion(i)))}</dd></div>
+        ${otros.length ? `<div><dt>${T.sueneIgual}</dt><dd>${otros.map((x) => esc(nombre(x))).join(' · ')}</dd></div>` : ''}
+      </dl>
+      ${referencia(i, op.dirEntre)}`;
+
+    const nota = notaA(op.desde, op.intervalo, op.dirDesde as 'arriba' | 'abajo');
+    const id = deGrado(op.intervalo);
+    $('[data-desde-resultado]').innerHTML = `
+      <div class="nombre">${esc(bonito(nota))}</div>
+      <div class="detalle">${formatear(T.detalleDesde, { intervalo: esc(nombre(id)), direccion: op.dirDesde === 'arriba' ? T.porEncima : T.porDebajo, nota: esc(bonito(op.desde)), n: id.semitonos })}</div>
+      ${referencia(id, op.dirDesde)}`;
+
+    $('[data-tabla-nota]').textContent = bonito(op.desde);
+    $('[data-tabla]').innerHTML = GRADOS_CALCULADORA.map((g) => {
+      const x = deGrado(g);
+      return `<tr data-fila="${g}" tabindex="0" title="${T.pulsaOir}"><td>${esc(nombre(x))}</td><td>${esc(g)}</td><td>${x.semitonos}</td><td><strong>${esc(bonito(notaA(op.desde, g, 'arriba')))}</strong></td><td>${esc(bonito(notaA(op.desde, g, 'abajo')))}</td></tr>`;
+    }).join('');
+    guardarJSON(CLAVE, op);
+  }
+
+  selA.addEventListener('change', () => ((op.a = selA.value), pintar()));
+  selB.addEventListener('change', () => ((op.b = selB.value), pintar()));
+  selDesde.addEventListener('change', () => ((op.desde = selDesde.value), pintar()));
+  selIntervalo.addEventListener('change', () => ((op.intervalo = selIntervalo.value), pintar()));
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+    const de = el.closest<HTMLButtonElement>('[data-dir-entre]');
+    if (de) return ((op.dirEntre = de.dataset.dirEntre!), pintar());
+    const dd = el.closest<HTMLButtonElement>('[data-dir-desde]');
+    if (dd) return ((op.dirDesde = dd.dataset.dirDesde!), pintar());
+    const fila = el.closest<HTMLElement>('[data-fila]');
+    if (fila) void tocar(secuenciaIntervalo(op.desde, fila.dataset.fila!, 'ascendente'), undefined, instrumento());
+  });
+  $('[data-tabla]').addEventListener('keydown', (e) => {
+    const fila = (e.target as Element).closest<HTMLElement>('[data-fila]');
+    if (fila && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      fila.click();
+    }
+  });
+
+  conectarAudio((boton) => {
+    const [seccion, tipo] = boton.dataset.audio!.split('-');
+    const armonico = tipo === 'armonico';
+    if (seccion === 'entre') {
+      const i = intervaloEntreActual();
+      const modo: ModoIntervalo = armonico ? 'armonico' : op.dirEntre === 'arriba' ? 'ascendente' : 'descendente';
+      return { eventos: secuenciaIntervalo(op.a, i.grado, modo), instrumento: instrumento() };
+    }
+    const modo: ModoIntervalo = armonico ? 'armonico' : op.dirDesde === 'arriba' ? 'ascendente' : 'descendente';
+    return { eventos: secuenciaIntervalo(op.desde, op.intervalo, modo), instrumento: instrumento() };
+  });
+
+  pintar();
+</script>
+
+<style>
+  .sonido {
+    margin: 0 0 1rem;
+  }
+  .sonido select {
+    width: auto;
+    margin: 0 0 0 0.4rem;
+  }
+  .columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+    margin: 0 0 2rem;
+  }
+  .tarjeta h2 {
+    margin-top: 0;
+  }
+  .fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin: 0 0 0.75rem;
+  }
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+  }
+  .campo select {
+    width: auto;
+    margin: 0;
+  }
+  .grupo-botones {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .resultado {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0 0 0.75rem;
+    padding: 0.8rem 1rem;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-top: 0.3rem solid var(--acento);
+    border-radius: var(--radio);
+  }
+  .resultado :global(.nombre) {
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .resultado :global(.datos) {
+    display: grid;
+    gap: 0.2rem;
+    margin: 0.3rem 0 0;
+  }
+  .resultado :global(.datos div) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+  }
+  .resultado :global(dt) {
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .resultado :global(dd) {
+    margin: 0;
+  }
+  .resultado :global(.caracter),
+  .resultado :global(.canciones) {
+    margin: 0.2rem 0 0;
+    font-size: 0.9rem;
+  }
+  .tabla-caja {
+    overflow-x: auto;
+  }
+  .tabla {
+    width: 100%;
+    max-width: 44rem;
+    border-collapse: collapse;
+  }
+  .tabla th,
+  .tabla :global(td) {
+    padding: 0.35rem 0.6rem;
+    text-align: left;
+    border-bottom: 1px solid var(--borde);
+  }
+  .tabla th {
+    font-size: 0.85rem;
+    color: var(--texto-suave);
+  }
+  .tabla :global(tr[data-fila]) {
+    cursor: pointer;
+  }
+  .tabla :global(tr[data-fila]:hover),
+  .tabla :global(tr[data-fila]:focus-visible) {
+    background: var(--acento-suave);
+    outline: none;
+  }
+</style>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CIRCULO, armadura, circuloSVG, diatonicos, escala, indiceDe, secundarios, sustitutoTritonal, textoArmadura, vecinas } from './circulo.ts';
+import { CIRCULO, armadura, circuloSVG, diatonicos, escala, indiceDe, nombreTonalidad, secundarios, sustitutoTritonal, textoArmadura, vecinas } from './circulo.ts';
 
 const de = (mayor: string) => CIRCULO.find((t) => t.mayor === mayor)!;
 
@@ -57,4 +57,11 @@ test('el dibujo marca la tonalidad elegida y sus vecinas', () => {
   assert.match(svg, /class="sector mayor elegido" data-indice="2"/);
   assert.match(svg, /class="sector mayor vecino" data-indice="1"/);
   assert.equal((svg.match(/data-indice=/g) ?? []).length, 24);
+});
+
+test('en inglés', () => {
+  assert.equal(nombreTonalidad(CIRCULO[2], 'mayor', 'en'), 'D major');
+  assert.equal(nombreTonalidad(CIRCULO[2], 'menor', 'en'), 'B minor');
+  assert.equal(textoArmadura(0, 'en'), 'no sharps or flats');
+  assert.match(circuloSVG({ indice: 6, modo: 'mayor' }, 'en'), /aria-label="F# major \(or Gb major\), 6♯"/);
 });

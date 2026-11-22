@@ -1,0 +1,63 @@
+// Textos del Buscador de acordes (components/herramientas/buscador-acordes.astro).
+import { textos } from './idiomas.ts';
+
+export const BUSCADOR_ACORDES = textos(
+  {
+    titulo: 'Buscador de acordes',
+    comoBuscar: 'Cómo buscar',
+    escribir: 'Escribir notas',
+    enMastil: 'En el mástil',
+    introNotas:
+      'Escribe las notas del acorde de grave a agudo, separadas por espacios o comas: la primera es el <strong>bajo</strong>. Valen <code>C Eb G Bb</code>, <code>do mib sol sib</code> o <code>c, d#, f♯</code>. También puedes ir pulsando las notas.',
+    introMastil:
+      'Pulsa un traste en cada cuerda que suene (0 es la cuerda al aire, a la izquierda de la cejuela); pulsarlo otra vez la apaga. El <strong>bajo</strong> es la nota más grave.',
+    buscador: 'Buscador',
+    limpiar: 'Limpiar mástil',
+    notas: 'Notas',
+    borrar: 'Borrar',
+    teclas: 'Añadir o quitar notas',
+    bloque: '▶ En bloque',
+    arpegiado: '▶ Arpegiado',
+    otras: 'Otras lecturas',
+    pie: 'El nombre depende del bajo: <code>A C E G</code> es Am7, pero <code>C A E G</code> se lee antes como C6 (y Am7/C queda entre las otras lecturas). Sin 3ª, el acorde se nombra como sus o se avisa de que falta. Los nombres siguen las mismas reglas que <a href="{slash}">Acordes slash</a>.',
+    trastes: 'De 6ª a 1ª: {trastes}',
+    noEntiendo: 'No entiendo: {trozos}',
+    faltanTrastes: 'Pulsa trastes en al menos tres cuerdas (con tres notas distintas).',
+    faltanNotas: 'Escribe o pulsa al menos tres notas distintas.',
+    unaNota: 'Solo una nota: <strong>{nota}</strong>. Faltan dos más para un acorde.',
+    dosNotas: '<strong>{a}–{b}</strong>: {intervalo}. Con dos notas es un intervalo; añade otra para formar un acorde.',
+    raizBajo: 'Raíz en el bajo',
+    raizOtra: 'Raíz {raiz}, con {bajo} en el bajo',
+    sinTercera: ' · sin 3ª',
+    notasGrados: 'Notas y grados',
+  },
+  {
+    titulo: 'Chord finder',
+    comoBuscar: 'How to search',
+    escribir: 'Type notes',
+    enMastil: 'On the neck',
+    introNotas:
+      'Type the notes of the chord from low to high, separated by spaces or commas: the first one is the <strong>bass</strong>. <code>C Eb G Bb</code>, <code>c, d#, f♯</code> or solfège (<code>do mib sol sib</code>) all work. You can also press the notes.',
+    introMastil:
+      'Press one fret on each string that sounds (0 is the open string, left of the nut); press it again to mute the string. The <strong>bass</strong> is the lowest note.',
+    buscador: 'Finder',
+    limpiar: 'Clear neck',
+    notas: 'Notes',
+    borrar: 'Clear',
+    teclas: 'Add or remove notes',
+    bloque: '▶ Block chord',
+    arpegiado: '▶ Arpeggiated',
+    otras: 'Other readings',
+    pie: 'The name depends on the bass: <code>A C E G</code> is Am7, but <code>C A E G</code> reads first as C6 (with Am7/C among the other readings). With no 3rd, the chord is named as a sus chord or flagged as missing it. Names follow the same rules as <a href="{slash}" hreflang="es">Slash chords</a> (in Spanish).',
+    trastes: '6th to 1st string: {trastes}',
+    noEntiendo: 'Not understood: {trozos}',
+    faltanTrastes: 'Press frets on at least three strings (with three different notes).',
+    faltanNotas: 'Type or press at least three different notes.',
+    unaNota: 'Just one note: <strong>{nota}</strong>. Two more are needed for a chord.',
+    dosNotas: '<strong>{a}–{b}</strong>: {intervalo}. Two notes make an interval; add another one for a chord.',
+    raizBajo: 'Root in the bass',
+    raizOtra: 'Root {raiz}, with {bajo} in the bass',
+    sinTercera: ' · no 3rd',
+    notasGrados: 'Notes and degrees',
+  },
+);

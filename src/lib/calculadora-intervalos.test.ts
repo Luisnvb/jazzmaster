@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GRADOS_CALCULADORA, enarmonicos, intervaloDe, intervaloEntre, inversion, notaA } from './calculadora-intervalos.ts';
+import { GRADOS_CALCULADORA, enarmonicos, intervaloDe, intervaloEntre, inversion, nombreIntervalo, notaA } from './calculadora-intervalos.ts';
 import { semitonosGrado } from './teoria.ts';
 
 const nombre = (a: string, b: string) => intervaloEntre(a, b).nombre;
@@ -56,4 +56,18 @@ test('enarmónicos e intervalos de la lista', () => {
     const n = Number(g.replace(/[b#]/g, ''));
     assert.equal(intervaloDe(n, semitonosGrado(g)).grado, g);
   }
+});
+
+test('nombres en inglés', () => {
+  const en = (a: string, b: string) => nombreIntervalo(intervaloEntre(a, b), 'en');
+  assert.equal(en('C', 'E'), 'major 3rd');
+  assert.equal(en('C', 'F#'), 'augmented 4th');
+  assert.equal(en('C', 'Gb'), 'diminished 5th');
+  assert.equal(en('C', 'C'), 'unison');
+  assert.equal(en('C', 'C#'), 'augmented unison');
+  assert.equal(nombreIntervalo(intervaloEntre('G', 'G', true), 'en'), 'perfect octave');
+  assert.equal(nombreIntervalo(intervaloDe(9, 13), 'en'), 'minor 9th');
+  assert.equal(nombreIntervalo(intervaloDe(11, 18), 'en'), 'augmented 11th');
+  assert.equal(nombreIntervalo(intervaloDe(13, 21), 'en'), 'major 13th');
+  assert.equal(nombreIntervalo(intervaloEntre('C', 'E'), 'es'), '3ª mayor');
 });

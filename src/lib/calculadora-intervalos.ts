@@ -91,3 +91,23 @@ export function enarmonicos(i: Intervalo): Intervalo[] {
   }
   return res;
 }
+
+const CALIDAD_EN: Record<Calidad, string> = {
+  justa: 'perfect',
+  mayor: 'major',
+  menor: 'minor',
+  aumentada: 'augmented',
+  disminuida: 'diminished',
+  'doble aumentada': 'doubly augmented',
+  'doble disminuida': 'doubly diminished',
+};
+
+/** Ordinal inglés: 2nd, 3rd, 4th… 11th, 12th, 13th. */
+const ordinalEn = (n: number) => `${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'}`;
+
+/** Nombre del intervalo en un idioma: «3ª mayor» / «major 3rd», «unísono» / «unison», «8ª justa» / «perfect octave». */
+export function nombreIntervalo(i: Pick<Intervalo, 'numero' | 'calidad' | 'nombre'>, idioma: 'es' | 'en' = 'es'): string {
+  if (idioma === 'es') return i.nombre;
+  if (i.numero === 1) return i.calidad === 'justa' ? 'unison' : `${CALIDAD_EN[i.calidad]} unison`;
+  return `${CALIDAD_EN[i.calidad]} ${i.numero === 8 ? 'octave' : ordinalEn(i.numero)}`;
+}

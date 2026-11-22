@@ -1,0 +1,86 @@
+// Textos de Progresiones aleatorias (components/herramientas/progresiones-aleatorias.astro).
+import { NIVELES, type Nivel } from '../lib/generador-progresiones.ts';
+import { textos } from './idiomas.ts';
+
+const nivelesEs = Object.fromEntries(NIVELES.map((n) => [n.id, { nombre: n.nombre, descripcion: n.descripcion }])) as Record<
+  Nivel,
+  { nombre: string; descripcion: string }
+>;
+
+export const GENERADOR = textos(
+  {
+    titulo: 'Progresiones aleatorias',
+    intro:
+      'Progresiones que nunca has visto, construidas con las reglas de la armonía funcional: cada acorde va hacia el siguiente como en los standards (II–V, dominantes secundarios, sustitutos…) y todas acaban en la tónica. Léelas a primera vista, acompáñalas o improvisa encima; oculta los grados para analizarlas tú.',
+    opciones: 'Opciones',
+    modo: 'Modo',
+    mayor: 'Mayor',
+    menor: 'Menor',
+    nivel: 'Nivel',
+    niveles: nivelesEs,
+    tonalidad: 'Tonalidad',
+    alAzar: 'Al azar',
+    compases: 'Compases',
+    dos: 'Dos acordes por compás',
+    nunca: 'Nunca',
+    aVeces: 'A veces',
+    aMenudo: 'A menudo',
+    grados: 'Mostrar los grados',
+    nuevaCadaVuelta: 'Una nueva en cada vuelta',
+    nueva: 'Nueva progresión',
+    copiar: 'Copiar cifrado',
+    guardar: 'Guardar en Progresiones',
+    metronomo: 'Metrónomo',
+    bucle: 'En bucle',
+    escuchar: '▶ Escuchar',
+    pie: 'Al guardarla aparece en <a href="{progresiones}">Progresiones</a> (en grados), donde puedes verla con voicings y en cualquier tono.',
+    en: 'En {tonica} {modo}',
+    modoMayor: 'mayor',
+    modoMenor: 'menor',
+    compas: 'Compás {n}',
+    prefijoNombre: 'Al azar',
+    descripcion: 'Generada con Progresiones aleatorias ({nivel}), en {tonica} {modo}.',
+    guardada: 'Guardada en Progresiones como «{nombre}».',
+  },
+  {
+    titulo: 'Random progressions',
+    intro:
+      'Progressions you have never seen, built with the rules of functional harmony: each chord moves to the next as in the standards (II–V, secondary dominants, substitutes…) and they all end on the tonic. Sight-read them, comp them or improvise over them; hide the degrees to analyse them yourself.',
+    opciones: 'Options',
+    modo: 'Mode',
+    mayor: 'Major',
+    menor: 'Minor',
+    nivel: 'Level',
+    niveles: {
+      diatonico: { nombre: 'Diatonic', descripcion: 'Only the chords of the key.' },
+      secundarios: { nombre: 'With secondary dominants', descripcion: 'Adds VI7, II7, III7… and their II–Vs.' },
+      sustituciones: {
+        nombre: 'With substitutions',
+        descripcion: 'Adds tritone substitutes, the backdoor (IVm7 bVII7) and borrowing from minor.',
+      },
+    },
+    tonalidad: 'Key',
+    alAzar: 'Random',
+    compases: 'Bars',
+    dos: 'Two chords per bar',
+    nunca: 'Never',
+    aVeces: 'Sometimes',
+    aMenudo: 'Often',
+    grados: 'Show the degrees',
+    nuevaCadaVuelta: 'A new one every time round',
+    nueva: 'New progression',
+    copiar: 'Copy chords',
+    guardar: 'Save to Progressions',
+    metronomo: 'Metronome',
+    bucle: 'Loop',
+    escuchar: '▶ Listen',
+    pie: 'Once saved it appears in <a href="{progresiones}" hreflang="es">Progressions</a> (in Spanish, written in degrees), where you can see it with voicings and in any key.',
+    en: 'In {tonica} {modo}',
+    modoMayor: 'major',
+    modoMenor: 'minor',
+    compas: 'Bar {n}',
+    prefijoNombre: 'Random',
+    descripcion: 'Made with Random progressions ({nivel}), in {tonica} {modo}.',
+    guardada: 'Saved to Progressions as “{nombre}”.',
+  },
+);

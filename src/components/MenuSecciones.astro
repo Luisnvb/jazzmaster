@@ -5,9 +5,13 @@
 // enlace directo. Herramientas puede llevar debajo contenido (slot "herramientas": en
 // la portada, el botón del registro de práctica y los favoritos de Apuntes).
 import { ruta } from '../lib/rutas.ts';
-import { SECCIONES, type Pagina, type Seccion } from '../lib/secciones.ts';
+import { secciones, type Pagina, type Seccion } from '../lib/secciones.ts';
+import { conPrefijo, type Idioma } from '../i18n/idiomas.ts';
+import { INTERFAZ } from '../i18n/interfaz.ts';
 
 interface Props {
+  /** Idioma del menú (por defecto, español). */
+  idioma?: Idioma;
   /** Página en la que estamos (se marca). */
   pagina?: Pagina;
   /** Sección abierta de entrada (la de la página actual). */
@@ -20,15 +24,17 @@ interface Props {
   columnas?: boolean;
 }
 
-const { pagina, abierta, conInicio = false, enInicio = false, columnas = false } = Astro.props;
+const { idioma = 'es', pagina, abierta, conInicio = false, enInicio = false, columnas = false } = Astro.props;
+const SECCIONES = secciones(idioma);
+const T = INTERFAZ[idioma];
 ---
 
 <ul class:list={['menu-secciones', { columnas }]} style={columnas ? `--columnas: ${SECCIONES.length}` : undefined}>
   {
     conInicio && (
       <li class="seccion">
-        <a class="nombre" href={ruta('')} aria-current={enInicio ? 'page' : undefined}>
-          Inicio
+        <a class="nombre" href={ruta(conPrefijo(idioma, ''))} aria-current={enInicio ? 'page' : undefined}>
+          {T.inicio}
         </a>
       </li>
     )
@@ -48,8 +54,9 @@ const { pagina, abierta, conInicio = false, enInicio = false, columnas = false }
             <ul class="paginas" data-lista-paginas>
               {s.partes.map((p) => (
                 <li data-pagina={p.href}>
-                  <a href={p.href} title={p.lema} aria-current={p === pagina ? 'page' : undefined}>
+                  <a href={p.href} title={p.lema} aria-current={p === pagina ? 'page' : undefined} hreflang={p.soloEspanol ? 'es' : undefined}>
                     {p.nombre}
+                    {p.soloEspanol && <span class="solo-es" title={T.soloEspanol}>ES</span>}
                   </a>
                 </li>
               ))}
@@ -116,6 +123,16 @@ const { pagina, abierta, conInicio = false, enInicio = false, columnas = false }
   summary.nombre:hover,
   .menu-secciones a[aria-current='page'] {
     color: var(--acento);
+  }
+  .solo-es {
+    margin-left: 0.35rem;
+    padding: 0 0.25rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    vertical-align: 0.1rem;
+    color: var(--texto-suave);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
   }
   .paginas :global(.favorita) > a::before {
     content: '★ ';

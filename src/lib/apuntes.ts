@@ -49,19 +49,20 @@ export function ordenar<T extends { favorita: boolean; editada: number }>(lista:
 }
 
 /** Título que se enseña: el escrito o, si está vacío, el principio del texto. */
-export function tituloDe(nota: Pick<Nota, 'titulo' | 'texto'>): string {
+export function tituloDe(nota: Pick<Nota, 'titulo' | 'texto'>, idioma: 'es' | 'en' = 'es'): string {
   const t = nota.titulo.trim();
   if (t) return t;
   const linea = nota.texto.trim().split('\n')[0] ?? '';
-  return linea ? (linea.length > 40 ? `${linea.slice(0, 40)}…` : linea) : 'Sin título';
+  return linea ? (linea.length > 40 ? `${linea.slice(0, 40)}…` : linea) : idioma === 'en' ? 'Untitled' : 'Sin título';
 }
 
-/** Tamaño legible: 2,4 MB. */
-export function tamanoLegible(bytes: number): string {
+/** Tamaño legible: 2,4 MB (en inglés, 2.4 MB). */
+export function tamanoLegible(bytes: number, idioma: 'es' | 'en' = 'es'): string {
+  const coma = (x: string) => (idioma === 'en' ? x : x.replace('.', ','));
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 ** 2) return `${Math.round(bytes / 1024)} KB`;
-  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1).replace('.', ',')} MB`;
-  return `${(bytes / 1024 ** 3).toFixed(1).replace('.', ',')} GB`;
+  if (bytes < 1024 ** 3) return `${coma((bytes / 1024 ** 2).toFixed(1))} MB`;
+  return `${coma((bytes / 1024 ** 3).toFixed(1))} GB`;
 }
 
 /** Nombre del archivo de una ruta del equipo (C:\a\b.pdf o /a/b.pdf → b.pdf). */
@@ -105,11 +106,12 @@ export function htmlIndiceNotas(
   actual?: string,
   documentos: readonly Documento[] = [],
   hrefDocumento: (id: string) => string = (id) => `#${anclaDocumento(id)}`,
+  idioma: 'es' | 'en' = 'es',
 ): string {
   const enlace = (clase: string, href: string, titulo: string, favorita: boolean, extra = '') =>
     `<a class="${clase}${favorita ? ' favorita' : ''}" href="${esc(href)}"${extra}>${favorita ? '★ ' : ''}${esc(titulo)}</a>`;
   const nota = (n: Nota) =>
-    enlace('enlace-nota', hrefNota(n.id), tituloDe(n), n.favorita, `${n.id === actual ? ' aria-current="page"' : ''} data-enlace-nota="${esc(n.id)}"`);
+    enlace('enlace-nota', hrefNota(n.id), tituloDe(n, idioma), n.favorita, `${n.id === actual ? ' aria-current="page"' : ''} data-enlace-nota="${esc(n.id)}"`);
   const doc = (d: Documento) =>
     enlace('enlace-nota enlace-documento', hrefDocumento(d.id), d.titulo, true, ` data-enlace-documento="${esc(d.id)}"`);
   const notasOrdenadas = ordenar(notas);

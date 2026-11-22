@@ -1,0 +1,340 @@
+---
+// Círculo de quintas (sección Herramientas): pulsando una tonalidad (mayor fuera,
+// relativa menor dentro) se ven su armadura, su escala, sus acordes diatónicos, los
+// dominantes secundarios y las tonalidades vecinas, y se pueden oír (lib/circulo.ts).
+// Textos en i18n/circulo-quintas.ts; lo usan pages/herramientas/circulo-quintas.astro y
+// pages/en/tools/circle-of-fifths.astro.
+import Base from '../../layouts/Base.astro';
+import Tempo from '../../components/Tempo.astro';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { CIRCULO_TEXTOS } from '../../i18n/circulo-quintas.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = CIRCULO_TEXTOS[idioma];
+const I = INTERFAZ[idioma];
+---
+
+<Base titulo={T.titulo}>
+  <p class="intro">{T.intro}</p>
+
+  <div class="disposicion">
+    <div class="caja-circulo" data-circulo></div>
+
+    <section class="panel" aria-live="polite">
+      <h2 class="titulo-tonalidad" data-titulo></h2>
+      <p class="armadura-texto" data-armadura></p>
+      <dl class="datos" data-datos></dl>
+
+      <h3>{T.escala}</h3>
+      <p class="escala" data-escala></p>
+
+      <h3>{T.acordes}</h3>
+      <ul class="acordes" data-diatonicos></ul>
+
+      <h3>{T.secundarios}</h3>
+      <ul class="acordes secundarios" data-secundarios></ul>
+      <p class="suave nota" data-tritono></p>
+
+      <div class="controles">
+        <label>{I.sonido}
+          <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+        </label>
+        <Tempo clave="circulo" inicial={100} />
+      </div>
+      <div class="botones-audio">
+        <button type="button" data-audio="cadencia" aria-pressed="false">▶ II–V–I</button>
+        <button type="button" data-audio="escala" aria-pressed="false">{T.oirEscala}</button>
+        <button type="button" data-detener>{I.detener}</button>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { CIRCULO_TEXTOS } from '../../i18n/circulo-quintas.ts';
+  import {
+    CADENCIA,
+    CIRCULO,
+    armadura,
+    circuloSVG,
+    diatonicos,
+    escala,
+    indiceDe,
+    nombreModo,
+    nombreTonalidad,
+    secundarios,
+    sustitutoTritonal,
+    textoArmadura,
+    tonicaDe,
+    vecinas,
+    type Modo,
+  } from '../../lib/circulo.ts';
+  import { conectarAudio, conectarInstrumento, conectarTempo } from '../../lib/cliente.ts';
+  import { analizarProgresion, parseAcordeGrado, secuenciaProgresion } from '../../lib/progresiones.ts';
+  import { secuenciaEscala } from '../../lib/secuencias.ts';
+  import { SOSTENIDOS, tocar } from '../../lib/audio.ts';
+
+  const idioma = idiomaValido(document.documentElement.lang);
+  const T = CIRCULO_TEXTOS[idioma];
+  const CLAVE = 'herramientas:circulo';
+  const guardado = leerJSON<{ indice?: number; modo?: Modo }>(CLAVE) ?? {};
+  let indice = Number.isInteger(guardado.indice) && guardado.indice! >= 0 && guardado.indice! < 12 ? guardado.indice! : 0;
+  let modo: Modo = guardado.modo === 'menor' ? 'menor' : 'mayor';
+
+  const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const caja = $('[data-circulo]');
+  const tempo = conectarTempo();
+  const instrumento = conectarInstrumento('herramientas:circulo-sonido');
+
+  const bonito = (texto: string) => texto.replace(/([A-G])#/g, '$1♯').replace(/([A-G])b/g, '$1♭');
+  const enlaceTonalidad = (i: number, m: Modo, texto?: string) =>
+    `<button type="button" class="enlace" data-ir="${i}" data-ir-modo="${m}">${esc(bonito(texto ?? nombreTonalidad(CIRCULO[i], m, idioma)))}</button>`;
+
+  function pintar() {
+    const t = CIRCULO[indice];
+    caja.innerHTML = circuloSVG({ indice, modo }, idioma);
+    const otra = t.enarmonica ? ` <span class="suave">(${T.o} ${esc(bonito(modo === 'mayor' ? t.enarmonica.mayor : t.enarmonica.menor))} ${nombreModo(modo, idioma)})</span>` : '';
+    $('[data-titulo]').innerHTML = `${esc(bonito(nombreTonalidad(t, modo, idioma)))}${otra}`;
+    const alt = armadura(t.alteraciones);
+    $('[data-armadura]').textContent = t.alteraciones === 0 ? T.sinAlteraciones : formatear(T.armadura, { n: textoArmadura(t.alteraciones, idioma), notas: bonito(alt.join(' ')) });
+    const v = vecinas(indice);
+    const otroModo: Modo = modo === 'mayor' ? 'menor' : 'mayor';
+    const homonima = indiceDe(tonicaDe(t, modo), otroModo);
+    $('[data-datos]').innerHTML = `
+      <div><dt>${modo === 'mayor' ? T.relativaMenor : T.relativaMayor}</dt><dd>${enlaceTonalidad(indice, otroModo)}</dd></div>
+      <div><dt>${T.homonima}</dt><dd>${homonima >= 0 ? enlaceTonalidad(homonima, otroModo, `${tonicaDe(t, modo)} ${nombreModo(otroModo, idioma)}`) : '—'}</dd></div>
+      <div><dt>${T.vecinas}</dt><dd>${enlaceTonalidad((indice + 11) % 12, modo, nombreTonalidad(v.subdominante, modo, idioma))} (IV) · ${enlaceTonalidad((indice + 1) % 12, modo, nombreTonalidad(v.dominante, modo, idioma))} (V)</dd></div>`;
+    $('[data-escala]').textContent = bonito(escala(t, modo).join(' '));
+    $('[data-diatonicos]').innerHTML = diatonicos(t, modo)
+      .map((a) => `<li><button type="button" class="acorde" data-acorde="${esc(a.grado)}"><span class="grado">${esc(a.grado)}</span><strong>${esc(bonito(a.simbolo))}</strong></button></li>`)
+      .join('');
+    $('[data-secundarios]').innerHTML = secundarios(t, modo)
+      .map(
+        (s) =>
+          `<li><button type="button" class="acorde" data-acorde="${esc(s.acorde.grado)}"><span class="grado">V7/${esc(s.destino.grado.replace(/(maj7|m7|7)$/, ''))}</span><strong>${esc(bonito(s.acorde.simbolo))}</strong><span class="suave">→ ${esc(bonito(s.destino.simbolo))}</span></button></li>`,
+      )
+      .join('');
+    const v7 = diatonicos(t, modo)[4];
+    $('[data-tritono]').textContent = formatear(T.tritono, { v7: bonito(v7.simbolo), sub: bonito(sustitutoTritonal(t, modo).simbolo) });
+    guardarJSON(CLAVE, { indice, modo });
+  }
+
+  const elegir = (i: number, m: Modo) => {
+    indice = i;
+    modo = m;
+    pintar();
+  };
+
+  caja.addEventListener('click', (e) => {
+    const g = (e.target as Element).closest<SVGGElement>('.sector');
+    if (g) elegir(Number(g.dataset.indice), g.dataset.modo as Modo);
+  });
+  caja.addEventListener('keydown', (e) => {
+    const g = (e.target as Element).closest<SVGGElement>('.sector');
+    if (!g || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    elegir(Number(g.dataset.indice), g.dataset.modo as Modo);
+    caja.querySelector<SVGGElement>(`.sector[data-indice="${g.dataset.indice}"][data-modo="${g.dataset.modo}"]`)?.focus();
+  });
+
+  const sostenido = () => SOSTENIDOS.includes(instrumento());
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+    const ir = el.closest<HTMLButtonElement>('[data-ir]');
+    if (ir) return elegir(Number(ir.dataset.ir), ir.dataset.irModo as Modo);
+    const a = el.closest<HTMLButtonElement>('[data-acorde]');
+    if (a) {
+      // Un acorde suelto, al pulsarlo.
+      const { eventos } = secuenciaProgresion(tonicaDe(CIRCULO[indice], modo), [[parseAcordeGrado(a.dataset.acorde!)]], tempo(), 4, { sostenido: sostenido() });
+      void tocar(eventos, undefined, instrumento());
+    }
+  });
+
+  conectarAudio((boton) => {
+    const tonica = tonicaDe(CIRCULO[indice], modo);
+    if (boton.dataset.audio === 'escala') {
+      const formula = modo === 'mayor' ? ['1', '2', '3', '4', '5', '6', '7'] : ['1', '2', 'b3', '4', '5', 'b6', 'b7'];
+      return { eventos: secuenciaEscala(tonica, formula, 'ascendente', tempo()), instrumento: instrumento() };
+    }
+    const { eventos } = secuenciaProgresion(tonica, analizarProgresion(CADENCIA[modo]), tempo(), 4, { sostenido: sostenido() });
+    return { eventos, instrumento: instrumento() };
+  });
+
+  pintar();
+</script>
+
+<style>
+  .intro {
+    max-width: var(--ancho-texto);
+  }
+  .disposicion {
+    display: grid;
+    grid-template-columns: minmax(0, 28rem) minmax(0, 1fr);
+    gap: 1.5rem 2rem;
+    align-items: start;
+  }
+  @media (max-width: 52rem) {
+    .disposicion {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .caja-circulo {
+    max-width: 28rem;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .caja-circulo :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .caja-circulo :global(.sector) {
+    cursor: pointer;
+    outline: none;
+  }
+  .caja-circulo :global(.sector path) {
+    fill: var(--superficie);
+    stroke: var(--borde);
+    stroke-width: 1.5;
+  }
+  .caja-circulo :global(.sector.menor path) {
+    fill: var(--fondo);
+  }
+  .caja-circulo :global(.sector:hover path),
+  .caja-circulo :global(.sector:focus-visible path) {
+    stroke: var(--acento);
+    stroke-width: 2.5;
+  }
+  /* COLOR: tonalidades vecinas de la elegida */
+  .caja-circulo :global(.sector.vecino path) {
+    fill: var(--acento-suave);
+  }
+  /* COLOR: tonalidad elegida */
+  .caja-circulo :global(.sector.elegido path) {
+    fill: var(--acento);
+    stroke: var(--acento);
+  }
+  .caja-circulo :global(.sector text) {
+    fill: var(--texto);
+    font-family: var(--fuente);
+    font-size: 20px;
+    font-weight: 800;
+    pointer-events: none;
+  }
+  .caja-circulo :global(.sector.menor text) {
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .caja-circulo :global(.sector text.enarmonica) {
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--texto-suave);
+  }
+  .caja-circulo :global(.sector.elegido text) {
+    fill: var(--sobre-acento);
+  }
+  .caja-circulo :global(text.armadura) {
+    fill: var(--texto-suave);
+    font-family: var(--fuente);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .titulo-tonalidad {
+    margin-top: 0;
+  }
+  .armadura-texto {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+  }
+  .datos {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 1rem;
+  }
+  .datos :global(div) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+  }
+  .datos :global(dt) {
+    min-width: 8rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .datos :global(dd) {
+    margin: 0;
+  }
+  .panel :global(.enlace) {
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    color: var(--acento);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .panel h3 {
+    margin: 1rem 0 0.4rem;
+    font-size: 1rem;
+  }
+  .escala {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .acordes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .acordes :global(.acorde) {
+    display: grid;
+    justify-items: center;
+    gap: 0.1rem;
+    min-width: 4.5rem;
+    padding: 0.35rem 0.6rem;
+    font: inherit;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    cursor: pointer;
+  }
+  .acordes :global(.acorde:hover) {
+    border-color: var(--acento);
+  }
+  .acordes :global(.grado) {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+  .acordes :global(.suave) {
+    font-size: 0.8rem;
+  }
+  .nota {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+  }
+  .controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1.25rem;
+  }
+  .controles :global(.tempo) {
+    margin: 0;
+  }
+</style>

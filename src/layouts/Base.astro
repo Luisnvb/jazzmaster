@@ -1,7 +1,9 @@
 ---
 import '../styles/global.css';
-import { archivo, ruta } from '../lib/rutas.ts';
-import { SECCIONES, paginaActual, seccionActual } from '../lib/secciones.ts';
+import { archivo, BASE, ruta } from '../lib/rutas.ts';
+import { paginaActual, seccionActual, secciones } from '../lib/secciones.ts';
+import { conPrefijo, formatear, idiomaDeDireccion } from '../i18n/idiomas.ts';
+import { INTERFAZ } from '../i18n/interfaz.ts';
 import { PASOS } from '../lib/ruta.ts';
 import MenuSecciones from '../components/MenuSecciones.astro';
 
@@ -15,25 +17,40 @@ interface Props {
   conH1?: boolean;
   /** Con la barra de secciones de escritorio (la portada no la lleva: ya muestra todas). */
   conBarra?: boolean;
+  /**
+   * La misma página en el otro idioma, si no sale de la lista de secciones (p. ej. una
+   * subpágina como /apuntes/nota/). Sin ella, el enlace de idioma va a la equivalente de
+   * la lista o, si no hay, a la portada del otro idioma.
+   */
+  otroIdioma?: string;
 }
 
 const { titulo, encabezado = titulo, conH1 = true, conBarra = true } = Astro.props;
+// El idioma sale de la dirección: /en/… es inglés; lo demás, español.
+const idioma = idiomaDeDireccion(Astro.url.pathname, BASE);
+const T = INTERFAZ[idioma];
+const SECCIONES = secciones(idioma);
+const otro = idioma === 'es' ? 'en' : 'es';
 const Titulo = conH1 ? 'h1' : 'p';
 
 // Con barra final para comparar igual "/acordes" y "/acordes/" con ruta('acordes').
 const actual = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
-const seccion = seccionActual(actual);
+const seccion = seccionActual(actual, idioma);
 // Página de las secciones en la que estamos: se puede marcar como favorita (solo en
 // la propia página, no en las que cuelgan de ella, como cada canción del Repertorio).
-const pagina = paginaActual(actual);
+const pagina = paginaActual(actual, idioma);
 const favoritable = pagina && pagina.href === actual ? pagina : undefined;
 // Si la página es un paso de la ruta de aprendizaje, un aviso arriba (solo se ve si
 // ya has empezado la ruta) para marcarlo como hecho e ir al siguiente.
-const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
+const pasoRuta = idioma === 'es' ? PASOS.find((p) => ruta(p.direccion) === actual) : undefined;
+// Enlace al otro idioma: la página equivalente si la hay; si no, su portada.
+const equivalente = Astro.props.otroIdioma ?? (pagina && pagina.href === actual ? pagina.otroIdioma : undefined);
+const enlaceIdioma = equivalente ?? ruta(conPrefijo(otro, ''));
+const enInicio = actual === ruta(conPrefijo(idioma, ''));
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={idioma}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -43,22 +60,23 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     <link rel="manifest" href={archivo('manifest.webmanifest')} />
     <link rel="icon" href={archivo('favicon.png')} type="image/png" />
     <link rel="apple-touch-icon" href={archivo('iconos/apple-touch-icon.png')} />
+    {equivalente && <link rel="alternate" hreflang={otro} href={equivalente} />}
     <title>{titulo} · JAZZMASTER</title>
   </head>
   <body>
     <header class="cabecera">
       <div class="cabecera-dentro">
         <div class="titulo-caja">
-          <a class="guitarra guitarra-inicio" href={ruta('')} title="Inicio">
-            <img src={archivo('iconos/guitarra.png')} alt="Inicio" width="120" height="120" />
+          <a class="guitarra guitarra-inicio" href={ruta(conPrefijo(idioma, ''))} title={T.inicio}>
+            <img src={archivo('iconos/guitarra.png')} alt={T.inicio} width="120" height="120" />
           </a>
           <button
             type="button"
             class="guitarra guitarra-menu"
             aria-expanded="false"
             aria-controls="menu"
-            aria-label="Menú de secciones"
-            title="Menú"
+            aria-label={T.menuSecciones}
+            title={T.menu}
             data-abrir-menu
           >
             <img src={archivo('iconos/guitarra.png')} alt="" width="120" height="120" />
@@ -71,8 +89,8 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
                 class="favorito favorito-pagina"
                 data-favorito-pagina={favoritable.href}
                 aria-pressed="false"
-                aria-label={`Página favorita: ${favoritable.nombre}`}
-                title="Marcar como favorita: sale la primera en el menú de su sección y en la portada"
+                aria-label={formatear(T.favorita, { nombre: favoritable.nombre })}
+                title={T.marcarFavorita}
               >
                 ☆
               </button>
@@ -81,7 +99,7 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
         </div>
         {
           conBarra && (
-            <nav aria-label="Secciones">
+            <nav aria-label={T.secciones} class="barra-secciones">
               {
                 SECCIONES.map((s) =>
                   s.partes.length === 1 ? (
@@ -96,8 +114,9 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
                     <ul class="desplegable" data-lista-paginas>
                       {s.partes.map((p) => (
                         <li data-pagina={p.href}>
-                          <a href={p.href} aria-current={p === pagina ? 'page' : undefined}>
+                          <a href={p.href} aria-current={p === pagina ? 'page' : undefined} hreflang={p.soloEspanol ? 'es' : undefined}>
                             {p.nombre}
+                            {p.soloEspanol && <span class="solo-es" title={T.soloEspanol}>ES</span>}
                           </a>
                         </li>
                       ))}
@@ -109,10 +128,13 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
             </nav>
           )
         }
+        <a class="cambiar-idioma" href={enlaceIdioma} hreflang={otro} lang={otro} title={T.cambiarIdiomaTitulo} data-cambiar-idioma={equivalente ? 'pagina' : 'portada'}>
+          {T.otroIdioma.toUpperCase()}
+        </a>
       </div>
-      <nav id="menu" class="menu" aria-label="Menú de secciones" hidden data-menu>
+      <nav id="menu" class="menu" aria-label={T.menuSecciones} hidden data-menu>
         <div class="menu-dentro">
-          <MenuSecciones pagina={pagina} abierta={seccion} conInicio enInicio={actual === ruta('')} />
+          <MenuSecciones idioma={idioma} pagina={pagina} abierta={seccion} conInicio enInicio={enInicio} />
         </div>
       </nav>
     </header>
@@ -142,6 +164,14 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
   import { progresoRuta, siguientePaso } from '../lib/ruta.ts';
   import { aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
   import { vigilarTitulos } from '../lib/titulos.ts';
+  import { idiomaValido } from '../i18n/idiomas.ts';
+  import { INTERFAZ } from '../i18n/interfaz.ts';
+
+  const T = INTERFAZ[idiomaValido(document.documentElement.lang)];
+
+  // El enlace al otro idioma lleva a la misma página con lo mismo abierto (?id=…, ?q=…, #…).
+  const cambiarIdioma = document.querySelector<HTMLAnchorElement>('[data-cambiar-idioma="pagina"]');
+  if (cambiarIdioma) cambiarIdioma.href = cambiarIdioma.href.split(/[?#]/)[0] + location.search + location.hash;
 
   // Modo sin conexión: solo en la web compilada (en desarrollo la caché estorbaría).
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
@@ -224,7 +254,7 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     const si = favoritas.tiene(estrella.dataset.favoritoPagina!);
     estrella.setAttribute('aria-pressed', String(si));
     estrella.textContent = si ? '★' : '☆';
-    estrella.title = si ? 'Quitar de favoritas' : 'Marcar como favorita: sale la primera en el menú de su sección y en la portada';
+    estrella.title = si ? T.quitarFavorita : T.marcarFavorita;
   };
   estrella?.addEventListener('click', () => {
     favoritas.alternar(estrella.dataset.favoritoPagina!);
@@ -327,14 +357,14 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
   .titulo-seccion.muy-largo {
     font-size: 0.98rem;
   }
-  nav[aria-label='Secciones'] {
+  .barra-secciones {
     flex: 0 0 auto;
     display: flex;
     align-items: stretch;
     height: 100%;
     gap: 1.6rem;
   }
-  nav[aria-label='Secciones'] > a,
+  .barra-secciones > a,
   .multiple > button {
     padding: 0;
     background: none;
@@ -353,11 +383,11 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     text-decoration: none;
     white-space: nowrap;
   }
-  nav[aria-label='Secciones'] > a:hover,
+  .barra-secciones > a:hover,
   .multiple > button:hover {
     color: var(--texto);
   }
-  nav[aria-label='Secciones'] > a[aria-current='page'],
+  .barra-secciones > a[aria-current='page'],
   .multiple > button[aria-current='page'] {
     color: var(--texto);
     border-bottom-color: var(--acento);
@@ -417,6 +447,32 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
   .desplegable a[aria-current='page'] {
     color: var(--acento);
   }
+  /* En inglés: páginas que aún solo están en español. */
+  .solo-es {
+    margin-left: 0.4rem;
+    padding: 0 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    vertical-align: 0.1rem;
+    color: var(--texto-suave);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  /* Enlace al otro idioma, siempre a la derecha de la cabecera. */
+  .cambiar-idioma {
+    flex: 0 0 auto;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+    text-decoration: none;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  .cambiar-idioma:hover {
+    color: var(--acento);
+    border-color: var(--acento);
+  }
   /* Pantalla pequeña: la barra de secciones no cabe; queda el menú de la guitarra. */
   @media (max-width: 80rem) {
     .cabecera-dentro {
@@ -428,7 +484,7 @@ const pasoRuta = PASOS.find((p) => ruta(p.direccion) === actual);
     .titulo-seccion {
       font-size: 1.5rem;
     }
-    nav[aria-label='Secciones'] {
+    .barra-secciones {
       display: none;
     }
     .guitarra-inicio {

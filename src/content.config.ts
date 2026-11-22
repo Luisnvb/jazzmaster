@@ -32,6 +32,8 @@ const grupos = defineCollection({
     orden,
     nombre: z.string(),
     simbolo: z.string(),
+    // Nombre en la versión inglesa, si cambia (7 alterado → Altered 7).
+    en: z.object({ nombre: z.string() }).optional(),
     descripcion: z.string().optional(),
     arpegio: z.array(grado).min(3),
   }),
@@ -48,6 +50,14 @@ const intervalos = defineCollection({
     ascendente: z.array(z.string()).default([]),
     descendente: z.array(z.string()).default([]),
     revisar: z.array(z.string()).default([]),
+    // Versión inglesa (calculadora de intervalos en /en/).
+    en: z
+      .object({
+        caracter: z.string(),
+        ascendente: z.array(z.string()).default([]),
+        descendente: z.array(z.string()).default([]),
+      })
+      .optional(),
   }),
 });
 
@@ -56,6 +66,8 @@ const escalas = defineCollection({
   schema: z.object({
     orden,
     nombre: z.string(),
+    // Nombre en la versión inglesa (buscador de escalas en /en/).
+    en: z.object({ nombre: z.string() }).optional(),
     grupo: reference('grupos'),
     formula: z.array(grado).min(5),
   }),

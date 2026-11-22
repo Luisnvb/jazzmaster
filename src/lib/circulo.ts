@@ -46,15 +46,18 @@ const ORDEN_BEMOLES = ['Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb', 'Fb'];
 export const armadura = (alteraciones: number): string[] =>
   alteraciones >= 0 ? ORDEN_SOSTENIDOS.slice(0, alteraciones) : ORDEN_BEMOLES.slice(0, -alteraciones);
 
-/** «2♯», «3♭» o «sin alteraciones». */
-export const textoArmadura = (alteraciones: number) =>
-  alteraciones === 0 ? 'sin alteraciones' : `${Math.abs(alteraciones)}${alteraciones > 0 ? '♯' : '♭'}`;
+/** Nombre de un modo en un idioma. */
+export const nombreModo = (modo: Modo, idioma: 'es' | 'en' = 'es') => (idioma === 'en' ? (modo === 'mayor' ? 'major' : 'minor') : modo);
+
+/** «2♯», «3♭» o «sin alteraciones» («no sharps or flats»). */
+export const textoArmadura = (alteraciones: number, idioma: 'es' | 'en' = 'es') =>
+  alteraciones === 0 ? (idioma === 'en' ? 'no sharps or flats' : 'sin alteraciones') : `${Math.abs(alteraciones)}${alteraciones > 0 ? '♯' : '♭'}`;
 
 /** Tónica de la tonalidad en un modo. */
 export const tonicaDe = (t: Tonalidad, modo: Modo) => (modo === 'mayor' ? t.mayor : t.menor);
 
 /** Nombre: «D mayor», «Bm» → «B menor». */
-export const nombreTonalidad = (t: Tonalidad, modo: Modo) => `${tonicaDe(t, modo)} ${modo}`;
+export const nombreTonalidad = (t: Tonalidad, modo: Modo, idioma: 'es' | 'en' = 'es') => `${tonicaDe(t, modo)} ${nombreModo(modo, idioma)}`;
 
 const ESCALAS: Record<Modo, string[]> = {
   mayor: ['1', '2', '3', '4', '5', '6', '7'],
@@ -145,7 +148,8 @@ const bonito = (n: string) => n.replace('#', '♯').replace(/b$/, '♭');
  * armadura. `seleccion` (índice y modo) se resalta; sus vecinas, más suave. Cada
  * sector lleva data-indice y data-modo para pulsarlo.
  */
-export function circuloSVG(seleccion: { indice: number; modo: Modo }): string {
+export function circuloSVG(seleccion: { indice: number; modo: Modo }, idioma: 'es' | 'en' = 'es'): string {
+  const o = idioma === 'en' ? 'or' : 'o';
   const partes: string[] = [];
   const cerca = (i: number) => (i - seleccion.indice + 12) % 12;
   CIRCULO.forEach((t, i) => {
@@ -156,7 +160,8 @@ export function circuloSVG(seleccion: { indice: number; modo: Modo }): string {
       const [r1, r2] = modo === 'mayor' ? [R_MEDIO, R_FUERA] : [R_DENTRO, R_MEDIO];
       const nombre = modo === 'mayor' ? t.mayor : `${t.menor}m`;
       const otra = t.enarmonica ? (modo === 'mayor' ? t.enarmonica.mayor : `${t.enarmonica.menor}m`) : '';
-      const etiqueta = `${tonicaDe(t, modo)} ${modo}${t.enarmonica ? ` (o ${t.enarmonica[modo]} ${modo})` : ''}, ${textoArmadura(t.alteraciones)}`;
+      const m = nombreModo(modo, idioma);
+      const etiqueta = `${tonicaDe(t, modo)} ${m}${t.enarmonica ? ` (${o} ${t.enarmonica[modo]} ${m})` : ''}, ${textoArmadura(t.alteraciones, idioma)}`;
       const centro = (r1 + r2) / 2;
       const [x, y] = punto(centro, i * 30).split(' ');
       partes.push(
@@ -171,5 +176,5 @@ export function circuloSVG(seleccion: { indice: number; modo: Modo }): string {
     const [x, y] = punto(R_ARMADURA, i * 30).split(' ');
     partes.push(`<text class="armadura" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${t.alteraciones === 0 ? '0' : textoArmadura(t.alteraciones)}</text>`);
   });
-  return `<svg class="circulo" viewBox="0 0 ${C * 2} ${C * 2}" xmlns="http://www.w3.org/2000/svg" aria-label="Círculo de quintas">${partes.join('')}</svg>`;
+  return `<svg class="circulo" viewBox="0 0 ${C * 2} ${C * 2}" xmlns="http://www.w3.org/2000/svg" aria-label="${idioma === 'en' ? 'Circle of fifths' : 'Círculo de quintas'}">${partes.join('')}</svg>`;
 }

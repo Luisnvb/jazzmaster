@@ -110,11 +110,14 @@ export function buscarAcordes(notas: readonly string[]): Candidato[] {
   return res.map((c, i) => ({ c, i })).sort((x, y) => y.c.puntos - x.c.puntos || x.i - y.i).map(({ c }) => c);
 }
 
-const NOMBRES_INTERVALO = ['unísono', '2ª menor', '2ª mayor', '3ª menor', '3ª mayor', '4ª justa', 'tritono', '5ª justa', '6ª menor', '6ª mayor', '7ª menor', '7ª mayor'];
+const NOMBRES_INTERVALO = {
+  es: ['unísono', '2ª menor', '2ª mayor', '3ª menor', '3ª mayor', '4ª justa', 'tritono', '5ª justa', '6ª menor', '6ª mayor', '7ª menor', '7ª mayor'],
+  en: ['unison', 'minor 2nd', 'major 2nd', 'minor 3rd', 'major 3rd', 'perfect 4th', 'tritone', 'perfect 5th', 'minor 6th', 'major 6th', 'minor 7th', 'major 7th'],
+};
 
 /** Con dos notas: el intervalo de la primera a la segunda, hacia arriba. */
-export function nombrarIntervalo(a: string, b: string): string {
-  return NOMBRES_INTERVALO[mod(pitchClass(parseNota(b)) - pitchClass(parseNota(a)))];
+export function nombrarIntervalo(a: string, b: string, idioma: 'es' | 'en' = 'es'): string {
+  return NOMBRES_INTERVALO[idioma][mod(pitchClass(parseNota(b)) - pitchClass(parseNota(a)))];
 }
 
 /** Sonidos (MIDI) para oír las notas: el bajo en la octava 2–3 y el resto encima, de grave a agudo en el orden escrito. */

@@ -29,5 +29,7 @@ export function favoritosPrimero<T>(lista: readonly T[], esFavorito: (x: T) => b
 }
 
 /** Botón de estrella (el estado va en aria-pressed). */
-export const botonFavorito = (activo: boolean, nombre: string) =>
-  `<button type="button" class="favorito" data-favorito aria-pressed="${activo}" aria-label="Favorito: ${nombre.replace(/"/g, '&quot;')}" title="${activo ? 'Quitar de favoritos' : 'Marcar como favorito'}">${activo ? '★' : '☆'}</button>`;
+export const botonFavorito = (activo: boolean, nombre: string, idioma: 'es' | 'en' = 'es') => {
+  const [etiqueta, quitar, marcar] = idioma === 'en' ? ['Favourite', 'Remove from favourites', 'Mark as favourite'] : ['Favorito', 'Quitar de favoritos', 'Marcar como favorito'];
+  return `<button type="button" class="favorito" data-favorito aria-pressed="${activo}" aria-label="${etiqueta}: ${nombre.replace(/"/g, '&quot;')}" title="${activo ? quitar : marcar}">${activo ? '★' : '☆'}</button>`;
+};

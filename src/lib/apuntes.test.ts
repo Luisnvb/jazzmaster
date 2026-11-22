@@ -52,3 +52,9 @@ test('copia de seguridad: valida el formato y junta por id', () => {
   const juntas = juntarPorId([nota('a', false, 1, 'vieja'), nota('b', false, 1)], [nota('a', false, 2, 'nueva')]);
   assert.deepEqual(juntas.map((n) => n.titulo), ['b', 'nueva']);
 });
+
+test('textos en inglés', () => {
+  assert.equal(tituloDe({ titulo: '', texto: '' }, 'en'), 'Untitled');
+  assert.equal(tamanoLegible(2.4 * 1024 ** 2, 'en'), '2.4 MB');
+  assert.equal(tamanoLegible(2.4 * 1024 ** 2), '2,4 MB');
+});

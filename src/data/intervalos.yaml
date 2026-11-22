@@ -1,6 +1,7 @@
 # Intervalos. `grado` es el que se usa para calcular la segunda nota desde la tónica.
 # `ascendente` y `descendente`: canciones de referencia (solo texto).
 # `revisar`: dudas pendientes sobre las referencias; la web no lo muestra.
+# `en`: carácter y canciones en la versión inglesa (si falta, se usan las de aquí).
 
 - id: segunda-menor
   nombre: 2ª menor
@@ -9,6 +10,10 @@
   caracter: Cerrado, inquietante, tensión
   ascendente: [Pantera Rosa, Tiburón, Ring theme]
   descendente: [Para Elisa, Jurassic Park, Game of Thrones]
+  en:
+    caracter: Closed, unsettling, tense
+    ascendente: [Pink Panther, Jaws]
+    descendente: [Für Elise, Jurassic Park, Game of Thrones]
   revisar: ['"Ring theme": no está claro a qué tema se refiere.']
 
 - id: segunda-mayor
@@ -18,6 +23,10 @@
   caracter: Abierto, melancólico, paso suave
   ascendente: [Cumpleaños Feliz, Do–Re (escala), Frère Jacques]
   descendente: [Yesterday]
+  en:
+    caracter: Open, wistful, a gentle step
+    ascendente: [Happy Birthday, Do–Re (scale), Frère Jacques]
+    descendente: [Yesterday]
 
 - id: tercera-menor
   nombre: 3ª menor
@@ -26,6 +35,10 @@
   caracter: Triste, íntima
   ascendente: [Smoke on the Water, Greensleeves]
   descendente: [Hey Jude, Losing My Religion]
+  en:
+    caracter: Sad, intimate
+    ascendente: [Smoke on the Water, Greensleeves]
+    descendente: [Hey Jude, Losing My Religion]
 
 - id: tercera-mayor
   nombre: 3ª mayor
@@ -34,6 +47,10 @@
   caracter: Alegre, luminosa
   ascendente: [When the Saints Go Marching In]
   descendente: [Bad Moon Rising, Cucurrucucú Paloma]
+  en:
+    caracter: Bright, happy
+    ascendente: [When the Saints Go Marching In]
+    descendente: [Bad Moon Rising, Cucurrucucú Paloma]
 
 - id: cuarta-justa
   nombre: 4ª justa
@@ -42,6 +59,10 @@
   caracter: Solemne, llamada
   ascendente: [We Wish You a Merry Christmas, Here Comes the Bride, La Marsellesa, Amazing Grace]
   descendente: [Under Pressure (bajo)]
+  en:
+    caracter: Solemn, a call
+    ascendente: [We Wish You a Merry Christmas, Here Comes the Bride, La Marseillaise, Amazing Grace]
+    descendente: [Under Pressure (bass)]
 
 - id: tritono
   nombre: 5ª disminuida (tritono)
@@ -50,6 +71,10 @@
   caracter: Inestable, incómoda
   ascendente: [The Simpsons, Maria (West Side Story)]
   descendente: [Black Sabbath (riff inicial)]
+  en:
+    caracter: Unstable, uneasy
+    ascendente: [The Simpsons, Maria (West Side Story)]
+    descendente: [Black Sabbath (opening riff)]
 
 - id: quinta-justa
   nombre: 5ª justa
@@ -58,6 +83,10 @@
   caracter: Estable, épica
   ascendente: [Twinkle Twinkle, Star Wars, Also sprach Zarathustra]
   descendente: [Flintstones (inicio)]
+  en:
+    caracter: Stable, epic
+    ascendente: [Twinkle Twinkle, Star Wars, Also sprach Zarathustra]
+    descendente: [The Flintstones (opening)]
 
 - id: sexta-menor
   nombre: 6ª menor (5ª aumentada)
@@ -66,6 +95,10 @@
   caracter: Extraña, flotante
   ascendente: [The Entertainer (3ª–4ª nota), Baker Street]
   descendente: [Blue in Green (Miles Davis – caída melódica)]
+  en:
+    caracter: Strange, floating
+    ascendente: [The Entertainer (3rd–4th note), Baker Street]
+    descendente: [Blue in Green (Miles Davis – melodic fall)]
   revisar: ['"Blue in Green": comprobar que la caída es de 8 semitonos.']
 
 - id: sexta-mayor
@@ -75,6 +108,10 @@
   caracter: Nostálgica, cálida
   ascendente: [My Way, Es un muchacho excelente, Chopin Noct. nº2]
   descendente: [Nobody Knows the Trouble I've Seen]
+  en:
+    caracter: Nostalgic, warm
+    ascendente: [My Way, "For He's a Jolly Good Fellow", Chopin Nocturne no. 2]
+    descendente: ["Nobody Knows the Trouble I've Seen"]
 
 - id: septima-menor
   nombre: 7ª menor
@@ -83,6 +120,10 @@
   caracter: Dramática, expansiva
   ascendente: [The Winner Takes It All, Interstellar]
   descendente: [Watermelon Man (head descendente)]
+  en:
+    caracter: Dramatic, expansive
+    ascendente: [The Winner Takes It All, Interstellar]
+    descendente: [Watermelon Man (descending head)]
   revisar: ['"Watermelon Man": comprobar que el salto descendente es de 7ª menor.']
 
 - id: septima-mayor
@@ -92,6 +133,10 @@
   caracter: Muy tensa, aspiracional
   ascendente: [Don't Know Why, Take On Me (estribillo)]
   descendente: [I Love You (Cole Porter)]
+  en:
+    caracter: Very tense, yearning
+    ascendente: ["Don't Know Why", Take On Me (chorus)]
+    descendente: [I Love You (Cole Porter)]
 
 - id: octava
   nombre: 8ª justa
@@ -100,4 +145,8 @@
   caracter: Resolución total
   ascendente: [Somewhere Over the Rainbow]
   descendente: []
+  en:
+    caracter: Complete resolution
+    ascendente: [Somewhere Over the Rainbow]
+    descendente: []
   revisar: ['Falta una referencia de 8ª descendente ("Do–Do" era un unísono).']

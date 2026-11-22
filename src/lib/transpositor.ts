@@ -16,10 +16,10 @@ export interface Transporte {
 }
 
 /** Instrumentos transpositores: lo que se sube al escribir para ellos desde el sonido real. */
-export const INSTRUMENTOS_TRANSPOSITORES: { id: string; nombre: string; ejemplos: string; grado: string }[] = [
-  { id: 'bb', nombre: 'Instrumento en Si♭', ejemplos: 'trompeta, clarinete, saxo tenor y soprano', grado: '2' },
-  { id: 'eb', nombre: 'Instrumento en Mi♭', ejemplos: 'saxo alto y barítono', grado: '6' },
-  { id: 'f', nombre: 'Instrumento en Fa', ejemplos: 'trompa, corno inglés', grado: '5' },
+export const INSTRUMENTOS_TRANSPOSITORES: { id: string; nombre: string; ejemplos: string; en: { nombre: string; ejemplos: string }; grado: string }[] = [
+  { id: 'bb', nombre: 'Instrumento en Si♭', ejemplos: 'trompeta, clarinete, saxo tenor y soprano', en: { nombre: 'B♭ instrument', ejemplos: 'trumpet, clarinet, tenor and soprano sax' }, grado: '2' },
+  { id: 'eb', nombre: 'Instrumento en Mi♭', ejemplos: 'saxo alto y barítono', en: { nombre: 'E♭ instrument', ejemplos: 'alto and baritone sax' }, grado: '6' },
+  { id: 'f', nombre: 'Instrumento en Fa', ejemplos: 'trompa, corno inglés', en: { nombre: 'F instrument', ejemplos: 'French horn, cor anglais' }, grado: '5' },
 ];
 
 /** Para escribir la parte de un instrumento: sube su intervalo. Para leerla en concierto: lo baja. */

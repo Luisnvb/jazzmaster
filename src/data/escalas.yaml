@@ -1,116 +1,140 @@
 # Diccionario de escalas. `grupo` es el id de un tipo de acorde de grupos.yaml.
-# El orden dentro de cada grupo es el de esta lista.
+# El orden dentro de cada grupo es el de esta lista. `en.nombre`: nombre en la versión inglesa.
 
 # Maj7
 - id: jonico
   nombre: Jónico
+  en: { nombre: Ionian }
   grupo: maj7
   formula: ['1', '2', '3', '4', '5', '6', '7']
 - id: lidio
   nombre: Lidio
+  en: { nombre: Lydian }
   grupo: maj7
   formula: ['1', '2', '3', '#4', '5', '6', '7']
 - id: lidio-s2
   nombre: 'Lidio #2'
+  en: { nombre: 'Lydian #2' }
   grupo: maj7
   formula: ['1', '#2', '3', '#4', '5', '6', '7']
 - id: lidio-aumentado
   nombre: Lidio aumentado
+  en: { nombre: Lydian augmented }
   grupo: maj7
   formula: ['1', '2', '3', '#4', '#5', '6', '7']
 - id: pentatonica-mayor
   nombre: Pentatónica mayor
+  en: { nombre: Major pentatonic }
   grupo: maj7
   formula: ['1', '2', '3', '5', '6']
 
 # m7
 - id: dorico
   nombre: Dórico
+  en: { nombre: Dorian }
   grupo: m7
   formula: ['1', '2', 'b3', '4', '5', '6', 'b7']
 - id: eolico
   nombre: Eólico
+  en: { nombre: Aeolian }
   grupo: m7
   formula: ['1', '2', 'b3', '4', '5', 'b6', 'b7']
 - id: pentatonica-menor
   nombre: Pentatónica menor
+  en: { nombre: Minor pentatonic }
   grupo: m7
   formula: ['1', 'b3', '4', '5', 'b7']
 - id: blues-menor
   nombre: Blues menor
+  en: { nombre: Minor blues }
   grupo: m7
   formula: ['1', 'b3', '4', 'b5', '5', 'b7']
 - id: frigio
   nombre: Frigio
+  en: { nombre: Phrygian }
   grupo: m7
   formula: ['1', 'b2', 'b3', '4', '5', 'b6', 'b7']
 
 # mMaj7
 - id: menor-melodica
   nombre: Menor melódica
+  en: { nombre: Melodic minor }
   grupo: mmaj7
   formula: ['1', '2', 'b3', '4', '5', '6', '7']
 - id: menor-armonica
   nombre: Menor armónica
+  en: { nombre: Harmonic minor }
   grupo: mmaj7
   formula: ['1', '2', 'b3', '4', '5', 'b6', '7']
 
 # 7 (dominante)
 - id: mixolidio
   nombre: Mixolidio
+  en: { nombre: Mixolydian }
   grupo: dom7
   formula: ['1', '2', '3', '4', '5', '6', 'b7']
 - id: lidio-dominante
   nombre: Lidio dominante
+  en: { nombre: Lydian dominant }
   grupo: dom7
   formula: ['1', '2', '3', '#4', '5', '6', 'b7']
 - id: mixolidio-b6
   nombre: Mixolidio b6
+  en: { nombre: Mixolydian b6 }
   grupo: dom7
   formula: ['1', '2', '3', '4', '5', 'b6', 'b7']
 
 # 7 alterado
 - id: superlocrio
   nombre: Superlocrio (alterada)
+  en: { nombre: Superlocrian (altered) }
   grupo: alt7
   formula: ['1', 'b2', '#2', '3', 'b5', '#5', 'b7']
 - id: disminuida-st
   nombre: Disminuida (S–T)
+  en: { nombre: Diminished (H–W) }
   grupo: alt7
   formula: ['1', 'b2', '#2', '3', '#4', '5', '6', 'b7']
 - id: tonos-enteros
   nombre: Tonos enteros
+  en: { nombre: Whole tone }
   grupo: alt7
   formula: ['1', '2', '3', '#4', '#5', 'b7']
 
 # m7b5
 - id: locrio
   nombre: Locrio
+  en: { nombre: Locrian }
   grupo: m7b5
   formula: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7']
 - id: locrio-s2
   nombre: 'Locrio #2'
+  en: { nombre: 'Locrian #2' }
   grupo: m7b5
   formula: ['1', '2', 'b3', '4', 'b5', 'b6', 'b7']
 
 # °7
 - id: disminuida-ts
   nombre: Disminuida (T–S)
+  en: { nombre: Diminished (W–H) }
   grupo: dim7
   formula: ['1', '2', 'b3', '4', 'b5', '#5', '6', '7']
 
 # Sus
 - id: mixolidio-sus
   nombre: Mixolidio
+  en: { nombre: Mixolydian }
   grupo: sus
   formula: ['1', '2', '3', '4', '5', '6', 'b7']
 
 # Aug
 - id: tonos-enteros-aug
   nombre: Tonos enteros
+  en: { nombre: Whole tone }
   grupo: aug
   formula: ['1', '2', '3', '#4', '#5', 'b7']
 - id: lidio-aumentado-aug
   nombre: Lidio aumentado
+  en: { nombre: Lydian augmented }
   grupo: aug
   formula: ['1', '2', '3', '#4', '#5', '6', '7']

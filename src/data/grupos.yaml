@@ -33,6 +33,7 @@
 
 - id: alt7
   nombre: 7 alterado
+  en: { nombre: Altered 7 }
   simbolo: '7alt'
   descripcion: 'Dominante alterado (más tensiones b9, #9, b5, #5)'
   arpegio: ['1', '3', 'b7']

@@ -3,12 +3,22 @@
 // página propia: es un desplegable del menú. Las direcciones de las páginas no
 // dependen de la sección (/acordes/, /estudio/drop2/…): para mover una página de
 // sección basta con cambiarla de lista aquí. Para añadir una, súmala a las `partes`.
+// La versión inglesa de la lista sale de `secciones('en')`, con los nombres de
+// src/i18n/secciones-en.ts (al añadir una página, añádela también allí).
+import { conPrefijo, type Idioma } from "../i18n/idiomas.ts";
+import { PAGINAS_EN, SECCIONES_EN } from "../i18n/secciones-en.ts";
 import { ruta } from "./rutas.ts";
 
 export interface Pagina {
   nombre: string;
   href: string;
   lema: string;
+  /** Dirección española, sin base (clave de la tabla inglesa). */
+  direccion: string;
+  /** En el menú inglés: la página aún no está traducida y lleva a la española. */
+  soloEspanol?: boolean;
+  /** La misma página en el otro idioma, si existe. */
+  otroIdioma?: string;
 }
 
 export interface Seccion {
@@ -18,11 +28,10 @@ export interface Seccion {
   partes: Pagina[];
 }
 
-const pagina = (nombre: string, direccion: string, lema: string): Pagina => ({
-  nombre,
-  href: ruta(direccion),
-  lema,
-});
+const pagina = (nombre: string, direccion: string, lema: string): Pagina => {
+  const en = PAGINAS_EN[direccion]?.direccion;
+  return { nombre, href: ruta(direccion), lema, direccion, otroIdioma: en ? ruta(conPrefijo("en", en)) : undefined };
+};
 const seccion = (
   id: string,
   nombre: string,
@@ -317,8 +326,38 @@ export const SECCIONES: Seccion[] = [
   ]),
 ];
 
+/** Las secciones en inglés: nombres traducidos; las páginas sin traducir llevan a la española. */
+const SECCIONES_INGLES: Seccion[] = SECCIONES.map((s) => ({
+  ...s,
+  nombre: SECCIONES_EN[s.id]?.nombre ?? s.nombre,
+  lema: SECCIONES_EN[s.id]?.lema ?? s.lema,
+  partes: s.partes.map((p): Pagina => {
+    const en = PAGINAS_EN[p.direccion];
+    if (!en) return { ...p, soloEspanol: true, otroIdioma: undefined };
+    return en.direccion
+      ? { ...p, nombre: en.nombre, lema: en.lema, href: ruta(conPrefijo("en", en.direccion)), otroIdioma: p.href }
+      : { ...p, nombre: en.nombre, lema: en.lema, soloEspanol: true, otroIdioma: undefined };
+  }),
+}));
+
+/** Las secciones de la web en un idioma. */
+export const secciones = (idioma: Idioma): Seccion[] => (idioma === "en" ? SECCIONES_INGLES : SECCIONES);
+
 /** Todas las páginas, en el orden de las secciones. */
 export const PAGINAS: Pagina[] = SECCIONES.flatMap((s) => s.partes);
+
+/**
+ * Nombre de una página en un idioma a partir de su nombre español (el que se guarda en el
+ * Registro de práctica). Si no es una página de la lista («Otra», texto libre), tal cual.
+ */
+export function nombreActividad(nombre: string, idioma: Idioma): string {
+  if (idioma === "es") return nombre;
+  const p = PAGINAS.find((x) => x.nombre === nombre);
+  return (p && PAGINAS_EN[p.direccion]?.nombre) ?? (nombre === "Otra" ? "Other" : nombre);
+}
+
+/** Todas las páginas de un idioma (en inglés, con las españolas que aún no están traducidas). */
+export const paginas = (idioma: Idioma): Pagina[] => secciones(idioma).flatMap((s) => s.partes);
 
 /** Si la página actual (con barra final) es esta página o está dentro de ella (/intervalos/entrenador/). */
 export const esActual = (p: Pick<Pagina, "href">, actual: string): boolean =>
@@ -328,13 +367,13 @@ export const esActual = (p: Pick<Pagina, "href">, actual: string): boolean =>
  * La página de la lista en la que estamos: la de dirección más larga que la contiene
  * (/estudio/escalas/ y no /escalas/… aunque aquí no se solapan; /repertorio/x/ → Repertorio).
  */
-export const paginaActual = (actual: string): Pagina | undefined =>
-  PAGINAS.filter((p) => esActual(p, actual)).sort(
-    (a, b) => b.href.length - a.href.length,
-  )[0];
+export const paginaActual = (actual: string, idioma: Idioma = "es"): Pagina | undefined =>
+  paginas(idioma)
+    .filter((p) => esActual(p, actual))
+    .sort((a, b) => b.href.length - a.href.length)[0];
 
 /** La sección en la que estamos: la de la página actual. */
-export const seccionActual = (actual: string): Seccion | undefined => {
-  const p = paginaActual(actual);
-  return p && SECCIONES.find((s) => s.partes.includes(p));
+export const seccionActual = (actual: string, idioma: Idioma = "es"): Seccion | undefined => {
+  const p = paginaActual(actual, idioma);
+  return p && secciones(idioma).find((s) => s.partes.includes(p));
 };
