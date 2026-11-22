@@ -566,8 +566,22 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     font-weight: 600;
     padding-left: 1.25rem;
   }
+  /* Cinco columnas en pantallas anchas; menos según se estrecha (la tarjeta lleva el
+     diagrama y los datos lado a lado y necesita unos 17rem). */
   :global(.voicings) {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  @media (max-width: 1600px) {
+    :global(.voicings) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (max-width: 1250px) {
+    :global(.voicings) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 950px) {
+    :global(.voicings) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    :global(.voicings) { grid-template-columns: minmax(0, 1fr); }
   }
   :global([data-lista] > section) {
     padding-top: 0.5rem;

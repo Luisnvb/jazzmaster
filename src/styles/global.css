@@ -313,6 +313,11 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 .indice a {
   text-decoration: none;
 }
+/* Tras la parte práctica (la <section> del ejercicio o del reproductor), más aire antes
+   del índice y del texto, para que se vea que empieza otra cosa. */
+main > section ~ .indice {
+  margin-top: 4rem;
+}
 
 /* Descripciones y leyendas de las herramientas: en la misma columna centrada que el
    texto de la página. (:root sube la especificidad por encima de los estilos de cada
@@ -326,6 +331,7 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
 .texto-estudio {
   max-width: var(--ancho-texto);
   margin-inline: auto;
+  font-size: 0.92rem;
   line-height: 1.6;
 }
 .texto-estudio h2 {
@@ -354,7 +360,7 @@ html:not(.reproduciendo) [data-detener] { opacity: 0.4; pointer-events: none; }
   overflow-x: auto;
   border-collapse: collapse;
   margin: 0.75rem 0 1rem;
-  font-size: 0.92rem;
+  font-size: 0.85rem;
 }
 .texto-estudio th,
 .texto-estudio td {
