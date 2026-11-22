@@ -68,8 +68,9 @@ export function guiaSencilla(tonica: string, compases: readonly AcordeGrado[][])
 }
 
 /** Distancia entre dos centros, en palabras: 'baja una 3ª mayor', 'sube una 4ª'… */
-export function salto(de: number, a: number): string {
+export function salto(de: number, a: number, idioma: 'es' | 'en' = 'es'): string {
   const s = mod(a - de);
+  if (idioma === 'en') return SALTOS_EN[s] ?? 'the same';
   const NOMBRES: Record<number, string> = {
     1: 'sube medio tono',
     2: 'sube un tono',
@@ -86,11 +87,25 @@ export function salto(de: number, a: number): string {
   return NOMBRES[s] ?? 'el mismo';
 }
 
+const SALTOS_EN: Record<number, string> = {
+  1: 'up a half step',
+  2: 'up a whole step',
+  3: 'up a minor 3rd',
+  4: 'up a major 3rd',
+  5: 'up a 4th',
+  6: 'tritone',
+  7: 'down a 4th',
+  8: 'down a major 3rd',
+  9: 'down a minor 3rd',
+  10: 'down a whole step',
+  11: 'down a half step',
+};
+
 /**
  * Ciclo de quintas con los centros de la progresión unidos (en los cambios de
  * Coltrane, un triángulo equilátero: una tríada aumentada). `activo` resalta uno.
  */
-export function cicloSVG(centrosPc: readonly number[], activo: number | null = null): string {
+export function cicloSVG(centrosPc: readonly number[], activo: number | null = null, idioma: 'es' | 'en' = 'es'): string {
   const R = 92;
   const c = 120;
   const pos = (pc: number) => {
@@ -107,7 +122,7 @@ export function cicloSVG(centrosPc: readonly number[], activo: number | null = n
     const clase = pc === activo ? 'activo' : centrosPc.includes(pc) ? 'centro' : '';
     return `<g class="tono ${clase}" data-pc="${pc}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="15" /><text x="${x.toFixed(1)}" y="${(y + 4.5).toFixed(1)}" text-anchor="middle">${nombre}</text></g>`;
   }).join('');
-  return `<svg class="ciclo" viewBox="0 0 240 240" role="img" aria-label="Ciclo de quintas con los centros tonales">
+  return `<svg class="ciclo" viewBox="0 0 240 240" role="img" aria-label="${idioma === 'en' ? 'Cycle of fifths with the tonal centres' : 'Ciclo de quintas con los centros tonales'}">
     <circle class="aro" cx="${c}" cy="${c}" r="${R}" />${linea}${puntos}
   </svg>`;
 }

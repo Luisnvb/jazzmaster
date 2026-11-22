@@ -30,6 +30,7 @@ test('tres centros a distancia de 3ª mayor', () => {
   const gs = centros('B', prog('giant-steps'));
   assert.deepEqual(gs.slice(0, 5).map((c) => `${c.papel} de ${c.nombre}`), ['Imaj7 de B', 'V7 de G', 'Imaj7 de G', 'V7 de Eb', 'Imaj7 de Eb']);
   assert.equal(salto(11, 7), 'baja una 3ª mayor');
+  assert.equal(salto(11, 7, 'en'), 'down a major 3rd');
 });
 
 test('notas guía con nombres sencillos y movimiento corto', () => {
