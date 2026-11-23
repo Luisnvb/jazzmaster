@@ -46,3 +46,14 @@ test('escalas: notas del acorde marcadas y secuencias en terceras y grupos', () 
   const { eventos } = eventosArpegio(orden, 120, false, 36);
   assert.equal(eventos.filter((e) => e.midi === 36).length, 1);
 });
+
+test('puntos guía dentro del mástil y números de traste', async () => {
+  const { marcasMastilSVG } = await import('./arpegios.ts');
+  const svg = marcasMastilSVG((t) => t * 10, (c) => 100 - c * 10, 15, 120);
+  // Uno en 3, 5, 7, 9 y 15 y dos en el 12; el punto simple, entre la 3ª y la 4ª cuerda.
+  assert.equal(svg.match(/class="marca"/g)?.length, 7);
+  assert.match(svg, /<circle class="marca" cx="[^"]*" cy="75"/);
+  assert.deepEqual([...svg.matchAll(/class="numero-traste"[^>]*>(\d+)</g)].map((m) => m[1]), ['3', '5', '7', '9', '12', '15']);
+  // En un mástil de 12 trastes no sale el 15.
+  assert.doesNotMatch(marcasMastilSVG((t) => t * 10, (c) => c, 12, 120), />15</);
+});

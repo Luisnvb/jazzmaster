@@ -381,11 +381,12 @@ main > section ~ .indice {
 
 /* Mástil horizontal (lib/arpegios.ts): notas de un arpegio en todo el mástil. */
 .mastil { display: block; width: 100%; max-width: 60rem; min-width: 40rem; margin: 0 auto; }
-.mastil .traste { stroke: var(--borde); stroke-width: 1.5; }
+.mastil .traste { stroke: color-mix(in srgb, var(--texto-suave) 65%, transparent); stroke-width: 1.5; } /* COLOR: trastes del mástil (oscuros para verse también dentro de la zona) */
 .mastil .cuerda { stroke: var(--texto-suave); stroke-width: 1; }
 .mastil .cejuela { fill: var(--texto); }
-.mastil .marca { fill: var(--borde); }
-.mastil .zona { fill: var(--acento-suave); } /* COLOR: zona del mástil que se practica */
+.mastil .marca { fill: color-mix(in srgb, var(--texto-suave) 22%, transparent); } /* COLOR: puntos guía dentro del mástil */
+.mastil .numero-traste { fill: var(--texto-suave); font-size: 11px; font-weight: 700; font-family: var(--fuente); } /* COLOR: número de los trastes con punto guía */
+.mastil .zona { fill: color-mix(in srgb, var(--acento) 7%, transparent); stroke: var(--acento); stroke-width: 1.5; } /* COLOR: zona del mástil que se practica (tono claro con borde) */
 .mastil .eco { fill: none; stroke: var(--acento); stroke-width: 1.5; stroke-dasharray: 5 4; } /* COLOR: posición donde se repite el dibujo (escalas simétricas) */
 .mastil .nota circle { fill: var(--texto); }
 .mastil .nota .grado { fill: var(--fondo); font-size: 11px; font-weight: 700; font-family: var(--fuente); }

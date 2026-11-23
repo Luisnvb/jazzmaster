@@ -577,15 +577,6 @@ const AYUDAS = ['oido', 'lenguaje', 'respuesta', 'siempre'].map((id) => [id, ...
   .mastil-caja {
     overflow-x: auto;
   }
-  /* Zona de la posición: un tono muy claro con borde, y los trastes más oscuros para que se distingan dentro. */
-  .mastil-caja :global(.mastil .zona) {
-    fill: color-mix(in srgb, var(--acento) 7%, transparent); /* COLOR: zona de la posición en el dictado */
-    stroke: var(--acento);
-    stroke-width: 1.5;
-  }
-  .mastil-caja :global(.mastil .traste) {
-    stroke: color-mix(in srgb, var(--texto-suave) 65%, transparent); /* COLOR: trastes del mástil del dictado */
-  }
   .ejemplo :global(.botones-audio) {
     margin-top: 0.5rem;
   }

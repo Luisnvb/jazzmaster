@@ -3,7 +3,7 @@
 // arpegio, las tríadas abiertas, la pentatónica, la escala y el acorde. Cada capa
 // se apoya en la anterior. Inspirado en Guitar Burpees, de Noel Johnston.
 // Funciones puras, sin DOM.
-import { notasFormula, type NotaMastil } from './arpegios.ts';
+import { marcasMastilSVG, notasFormula, type NotaMastil } from './arpegios.ts';
 import { enPosicion } from './digitacion.ts';
 import { inversionesDrop, tresNotas, type IdGrupo } from './drop.ts';
 import { parseAcordeGrado, simboloEn, type AcordeGrado } from './progresiones.ts';
@@ -421,7 +421,6 @@ const MARGEN_IZQ = 34;
 const MARGEN_SUP = 16;
 const MARGEN_INF = 26;
 const RADIO = 11;
-const MARCAS = [3, 5, 7, 9, 15];
 
 export type Rotulo = 'grado' | 'nota';
 
@@ -452,10 +451,7 @@ export function mastilCapasSVG(
     const x0 = z.desde <= 0 ? MARGEN_IZQ - 30 : xTraste(z.desde - 1);
     partes.push(`<rect class="zona" x="${x0}" y="${MARGEN_SUP - 12}" width="${xTraste(z.hasta) - x0}" height="${SEP_CUERDA * 5 + 24}" rx="6"/>`);
   }
-  for (const m of MARCAS) partes.push(`<circle class="marca" cx="${xTraste(m) - ANCHO_TRASTE / 2}" cy="${alto - 10}" r="3.5"/>`);
-  partes.push(
-    `<circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 - 6}" cy="${alto - 10}" r="3.5"/><circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 + 6}" cy="${alto - 10}" r="3.5"/>`,
-  );
+  partes.push(marcasMastilSVG(xTraste, yCuerda, TRASTES, alto));
   for (let t = 1; t <= TRASTES; t++) partes.push(`<line class="traste" x1="${xTraste(t)}" y1="${yCuerda(5)}" x2="${xTraste(t)}" y2="${yCuerda(0)}"/>`);
   partes.push(`<rect class="cejuela" x="${MARGEN_IZQ - 3}" y="${yCuerda(5) - 1}" width="5" height="${SEP_CUERDA * 5 + 2}"/>`);
   for (let c = 0; c < 6; c++) partes.push(`<line class="cuerda" x1="${MARGEN_IZQ}" y1="${yCuerda(c)}" x2="${xTraste(TRASTES)}" y2="${yCuerda(c)}"/>`);

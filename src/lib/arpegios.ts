@@ -150,7 +150,25 @@ const MARGEN_IZQ = 34;
 const MARGEN_SUP = 16;
 const MARGEN_INF = 26;
 const RADIO = 11;
-const MARCAS = [3, 5, 7, 9, 15];
+/** Trastes con punto guía (en el 12, doble). */
+export const MARCAS = [3, 5, 7, 9, 12, 15];
+
+/**
+ * Puntos guía dentro del mástil, como en una Fender (uno entre la 3ª y la 4ª cuerda;
+ * en el 12, dos), y debajo el número de esos trastes. `xTraste(t)` es la línea del traste
+ * t; `yCuerda(c)`, la de la cuerda c (0 = 6ª). Va antes de trastes y cuerdas, que pasan por encima.
+ */
+export function marcasMastilSVG(xTraste: (t: number) => number, yCuerda: (c: number) => number, trastes: number, alto: number): string {
+  const entre = (a: number, b: number) => (yCuerda(a) + yCuerda(b)) / 2;
+  const partes: string[] = [];
+  for (const m of MARCAS.filter((x) => x <= trastes)) {
+    const x = xTraste(m) - ANCHO_TRASTE / 2;
+    const ys = m === 12 ? [entre(1, 2), entre(3, 4)] : [entre(2, 3)];
+    for (const y of ys) partes.push(`<circle class="marca" cx="${x}" cy="${y}" r="5.5"/>`);
+    partes.push(`<text class="numero-traste" x="${x}" y="${alto - 8}" text-anchor="middle" dominant-baseline="central">${m}</text>`);
+  }
+  return partes.join('');
+}
 
 /**
  * SVG del mástil con las notas dadas (rotuladas con su grado). Las notas fuera
@@ -185,11 +203,8 @@ export function mastilSVG(notas: readonly NotaMastil[], zona: Zona = { tipo: 'to
     const y1 = yCuerda(zona.cuerda) + 12;
     partes.push(`<rect class="zona" x="${MARGEN_IZQ - 30}" y="${y0}" width="${xTraste(TRASTES_SVG) - MARGEN_IZQ + 30}" height="${y1 - y0}" rx="6"/>`);
   }
-  // Marcas de traste, trastes, cejuela y cuerdas.
-  for (const m of MARCAS.filter((x) => x <= TRASTES_SVG)) partes.push(`<circle class="marca" cx="${xTraste(m) - ANCHO_TRASTE / 2}" cy="${alto - 10}" r="3.5"/>`);
-  partes.push(
-    `<circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 - 6}" cy="${alto - 10}" r="3.5"/><circle class="marca" cx="${xTraste(12) - ANCHO_TRASTE / 2 + 6}" cy="${alto - 10}" r="3.5"/>`,
-  );
+  // Puntos guía y números de traste, trastes, cejuela y cuerdas.
+  partes.push(marcasMastilSVG(xTraste, yCuerda, TRASTES_SVG, alto));
   for (let t = 1; t <= TRASTES_SVG; t++) {
     partes.push(`<line class="traste" x1="${xTraste(t)}" y1="${yCuerda(5)}" x2="${xTraste(t)}" y2="${yCuerda(0)}"/>`);
   }
