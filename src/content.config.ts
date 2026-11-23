@@ -50,9 +50,10 @@ const intervalos = defineCollection({
     ascendente: z.array(z.string()).default([]),
     descendente: z.array(z.string()).default([]),
     revisar: z.array(z.string()).default([]),
-    // Versión inglesa (calculadora de intervalos en /en/).
+    // Versión inglesa (Intervalos y calculadora de intervalos en /en/).
     en: z
       .object({
+        nombre: z.string().optional(),
         caracter: z.string(),
         ascendente: z.array(z.string()).default([]),
         descendente: z.array(z.string()).default([]),

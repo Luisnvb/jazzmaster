@@ -10,11 +10,11 @@ import Base from '../../layouts/Base.astro';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
 import { GRADOS_CALCULADORA, intervaloDe, nombreIntervalo } from '../../lib/calculadora-intervalos.ts';
 import { porOrden } from '../../lib/orden.ts';
-import { ruta } from '../../lib/rutas.ts';
 import { LETRAS, semitonosGrado } from '../../lib/teoria.ts';
 import { formatear, type Idioma } from '../../i18n/idiomas.ts';
 import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
 import { CALCULADORA } from '../../i18n/calculadora-intervalos.ts';
+import { enlacePagina } from '../../lib/secciones.ts';
 
 interface Props {
   idioma: Idioma;
@@ -89,7 +89,7 @@ const bonito = (n: string) => n.replace('#', '♯').replace(/(?<=[A-G])b/, '♭'
         <tbody data-tabla></tbody>
       </table>
     </div>
-    <p class="suave" set:html={formatear(T.pie, { intervalos: ruta('intervalos') })} />
+    <p class="suave" set:html={formatear(T.pie, { intervalos: enlacePagina('intervalos', idioma) })} />
   </section>
 
   <script type="application/json" id="datos-intervalos" set:html={datos} />

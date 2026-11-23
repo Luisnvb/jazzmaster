@@ -1,7 +1,7 @@
 # Intervalos. `grado` es el que se usa para calcular la segunda nota desde la tónica.
 # `ascendente` y `descendente`: canciones de referencia (solo texto).
 # `revisar`: dudas pendientes sobre las referencias; la web no lo muestra.
-# `en`: carácter y canciones en la versión inglesa (si falta, se usan las de aquí).
+# `en`: nombre, carácter y canciones en la versión inglesa (si falta, se usan las de aquí).
 
 - id: segunda-menor
   nombre: 2ª menor
@@ -11,6 +11,7 @@
   ascendente: [Pantera Rosa, Tiburón, Ring theme]
   descendente: [Para Elisa, Jurassic Park, Game of Thrones]
   en:
+    nombre: Minor 2nd
     caracter: Closed, unsettling, tense
     ascendente: [Pink Panther, Jaws]
     descendente: [Für Elise, Jurassic Park, Game of Thrones]
@@ -24,6 +25,7 @@
   ascendente: [Cumpleaños Feliz, Do–Re (escala), Frère Jacques]
   descendente: [Yesterday]
   en:
+    nombre: Major 2nd
     caracter: Open, wistful, a gentle step
     ascendente: [Happy Birthday, Do–Re (scale), Frère Jacques]
     descendente: [Yesterday]
@@ -36,6 +38,7 @@
   ascendente: [Smoke on the Water, Greensleeves]
   descendente: [Hey Jude, Losing My Religion]
   en:
+    nombre: Minor 3rd
     caracter: Sad, intimate
     ascendente: [Smoke on the Water, Greensleeves]
     descendente: [Hey Jude, Losing My Religion]
@@ -48,6 +51,7 @@
   ascendente: [When the Saints Go Marching In]
   descendente: [Bad Moon Rising, Cucurrucucú Paloma]
   en:
+    nombre: Major 3rd
     caracter: Bright, happy
     ascendente: [When the Saints Go Marching In]
     descendente: [Bad Moon Rising, Cucurrucucú Paloma]
@@ -60,6 +64,7 @@
   ascendente: [We Wish You a Merry Christmas, Here Comes the Bride, La Marsellesa, Amazing Grace]
   descendente: [Under Pressure (bajo)]
   en:
+    nombre: Perfect 4th
     caracter: Solemn, a call
     ascendente: [We Wish You a Merry Christmas, Here Comes the Bride, La Marseillaise, Amazing Grace]
     descendente: [Under Pressure (bass)]
@@ -72,6 +77,7 @@
   ascendente: [The Simpsons, Maria (West Side Story)]
   descendente: [Black Sabbath (riff inicial)]
   en:
+    nombre: Diminished 5th (tritone)
     caracter: Unstable, uneasy
     ascendente: [The Simpsons, Maria (West Side Story)]
     descendente: [Black Sabbath (opening riff)]
@@ -84,6 +90,7 @@
   ascendente: [Twinkle Twinkle, Star Wars, Also sprach Zarathustra]
   descendente: [Flintstones (inicio)]
   en:
+    nombre: Perfect 5th
     caracter: Stable, epic
     ascendente: [Twinkle Twinkle, Star Wars, Also sprach Zarathustra]
     descendente: [The Flintstones (opening)]
@@ -96,6 +103,7 @@
   ascendente: [The Entertainer (3ª–4ª nota), Baker Street]
   descendente: [Blue in Green (Miles Davis – caída melódica)]
   en:
+    nombre: Minor 6th (augmented 5th)
     caracter: Strange, floating
     ascendente: [The Entertainer (3rd–4th note), Baker Street]
     descendente: [Blue in Green (Miles Davis – melodic fall)]
@@ -109,6 +117,7 @@
   ascendente: [My Way, Es un muchacho excelente, Chopin Noct. nº2]
   descendente: [Nobody Knows the Trouble I've Seen]
   en:
+    nombre: Major 6th
     caracter: Nostalgic, warm
     ascendente: [My Way, "For He's a Jolly Good Fellow", Chopin Nocturne no. 2]
     descendente: ["Nobody Knows the Trouble I've Seen"]
@@ -121,6 +130,7 @@
   ascendente: [The Winner Takes It All, Interstellar]
   descendente: [Watermelon Man (head descendente)]
   en:
+    nombre: Minor 7th
     caracter: Dramatic, expansive
     ascendente: [The Winner Takes It All, Interstellar]
     descendente: [Watermelon Man (descending head)]
@@ -134,6 +144,7 @@
   ascendente: [Don't Know Why, Take On Me (estribillo)]
   descendente: [I Love You (Cole Porter)]
   en:
+    nombre: Major 7th
     caracter: Very tense, yearning
     ascendente: ["Don't Know Why", Take On Me (chorus)]
     descendente: [I Love You (Cole Porter)]
@@ -146,6 +157,7 @@
   ascendente: [Somewhere Over the Rainbow]
   descendente: []
   en:
+    nombre: Octave
     caracter: Complete resolution
     ascendente: [Somewhere Over the Rainbow]
     descendente: []

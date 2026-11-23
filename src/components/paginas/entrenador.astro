@@ -1,0 +1,437 @@
+---
+// Entrenador de oído de intervalos (lib/entrenador.ts). Lo usan pages/intervalos/entrenador.astro
+// y pages/en/intervals/ear-trainer.astro (textos en i18n/intervalos.ts).
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { porOrden } from '../../lib/orden.ts';
+import { ruta } from '../../lib/rutas.ts';
+import { TONICAS } from '../../lib/teoria.ts';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { conPrefijo, formatear, type Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { ENTRENADOR } from '../../i18n/intervalos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = ENTRENADOR[idioma];
+const I = INTERFAZ[idioma];
+const ingles = idioma === 'en';
+const intervalos = porOrden(await getCollection('intervalos')).map(({ id, data }) => ({
+  id,
+  nombre: (ingles && data.en?.nombre) || data.nombre,
+  grado: data.grado,
+  ascendente: ingles && data.en ? data.en.ascendente : data.ascendente,
+  descendente: ingles && data.en ? data.en.descendente : data.descendente,
+}));
+const volver = ruta(ingles ? conPrefijo('en', 'intervals') : 'intervalos');
+const otroIdioma = ruta(ingles ? 'intervalos/entrenador' : conPrefijo('en', 'intervals/ear-trainer'));
+// JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
+const datos = JSON.stringify(intervalos).replace(/</g, '\\u003c');
+
+const modos = (['ascendente', 'descendente', 'armonico'] as const).map((id) => ({ id, nombre: T.modos[id] }));
+---
+
+<Base titulo={T.titulo} otroIdioma={otroIdioma}>
+  <a class="volver" href={volver}>{T.volver}</a>
+
+  <p
+    class="marcador"
+    aria-live="polite"
+    set:html={formatear(T.marcador, { aciertos: '<strong data-aciertos>0</strong>', intentos: '<strong data-intentos>0</strong>' })}
+  />
+
+  <div class="controles">
+    <button type="button" class="principal" data-nuevo>{T.nuevo}</button>
+    <button type="button" data-repetir disabled>{T.repetir}</button>
+    <button type="button" data-pista disabled>{T.pista}</button>
+  </div>
+
+  <div class="resultado" data-resultado aria-live="polite">
+    <p class="suave">{T.instrucciones}</p>
+  </div>
+
+  <ul class="respuestas" data-respuestas>
+    {
+      intervalos.map((i) => (
+        <li data-intervalo-respuesta={i.id}>
+          <button type="button" data-respuesta={i.id} disabled>
+            {i.nombre}
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  <details class="ajustes tarjeta">
+    <summary>{T.ajustes}</summary>
+    <fieldset>
+      <legend>{T.comoSuena}</legend>
+      {
+        modos.map((m) => (
+          <label class="opcion">
+            <input type="checkbox" name="modo" value={m.id} checked={m.id === 'ascendente'} />
+            {m.nombre}
+          </label>
+        ))
+      }
+    </fieldset>
+    <fieldset>
+      <legend>{I.sonido}</legend>
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </fieldset>
+    <fieldset>
+      <legend>{T.notaPartida}</legend>
+      <select name="tonica">
+        <option value="azar">{T.alAzar}</option>
+        {TONICAS.map((t) => <option value={t}>{t}</option>)}
+      </select>
+    </fieldset>
+    <fieldset>
+      <legend>{T.intervalos}</legend>
+      <div class="todos">
+        <button type="button" data-marcar="todos">{T.todos}</button>
+        <button type="button" data-marcar="ninguno">{T.ninguno}</button>
+      </div>
+      {
+        intervalos.map((i) => (
+          <label class="opcion">
+            <input type="checkbox" name="intervalo" value={i.id} checked />
+            {i.nombre}
+          </label>
+        ))
+      }
+    </fieldset>
+    <p class="aviso suave" data-aviso hidden>{T.aviso}</p>
+  </details>
+
+  <script type="application/json" id="datos-intervalos" set:html={datos} />
+</Base>
+
+<script>
+  import { tocar } from '../../lib/audio.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { ENTRENADOR } from '../../i18n/intervalos.ts';
+  import { conectarInstrumento } from '../../lib/cliente.ts';
+  // El mismo sonido que en la página de Intervalos.
+  const instrumento = conectarInstrumento('intervalos:sonido');
+  import { nuevaPregunta, pista, responder, type Marcador, type Pregunta } from '../../lib/entrenador.ts';
+  import { secuenciaIntervalo, type ModoIntervalo } from '../../lib/secuencias.ts';
+  import { notaBajoGrado, notaDeGrado, formatNota, TONICAS } from '../../lib/teoria.ts';
+
+  interface Intervalo {
+    id: string;
+    nombre: string;
+    grado: string;
+    ascendente: string[];
+    descendente: string[];
+  }
+
+  const intervalos: Intervalo[] = JSON.parse(document.getElementById('datos-intervalos')!.textContent!);
+  const porId = new Map(intervalos.map((i) => [i.id, i]));
+  const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
+  const $$ = <T extends Element>(sel: string) => [...document.querySelectorAll<T>(sel)];
+
+  const botonNuevo = $<HTMLButtonElement>('[data-nuevo]');
+  const botonRepetir = $<HTMLButtonElement>('[data-repetir]');
+  const botonPista = $<HTMLButtonElement>('[data-pista]');
+  const resultado = $<HTMLElement>('[data-resultado]');
+  const aviso = $<HTMLElement>('[data-aviso]');
+  const casillasModo = $$<HTMLInputElement>('input[name="modo"]');
+  const casillasIntervalo = $$<HTMLInputElement>('input[name="intervalo"]');
+  const selectorTonica = $<HTMLSelectElement>('select[name="tonica"]');
+
+  let pregunta: Pregunta | null = null;
+  let respondida = false;
+  let marcador: Marcador = { aciertos: 0, intentos: 0 };
+
+  // ---- Ajustes (se recuerdan en este navegador) ----
+  const CLAVE = 'entrenador:ajustes';
+
+  function guardarAjustes() {
+    const ajustes = {
+      modos: casillasModo.filter((c) => c.checked).map((c) => c.value),
+      intervalos: casillasIntervalo.filter((c) => c.checked).map((c) => c.value),
+      tonica: selectorTonica.value,
+    };
+    try {
+      localStorage.setItem(CLAVE, JSON.stringify(ajustes));
+    } catch {
+      // sin almacenamiento: los ajustes duran lo que la página
+    }
+  }
+
+  function cargarAjustes() {
+    try {
+      const a = JSON.parse(localStorage.getItem(CLAVE) ?? 'null');
+      if (!a) return;
+      for (const c of casillasModo) c.checked = a.modos.includes(c.value);
+      for (const c of casillasIntervalo) c.checked = a.intervalos.includes(c.value);
+      if ([...selectorTonica.options].some((o) => o.value === a.tonica)) selectorTonica.value = a.tonica;
+    } catch {
+      // ajustes ausentes o corruptos: se quedan los de por defecto
+    }
+  }
+
+  const modosElegidos = () => casillasModo.filter((c) => c.checked).map((c) => c.value as ModoIntervalo);
+  const intervalosElegidos = () => casillasIntervalo.filter((c) => c.checked).map((c) => c.value);
+
+  /** Muestra solo los botones de respuesta de los intervalos elegidos. */
+  function actualizarAjustes() {
+    const elegidos = new Set(intervalosElegidos());
+    for (const li of $$<HTMLElement>('[data-intervalo-respuesta]')) li.hidden = !elegidos.has(li.dataset.intervaloRespuesta!);
+    const valido = elegidos.size > 0 && modosElegidos().length > 0;
+    aviso.hidden = valido;
+    botonNuevo.disabled = !valido;
+    guardarAjustes();
+  }
+
+  // ---- Juego ----
+  const T = ENTRENADOR[idiomaValido(document.documentElement.lang)];
+  const NOMBRE_MODO: Record<ModoIntervalo, string> = T.modosMinuscula;
+
+  function describir(p: Pregunta) {
+    const i = porId.get(p.intervalo)!;
+    const otra = p.modo === 'descendente' ? notaBajoGrado(p.tonica, i.grado) : notaDeGrado(p.tonica, i.grado);
+    const flecha = p.modo === 'descendente' ? '↓' : p.modo === 'ascendente' ? '↑' : '+';
+    return `${i.nombre} ${NOMBRE_MODO[p.modo]} (${p.tonica} ${flecha} ${formatNota(otra)})`;
+  }
+
+  function textoPista(p: Pregunta) {
+    const canciones = pista(porId.get(p.intervalo)!, p.modo);
+    return canciones.length ? canciones.join(' · ') : T.sinCancion;
+  }
+
+  function sonar() {
+    if (!pregunta) return;
+    const i = porId.get(pregunta.intervalo)!;
+    tocar(secuenciaIntervalo(pregunta.tonica, i.grado, pregunta.modo), undefined, instrumento()).catch(console.error);
+  }
+
+  function pintarResultado(clase: string, titulo: string, detalle?: string) {
+    resultado.className = `resultado ${clase}`;
+    resultado.replaceChildren();
+    const p = document.createElement('p');
+    p.className = 'titulo';
+    p.textContent = titulo;
+    resultado.append(p);
+    if (detalle) {
+      const d = document.createElement('p');
+      d.textContent = detalle;
+      resultado.append(d);
+    }
+  }
+
+  botonNuevo.addEventListener('click', () => {
+    const tonicas = selectorTonica.value === 'azar' ? [...TONICAS] : [selectorTonica.value];
+    pregunta = nuevaPregunta(intervalosElegidos(), modosElegidos(), tonicas, pregunta ?? undefined);
+    respondida = false;
+    for (const b of $$<HTMLButtonElement>('[data-respuesta]')) {
+      b.disabled = false;
+      b.classList.remove('correcta', 'fallada');
+    }
+    botonRepetir.disabled = false;
+    botonPista.disabled = false;
+    pintarResultado('', formatear(T.pregunta, { modo: NOMBRE_MODO[pregunta.modo] }));
+    sonar();
+  });
+
+  botonRepetir.addEventListener('click', sonar);
+
+  botonPista.addEventListener('click', () => {
+    if (pregunta && !respondida) pintarResultado('', formatear(T.textoPista, { pista: textoPista(pregunta) }));
+  });
+
+  $<HTMLElement>('[data-respuestas]').addEventListener('click', (e) => {
+    const boton = (e.target as Element).closest<HTMLButtonElement>('[data-respuesta]');
+    if (!boton || !pregunta || respondida) return;
+    respondida = true;
+    const r = responder(marcador, pregunta, boton.dataset.respuesta!);
+    marcador = r.marcador;
+    $('[data-aciertos]').textContent = String(marcador.aciertos);
+    $('[data-intentos]').textContent = String(marcador.intentos);
+    $<HTMLButtonElement>(`[data-respuesta="${pregunta.intervalo}"]`).classList.add('correcta');
+    if (!r.acierto) boton.classList.add('fallada');
+    for (const b of $$<HTMLButtonElement>('[data-respuesta]')) b.disabled = true;
+    pintarResultado(
+      r.acierto ? 'acierto' : 'fallo',
+      `${r.acierto ? T.correcto : T.fallo}: ${describir(pregunta)}`,
+      formatear(T.referencia, { pista: textoPista(pregunta) }),
+    );
+    botonNuevo.focus();
+  });
+
+  // ---- Ajustes: eventos ----
+  for (const c of [...casillasModo, ...casillasIntervalo]) c.addEventListener('change', actualizarAjustes);
+  selectorTonica.addEventListener('change', guardarAjustes);
+  for (const b of $$<HTMLButtonElement>('[data-marcar]')) {
+    b.addEventListener('click', () => {
+      for (const c of casillasIntervalo) c.checked = b.dataset.marcar === 'todos';
+      actualizarAjustes();
+    });
+  }
+
+  cargarAjustes();
+  actualizarAjustes();
+</script>
+
+<style>
+  .volver {
+    display: inline-block;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .marcador {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-family: var(--fuente);
+  }
+  .controles {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    max-width: 60rem;
+    gap: 0.5rem;
+  }
+  button {
+    min-height: 2.6rem;
+    font: inherit;
+    font-weight: 700;
+    font-family: var(--fuente);
+    font-size: 0.95rem;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .principal {
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+  }
+  .resultado {
+    min-height: 3.5rem;
+    margin: 0.6rem 0;
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radio);
+    max-width: 60rem;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+  }
+  .resultado :global(p) {
+    margin: 0;
+  }
+  .resultado :global(.titulo) {
+    font-weight: 700;
+    font-size: 1.6rem;
+  }
+  .resultado.acierto {
+    border-color: var(--bien);
+    border-width: 2px;
+  }
+  .resultado.acierto :global(.titulo) {
+    color: var(--bien);
+  }
+  .resultado.fallo {
+    border-color: var(--mal);
+    border-width: 2px;
+  }
+  .resultado.fallo :global(.titulo) {
+    color: var(--mal);
+  }
+  .respuestas {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: 0.5rem;
+  }
+  .respuestas button {
+    width: 100%;
+    font-size: 0.95rem;
+  }
+  .respuestas button:disabled {
+    opacity: 1;
+    color: var(--texto-suave);
+  }
+  .respuestas button.correcta {
+    background: var(--bien);
+    border-color: var(--bien);
+    color: var(--sobre-acento);
+  }
+  .respuestas button.fallada {
+    background: var(--mal);
+    border-color: var(--mal);
+    color: var(--sobre-acento);
+  }
+  /* En el móvil: los tres controles en una fila sin partir el texto y las respuestas en dos columnas. */
+  @media (max-width: 40rem) {
+    .controles {
+      grid-template-columns: 1.3fr 1fr 1fr;
+    }
+    .controles button {
+      padding: 0 0.5rem;
+      white-space: nowrap;
+    }
+    .respuestas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .respuestas button {
+      padding: 0.4rem 0.5rem;
+      font-size: 0.9rem;
+      line-height: 1.2;
+    }
+  }
+  .ajustes summary {
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 2rem;
+  }
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 1rem 0 0;
+  }
+  legend {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .opcion {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.5rem;
+  }
+  .opcion input {
+    width: 1.3rem;
+    height: 1.3rem;
+    accent-color: var(--acento);
+  }
+  select {
+    min-height: 2.3rem;
+    min-width: 10rem;
+    font: inherit;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    padding: 0 0.5rem;
+  }
+  .todos {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+  .todos button {
+    min-height: 2.5rem;
+    padding: 0 1rem;
+    font-weight: 600;
+  }
+</style>

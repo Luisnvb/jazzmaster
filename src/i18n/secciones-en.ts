@@ -25,7 +25,7 @@ export const PAGINAS_EN: Record<string, PaginaEn> = {
   'estudio/rutina': { nombre: 'Practice routine', lema: 'One note and one quality; repertoire in one position', direccion: 'study/routine' },
   'estudio/capas': { nombre: 'Fretboard in layers', lema: 'Root, triads, arpeggio, pentatonic, scale and chord in one CAGED zone', direccion: 'study/fretboard-layers' },
   'estudio/ritmo': { nombre: 'Rhythm', lema: 'Pulse, subdivisions, swing and comping patterns', direccion: 'study/rhythm' },
-  intervalos: { nombre: 'Intervals', lema: 'Cards, audio and ear trainer' },
+  intervalos: { nombre: 'Intervals', lema: 'Cards, audio and ear trainer', direccion: 'intervals' },
   'estudio/oido-armonico': { nombre: 'Harmonic ear', lema: 'Chord quality trainer, degree chains and progressions', direccion: 'study/harmonic-ear' },
   'estudio/dictado': { nombre: 'Melodic dictation', lema: 'Call and response: play back the phrase in the next bar', direccion: 'study/dictation' },
   'estudio/lectura': { nombre: 'Sight reading', lema: 'A note on the staff: find it on the neck, in its octave', direccion: 'study/sight-reading' },

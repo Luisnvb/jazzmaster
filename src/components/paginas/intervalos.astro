@@ -1,0 +1,182 @@
+---
+// Intervalos: fichas con su sonido, carácter y canciones de referencia (intervalos.yaml).
+// Lo usan pages/intervalos.astro y pages/en/intervals/index.astro (textos en i18n/intervalos.ts;
+// en inglés, el campo `en` de intervalos.yaml).
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../SelectorTonica.astro';
+import { porOrden } from '../../lib/orden.ts';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import { ruta } from '../../lib/rutas.ts';
+import { formatNota, notaBajoGrado, notasDeFormula } from '../../lib/teoria.ts';
+import { conPrefijo, formatear, type Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { INTERVALOS } from '../../i18n/intervalos.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = INTERVALOS[idioma];
+const I = INTERFAZ[idioma];
+const ingles = idioma === 'en';
+const intervalos = porOrden(await getCollection('intervalos')).map(({ id, data }) => ({
+  id,
+  data: {
+    ...data,
+    nombre: (ingles && data.en?.nombre) || data.nombre,
+    caracter: (ingles && data.en?.caracter) || data.caracter,
+    ascendente: ingles && data.en ? data.en.ascendente : data.ascendente,
+    descendente: ingles && data.en ? data.en.descendente : data.descendente,
+  },
+}));
+const tonica = 'C';
+const entrenador = ruta(ingles ? conPrefijo('en', 'intervals/ear-trainer') : 'intervalos/entrenador');
+---
+
+<Base titulo={T.titulo}>
+  <a class="entrenador tarjeta" href={entrenador}><span>{T.entrenador}</span><span aria-hidden="true">→</span></a>
+  <SelectorTonica clave="intervalos" etiqueta={T.notaPartida} idioma={idioma}>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+  </SelectorTonica>
+  <button type="button" class="boton restaurar" data-restaurar-eliminados hidden>{I.restaurarEliminados}</button>
+
+  <ul class="lista-tarjetas">
+    {
+      intervalos.map(({ id, data }) => {
+        const [desde, hasta] = notasDeFormula(tonica, ['1', data.grado]);
+        const abajo = formatNota(notaBajoGrado(tonica, data.grado));
+        return (
+          <li class="tarjeta intervalo" data-eliminable={id} data-nombre={data.nombre}>
+            <div class="cabecera">
+              <h2>{data.nombre}</h2>
+              <span class="semitonos">{data.semitonos} {T.semitonos}</span>
+            </div>
+            <p class="ejemplo" data-grado={data.grado}>
+              <span>↑ <span data-desde>{desde}</span> → <span data-hasta>{hasta}</span></span>
+              <span>↓ <span data-desde>{desde}</span> → <span data-abajo>{abajo}</span></span>
+            </p>
+            <p class="caracter">{data.caracter}</p>
+            <dl class="referencias">
+              <dt>{T.ascendente}</dt>
+              <dd>{data.ascendente.length ? data.ascendente.join(' · ') : <span class="suave">—</span>}</dd>
+              <dt>{T.descendente}</dt>
+              <dd>{data.descendente.length ? data.descendente.join(' · ') : <span class="suave">—</span>}</dd>
+            </dl>
+            <div class="botones-audio">
+              <button type="button" data-audio="ascendente" data-grado={data.grado} aria-pressed="false">{T.ascendente}</button>
+              <button type="button" data-audio="descendente" data-grado={data.grado} aria-pressed="false">{T.descendente}</button>
+              <button type="button" data-audio="armonico" data-grado={data.grado} aria-pressed="false">{T.armonico}</button>
+              <button type="button" class="eliminar" data-eliminar aria-label={formatear(I.eliminarNombre, { nombre: data.nombre })}>{I.eliminar}</button>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+</Base>
+
+<script>
+  import { conectarAudio, conectarInstrumento, conectarTonica } from '../../lib/cliente.ts';
+  import { conectarEliminados } from '../../lib/eliminados.ts';
+  import { secuenciaIntervalo, type ModoIntervalo } from '../../lib/secuencias.ts';
+  import { formatNota, notaBajoGrado, notasDeFormula } from '../../lib/teoria.ts';
+
+  let tonicaActual = 'C';
+
+  conectarTonica((tonica) => {
+    tonicaActual = tonica;
+    for (const el of document.querySelectorAll<HTMLElement>('.ejemplo[data-grado]')) {
+      const grado = el.dataset.grado!;
+      const [desde, hasta] = notasDeFormula(tonica, ['1', grado]);
+      for (const d of el.querySelectorAll('[data-desde]')) d.textContent = desde;
+      el.querySelector('[data-hasta]')!.textContent = hasta;
+      el.querySelector('[data-abajo]')!.textContent = formatNota(notaBajoGrado(tonica, grado));
+    }
+  });
+
+  conectarEliminados('intervalos');
+
+  const instrumento = conectarInstrumento('intervalos:sonido');
+  conectarAudio((boton) => ({
+    eventos: secuenciaIntervalo(tonicaActual, boton.dataset.grado!, boton.dataset.audio as ModoIntervalo),
+    instrumento: instrumento(),
+  }));
+</script>
+
+<style>
+  .entrenador {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding: 0.9rem 1.25rem;
+    background: var(--acento);
+    border-color: var(--acento);
+    color: var(--sobre-acento);
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .entrenador:hover {
+    border-color: var(--acento);
+  }
+  .restaurar {
+    margin-bottom: 1rem;
+  }
+  .lista-tarjetas {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 23rem), 1fr));
+  }
+  .cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+  .cabecera h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  .semitonos {
+    font-family: var(--fuente);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--acento);
+    white-space: nowrap;
+  }
+  .ejemplo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+    margin: 0.5rem 0;
+    font-family: var(--fuente);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .caracter {
+    margin: 0.25rem 0 1rem;
+    font-size: 1.1rem;
+    color: var(--texto-suave);
+  }
+  .referencias {
+    margin: 0;
+    padding-top: 0.75rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.35rem 1rem;
+    border-top: 1px solid var(--borde);
+  }
+  .referencias dt {
+    font-family: var(--fuente);
+    font-size: 0.82rem;
+    color: var(--texto-suave);
+    padding-top: 0.2rem;
+    white-space: nowrap;
+  }
+  .referencias dd {
+    margin: 0;
+  }
+</style>

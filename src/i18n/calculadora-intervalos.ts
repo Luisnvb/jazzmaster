@@ -56,7 +56,7 @@ export const CALCULADORA = textos(
     semitonos: 'Semitones',
     arriba: 'Above',
     abajo: 'Below',
-    pie: 'Each row plays when pressed. To train your ear, go to <a href="{intervalos}" hreflang="es">Intervals</a> (in Spanish).',
+    pie: 'Each row plays when pressed. To train your ear, go to <a href="{intervalos}">Intervals</a>.',
     cancionesInicio: 'Sounds like the start of: {canciones}',
     detalleEntre: '{a} → {b} {direccion} · degree <strong>{grado}</strong> · {n} semitones',
     subiendoMin: 'ascending',
