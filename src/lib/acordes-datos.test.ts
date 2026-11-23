@@ -38,9 +38,15 @@ test('errores de un voicing', () => {
   assert.deepEqual(erroresVoicing(dim, ['dim7']), []);
 });
 
+test('errores de un voicing en inglés', () => {
+  assert.match(erroresVoicing(v('a', { grados: ['', '1', '5', 'b7', '3', ''] }), ['m7'], 'en').join(), /2nd string.*b3.*not 3/);
+  assert.match(erroresVoicing(v('a', { nombre: ' ' }), ['m7'], 'en').join(), /name is missing/);
+});
+
 test('exportar a YAML y volver a leerlo', () => {
   const lista = [
-    v('a', { notas: "Con 'comillas'" }),
+    v('a', { notas: "Con 'comillas'", en: { notas: "With 'quotes'" } }),
+    v('c', { en: { nombre: 'Triad', notas: 'Two\nlines' } }),
     v('b', { trastes: [8, 'x', 8, 9, 8, 'x'], grados: ['1', '', 'b7', '3', '5', ''], grupo: 'dom7' }),
   ];
   const leido = (parse(voicingsAYaml(lista)) as unknown[]).map(aVoicing);

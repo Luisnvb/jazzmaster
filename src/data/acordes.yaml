@@ -20,6 +20,8 @@
   trastes: [8, x, 8, 10, 8, x]
   grados: ['1', '', 'b7', '4', '5', '']
   notas: Voicing de ejemplo.
+  en:
+    notas: 'Example voicing.'
 
 - id: aug-5
   grupo: aug
@@ -28,6 +30,9 @@
   trastes: [x, 3, 2, 1, 1, x]
   grados: ['', '1', '3', '#5', '1', '']
   notas: Voicing de ejemplo.
+  en:
+    nombre: 'Triad'
+    notas: 'Example voicing.'
 
 - id: aug-1
   grupo: aug
@@ -36,6 +41,9 @@
   trastes: [8, 7, 6, x, x, x]
   grados: ['1', '3', '#5', '', '', '']
   notas: 'Tríada en las cuerdas graves.'
+  en:
+    nombre: 'Triad'
+    notas: 'Triad on the low strings.'
 
 - id: aug-2
   grupo: aug
@@ -44,6 +52,9 @@
   trastes: [x, x, x, 5, 5, 4]
   grados: ['', '', '', '1', '3', '#5']
   notas: 'Tríada en las cuerdas agudas. Se repite cada 4 trastes (es simétrica).'
+  en:
+    nombre: 'Triad'
+    notas: 'Triad on the high strings. It repeats every 4 frets (it is symmetric).'
 
 - id: aug-3
   grupo: aug
@@ -52,6 +63,8 @@
   trastes: [8, x, 8, 9, 9, x]
   grados: ['1', '', 'b7', '3', '#5', '']
   notas: 'Dominante aumentado (C7#5): bajo en la 6ª.'
+  en:
+    notas: 'Augmented dominant (C7#5): bass on the 6th string.'
 
 - id: aug-4
   grupo: aug
@@ -60,6 +73,8 @@
   trastes: [x, 3, x, 3, 5, 4]
   grados: ['', '1', '', 'b7', '3', '#5']
   notas: 'Dominante aumentado (C7#5): bajo en la 5ª.'
+  en:
+    notas: 'Augmented dominant (C7#5): bass on the 5th string.'
 
 - id: aug-6
   grupo: aug
@@ -68,6 +83,8 @@
   trastes: [8, x, 9, 9, 9, x]
   grados: ['1', '', '7', '3', '#5', '']
   notas: 'Maj7 aumentado (Cmaj7#5): tónica de la menor melódica (III+maj7).'
+  en:
+    notas: 'Augmented maj7 (Cmaj7#5): the tonic of melodic minor (III+maj7).'
 
 - id: aug-7
   grupo: aug
@@ -76,6 +93,8 @@
   trastes: [x, 3, x, 4, 5, 4]
   grados: ['', '1', '', '7', '3', '#5']
   notas: 'Maj7 aumentado (Cmaj7#5): bajo en la 5ª.'
+  en:
+    notas: 'Augmented maj7 (Cmaj7#5): bass on the 5th string.'
 
 # --- Del repertorio (npm run voicings-repertorio) ---
 
@@ -552,6 +571,8 @@
   trastes: [x, x, 2, 4, 1, 3]
   grados: ['', '', '3', '7', '1', '5']
   notas: 'II-V-I mayor, cuerdas 4321, fila 1 (Imaj7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 1 (Imaj7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-dom7-9
   grupo: dom7
@@ -560,6 +581,8 @@
   trastes: [x, x, 8, 9, 8, 8]
   grados: ['', '', 'b7', '3', '5', '1']
   notas: 'II-V-I mayor, cuerdas 4321, fila 1 (V7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 1 (V7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-m7-12
   grupo: m7
@@ -568,6 +591,8 @@
   trastes: [x, x, 1, 3, 1, 3]
   grados: ['', '', 'b3', 'b7', '1', '5']
   notas: 'II-V-I mayor, cuerdas 4321, fila 1 (II-7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 1 (II-7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-maj7-12
   grupo: maj7
@@ -576,6 +601,8 @@
   trastes: [x, x, 5, 5, 5, 7]
   grados: ['', '', '5', '1', '3', '7']
   notas: 'II-V-I mayor, cuerdas 4321, fila 2 (Imaj7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 2 (Imaj7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-m7-13
   grupo: m7
@@ -584,6 +611,8 @@
   trastes: [x, x, 5, 5, 4, 6]
   grados: ['', '', '5', '1', 'b3', 'b7']
   notas: 'II-V-I mayor, cuerdas 4321, fila 2 (II-7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 2 (II-7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-maj7-13
   grupo: maj7
@@ -592,6 +621,8 @@
   trastes: [x, x, 9, 9, 8, 8]
   grados: ['', '', '7', '3', '5', '1']
   notas: 'II-V-I mayor, cuerdas 4321, fila 3 (Imaj7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 3 (Imaj7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-m7-14
   grupo: m7
@@ -600,6 +631,8 @@
   trastes: [x, x, 8, 8, 8, 8]
   grados: ['', '', 'b7', 'b3', '5', '1']
   notas: 'II-V-I mayor, cuerdas 4321, fila 3 (II-7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 3 (II-7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-dom7-10
   grupo: dom7
@@ -608,6 +641,8 @@
   trastes: [x, x, 5, 5, 5, 6]
   grados: ['', '', '5', '1', '3', 'b7']
   notas: 'II-V-I mayor, cuerdas 4321, fila 4 (V7, Drop 2). De: Voicings_4321.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 4321, row 4 (V7, Drop 2). From: Voicings_4321.jpg.'
 
 - id: chords-maj7-14
   grupo: maj7
@@ -616,6 +651,8 @@
   trastes: [x, 7, 9, 5, 8, x]
   grados: ['', '3', '7', '1', '5', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 1 (Imaj7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 1 (Imaj7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-dom7-11
   grupo: dom7
@@ -624,6 +661,8 @@
   trastes: [x, 13, 14, 12, 13, x]
   grados: ['', 'b7', '3', '5', '1', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 1 (V7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 1 (V7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-m7-15
   grupo: m7
@@ -632,6 +671,8 @@
   trastes: [x, 6, 8, 5, 8, x]
   grados: ['', 'b3', 'b7', '1', '5', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 1 (II-7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 1 (II-7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-dom7-12
   grupo: dom7
@@ -640,6 +681,8 @@
   trastes: [x, 10, 10, 9, 11, x]
   grados: ['', '5', '1', '3', 'b7', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 2 (V7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 2 (V7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-maj7-15
   grupo: maj7
@@ -648,6 +691,8 @@
   trastes: [x, 14, 14, 12, 13, x]
   grados: ['', '7', '3', '5', '1', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 3 (Imaj7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 3 (Imaj7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-dom7-13
   grupo: dom7
@@ -656,6 +701,8 @@
   trastes: [x, 7, 8, 5, 8, x]
   grados: ['', '3', 'b7', '1', '5', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 3 (V7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 3 (V7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-m7-16
   grupo: m7
@@ -664,6 +711,8 @@
   trastes: [x, 13, 13, 12, 13, x]
   grados: ['', 'b7', 'b3', '5', '1', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 3 (II-7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 3 (II-7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-maj7-16
   grupo: maj7
@@ -672,6 +721,8 @@
   trastes: [x, 10, 10, 9, 12, x]
   grados: ['', '5', '1', '3', '7', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 4 (Imaj7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 4 (Imaj7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-m7-17
   grupo: m7
@@ -680,6 +731,8 @@
   trastes: [x, 10, 10, 8, 11, x]
   grados: ['', '5', '1', 'b3', 'b7', '']
   notas: 'II-V-I mayor, cuerdas 5432, fila 4 (II-7, Drop 2). De: Voicing_5432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 5432, row 4 (II-7, Drop 2). From: Voicing_5432.jpg.'
 
 - id: chords-dom7-14
   grupo: dom7
@@ -688,6 +741,8 @@
   trastes: [3, x, 2, 3, 1, x]
   grados: ['5', '', '3', 'b7', '1', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 1 (V7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 1 (V7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-maj7-17
   grupo: maj7
@@ -696,6 +751,8 @@
   trastes: [3, x, 2, 4, 1, x]
   grados: ['5', '', '3', '7', '1', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 2 (Imaj7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 2 (Imaj7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-m7-18
   grupo: m7
@@ -704,6 +761,8 @@
   trastes: [3, x, 1, 3, 1, x]
   grados: ['5', '', 'b3', 'b7', '1', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 2 (II-7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 2 (II-7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-maj7-18
   grupo: maj7
@@ -712,6 +771,8 @@
   trastes: [7, x, 5, 5, 5, x]
   grados: ['7', '', '5', '1', '3', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 3 (Imaj7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 3 (Imaj7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-dom7-15
   grupo: dom7
@@ -720,6 +781,8 @@
   trastes: [12, x, 10, 12, 11, x]
   grados: ['3', '', '1', '5', 'b7', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 3 (V7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 3 (V7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-m7-19
   grupo: m7
@@ -728,6 +791,8 @@
   trastes: [6, x, 5, 5, 4, x]
   grados: ['b7', '', '5', '1', 'b3', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 3 (II-7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 3 (II-7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-maj7-19
   grupo: maj7
@@ -736,6 +801,8 @@
   trastes: [12, x, 10, 12, 12, x]
   grados: ['3', '', '1', '5', '7', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 4 (Imaj7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 4 (Imaj7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-dom7-16
   grupo: dom7
@@ -744,6 +811,8 @@
   trastes: [6, x, 5, 5, 5, x]
   grados: ['b7', '', '5', '1', '3', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 4 (V7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 4 (V7, Drop 3). From: Voicings_6432.jpg.'
 
 - id: chords-m7-20
   grupo: m7
@@ -752,6 +821,8 @@
   trastes: [11, x, 10, 12, 11, x]
   grados: ['b3', '', '1', '5', 'b7', '']
   notas: 'II-V-I mayor, cuerdas 6432, fila 4 (II-7, Drop 3). De: Voicings_6432.jpg.'
+  en:
+    notas: 'Major II-V-I, strings 6432, row 4 (II-7, Drop 3). From: Voicings_6432.jpg.'
 
 # --- Del repertorio (npm run voicings-repertorio) ---
 
@@ -940,6 +1011,8 @@
   trastes: [0, x, 1, 1, 0, 0]
   grados: ['1', '', '7', '3', '5', '1']
   notas: 'La 7 (D#) a un semitono de la 1ª al aire: un roce que brilla.'
+  en:
+    notas: 'The 7 (D#) a half step from the open 1st string: a bright rub.'
 
 - id: aire-maj7-2
   grupo: maj7
@@ -948,6 +1021,8 @@
   trastes: [0, x, 6, 4, 4, 0]
   grados: ['1', '', '3', '5', '7', '1']
   notas: 'Forma cerrada en el traste 4 entre dos Mi al aire, grave y agudo.'
+  en:
+    notas: 'A closed shape at the 4th fret between two open Es, low and high.'
 
 - id: aire-maj7-3
   grupo: maj7
@@ -991,6 +1066,8 @@
   trastes: [1, x, 3, 2, 0, 0]
   grados: ['1', '', '1', '3', '#11', '7']
   notas: 'Lidio: la #11 y la 7 al aire, arriba del todo.'
+  en:
+    notas: 'Lydian: the #11 and the 7 as open strings, right at the top.'
 
 - id: aire-maj7-9
   grupo: maj7
@@ -999,6 +1076,8 @@
   trastes: [3, x, 4, 4, 0, 0]
   grados: ['1', '', '7', '3', '3', '13']
   notas: 'La 3 doble (pisada y al aire) suena casi como un coro.'
+  en:
+    notas: 'The doubled 3 (fretted and open) sounds almost like a chorus.'
 
 - id: aire-maj7-10
   grupo: maj7
@@ -1021,6 +1100,8 @@
   trastes: [0, 0, 0, 0, 0, 0]
   grados: ['1', '11', 'b7', 'b3', '5', '1']
   notas: 'Las seis cuerdas al aire: un Em11 por cuartas.'
+  en:
+    notas: 'All six open strings: an Em11 in fourths.'
 
 - id: aire-m7-3
   grupo: m7
@@ -1036,6 +1117,8 @@
   trastes: [x, 0, 5, 5, 0, 0]
   grados: ['', '1', 'b7', 'b3', '9', '5']
   notas: 'La 9 (Si) y la 5 (Mi) al aire sobre la b7 y la b3 pisadas.'
+  en:
+    notas: 'The 9 (B) and the 5 (E) open over the fretted b7 and b3.'
 
 - id: aire-m7-5
   grupo: m7
@@ -1100,6 +1183,8 @@
   trastes: [3, x, 3, 4, 5, 0]
   grados: ['1', '', 'b7', '3', '13', '13']
   notas: 'La 13 dos veces, pisada y al aire, a la misma altura.'
+  en:
+    notas: 'The 13 twice, fretted and open, at the same pitch.'
 
 - id: aire-sus-1
   grupo: sus
@@ -1129,6 +1214,8 @@
   trastes: [0, x, 6, 7, 8, x]
   grados: ['1', '', '3', 'b7', '#9', '']
   notas: 'El acorde Hendrix, con el Mi grave al aire.'
+  en:
+    notas: 'The Hendrix chord, with the low E open.'
 
 - id: aire-alt7-2
   grupo: alt7

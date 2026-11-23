@@ -8,6 +8,7 @@ import * as es from '../../data/estudio/rutina.md';
 import * as en from '../../data/estudio/rutina.en.md';
 import { porOrden } from '../../lib/orden.ts';
 import { ruta } from '../../lib/rutas.ts';
+import { enlacePagina } from '../../lib/secciones.ts';
 import { TONICAS } from '../../lib/teoria.ts';
 import type { Idioma } from '../../i18n/idiomas.ts';
 import { INTERFAZ } from '../../i18n/interfaz.ts';
@@ -27,9 +28,9 @@ const grupos = porOrden(await getCollection('grupos'));
 const datos = JSON.stringify({
   notas: TONICAS,
   cualidades: [
-    { nombre: T.triadaMayor, enlace: `${ruta('acordes')}#grupo-maj7` },
-    { nombre: T.triadaMenor, enlace: `${ruta('acordes')}#grupo-m7` },
-    ...grupos.map((g) => ({ nombre: (idioma === 'en' && g.data.en?.nombre) || g.data.nombre, enlace: `${ruta('acordes')}#grupo-${g.id}` })),
+    { nombre: T.triadaMayor, enlace: `${enlacePagina('acordes', idioma)}#grupo-maj7` },
+    { nombre: T.triadaMenor, enlace: `${enlacePagina('acordes', idioma)}#grupo-m7` },
+    ...grupos.map((g) => ({ nombre: (idioma === 'en' && g.data.en?.nombre) || g.data.nombre, enlace: `${enlacePagina('acordes', idioma)}#grupo-${g.id}` })),
   ],
   canciones: (await getCollection('repertorio')).map((c) => ({ nombre: c.data.titulo, enlace: ruta(`repertorio/${c.id}`) })),
 }).replace(/</g, '\\u003c');

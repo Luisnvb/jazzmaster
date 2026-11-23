@@ -1,18 +1,33 @@
 ---
 // Lista de voicings (los de src/data/acordes.yaml, con edición en el navegador). La usan
 // dos páginas: Voicings (/acordes/), sin los de cuerdas al aire, y Cuerdas al aire
-// (/acordes/al-aire/), solo con ellos. Comparten cambios, orden y favoritos.
+// (/acordes/al-aire/), solo con ellos. Comparten cambios, orden y favoritos. En inglés,
+// /en/chords/ y /en/chords/open-strings/ (textos en i18n/voicings.ts; nombres y notas
+// de cada voicing en su campo `en` de acordes.yaml).
 import { getCollection } from 'astro:content';
-import Base from '../layouts/Base.astro';
-import SelectorTonica from '../components/SelectorTonica.astro';
-import Tempo from '../components/Tempo.astro';
-import { porOrden } from '../lib/orden.ts';
-import { TONICAS } from '../lib/teoria.ts';
-import { INSTRUMENTOS } from '../lib/audio.ts';
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../SelectorTonica.astro';
+import Tempo from '../Tempo.astro';
+import { porOrden } from '../../lib/orden.ts';
+import { TONICAS } from '../../lib/teoria.ts';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { VOICINGS } from '../../i18n/voicings.ts';
+
+interface Props {
+  /** true: solo los voicings con cuerdas al aire; false: solo los que no las tienen. */
+  alAire: boolean;
+  idioma: Idioma;
+}
+const { alAire, idioma } = Astro.props;
+const T = VOICINGS[idioma];
+const I = INTERFAZ[idioma];
+const ingles = idioma === 'en';
 
 const grupos = porOrden(await getCollection('grupos')).map(({ id, data }) => ({
   id,
-  nombre: data.nombre,
+  nombre: (ingles && data.en?.nombre) || data.nombre,
   simbolo: data.simbolo,
   arpegio: data.arpegio,
 }));
@@ -25,88 +40,70 @@ const voicings = porOrden(await getCollection('acordes')).map(({ id, data }) => 
   grados: data.grados,
   ...(data.dedos ? { dedos: data.dedos } : {}),
   ...(data.notas ? { notas: data.notas } : {}),
+  ...(data.en ? { en: data.en } : {}),
 }));
 // JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
-interface Props {
-  /** true: solo los voicings con cuerdas al aire; false: solo los que no las tienen. */
-  alAire: boolean;
-  titulo: string;
-}
-const { alAire, titulo } = Astro.props;
-
 const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 ---
 
-<Base titulo={titulo}>
-  {
-    alAire && (
-      <p class="intro suave">
-        Las cuerdas al aire siguen sonando bajo las pisadas y dan al acorde una resonancia que no
-        tiene la misma forma cerrada. Por eso estos voicings no se transportan: cada uno está en su tónica.
-      </p>
-    )
-  }
-  <SelectorTonica clave="acordes" conTonica={!alAire}>
+<Base titulo={alAire ? T.tituloAlAire : T.titulo}>
+  {alAire && <p class="intro suave">{T.introAlAire}</p>}
+  <SelectorTonica clave="acordes" conTonica={!alAire} idioma={idioma}>
     {
       alAire && (
-        <label>Nota
+        <label>{T.nota}
           <select data-filtro-nota>
-            <option value="">Todas</option>
+            <option value="">{T.todas}</option>
             {TONICAS.map((t) => <option value={t}>{t}</option>)}
           </select>
         </label>
       )
     }
-    <label>Arpegio
+    <label>{T.arpegio}
       <select data-filtro-arpegio>
-        <option value="">Todos</option>
+        <option value="">{I.todos}</option>
         {grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}
       </select>
     </label>
-    <label>Sonido
-      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{i.nombre}</option>)}</select>
+    <label>{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
     </label>
     <Tempo clave="acordes" />
   </SelectorTonica>
 
   <div class="barra-edicion">
-    <button type="button" class="boton" data-modo-edicion aria-pressed="false">Editar</button>
-    <span class="suave aviso-local" data-aviso-local hidden>Con cambios guardados en este navegador.</span>
+    <button type="button" class="boton" data-modo-edicion aria-pressed="false">{T.editar}</button>
+    <span class="suave aviso-local" data-aviso-local hidden>{T.avisoLocal}</span>
   </div>
   <div class="herramientas" data-herramientas hidden>
-    <button type="button" class="boton principal" data-nuevo>+ Nuevo voicing</button>
-    <button type="button" class="boton" data-exportar>Exportar YAML</button>
-    <button type="button" class="boton" data-importar>Importar</button>
-    <button type="button" class="boton peligro" data-restaurar>Descartar cambios</button>
-    <p class="suave ayuda">
-      Los cambios se guardan en este navegador. Para llevarlos al repositorio, exporta y sustituye
-      <code>src/data/acordes.yaml</code> por el archivo descargado.
-    </p>
+    <button type="button" class="boton principal" data-nuevo>{T.nuevo}</button>
+    <button type="button" class="boton" data-exportar>{T.exportar}</button>
+    <button type="button" class="boton" data-importar>{T.importar}</button>
+    <button type="button" class="boton peligro" data-restaurar>{T.descartar}</button>
+    <p class="suave ayuda" set:html={T.ayudaEdicion} />
   </div>
 
   <div data-lista></div>
 
   <dialog class="dialogo" data-dialogo>
     <form method="dialog" data-formulario>
-      <h2 data-dialogo-titulo>Voicing</h2>
+      <h2 data-dialogo-titulo>{T.voicing}</h2>
       <div class="campos">
-        <label>Tipo
+        <label>{T.tipo}
           <select name="grupo">{grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}</select>
         </label>
-        <label>Nombre <input name="nombre" required placeholder="Shell, Drop 2…" /></label>
-        <label>Tónica de los trastes
+        <label>{T.nombre} <input name="nombre" required placeholder={T.nombreEjemplo} /></label>
+        <label>{T.tonicaTrastes}
           <select name="tonica">{TONICAS.map((t) => <option value={t}>{t}</option>)}</select>
         </label>
       </div>
       <div data-editor-trastes></div>
-      <label class="bloque">Notas <textarea name="notas" rows="2"></textarea></label>
-      <p class="suave nota-pagina">
-        Los voicings con alguna cuerda al aire (traste 0) salen en Cuerdas al aire; los demás, en Voicings.
-      </p>
+      <label class="bloque">{T.notas} <textarea name="notas" rows="2"></textarea></label>
+      <p class="suave nota-pagina">{T.notaPagina}</p>
       <ul class="errores" data-errores></ul>
       <div class="acciones">
-        <button type="button" class="boton" data-cancelar>Cancelar</button>
-        <button type="submit" class="boton principal" value="guardar">Guardar</button>
+        <button type="button" class="boton" data-cancelar>{T.cancelar}</button>
+        <button type="submit" class="boton principal" value="guardar">{T.guardar}</button>
       </div>
     </form>
   </dialog>
@@ -115,16 +112,19 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 </Base>
 
 <script>
-  import { aplicarCambios, aVoicing, moverEnGrupo, ordenarPorIds, erroresVoicing, gradosSugeridos, nuevoIdVoicing, voicingsAYaml, type Cambios, type Voicing } from '../lib/acordes-datos.ts';
-  import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from '../lib/almacen.ts';
-  import { conectarAudio, conectarFiltroArpegio, conectarInstrumento, conectarTempo, conectarTonica } from '../lib/cliente.ts';
-  import { diagramaSVG } from '../lib/diagrama.ts';
-  import { botonFavorito, favoritos, favoritosPrimero } from '../lib/favoritos.ts';
-  import { editorTrastes, type EditorTrastes } from '../lib/editor-trastes.ts';
-  import { secuenciaVoicing, secuenciaVoicingContinua, type ModoVoicing } from '../lib/secuencias.ts';
-  import { SOSTENIDOS } from '../lib/audio.ts';
-  import { notaDeGrado, formatNota, parseNota, pitchClass } from '../lib/teoria.ts';
-  import { transportar, type Traste } from '../lib/voicings.ts';
+  import { aplicarCambios, aVoicing, limpiarEn, moverEnGrupo, ordenarPorIds, erroresVoicing, gradosSugeridos, nuevoIdVoicing, voicingsAYaml, type Cambios, type Voicing } from '../../lib/acordes-datos.ts';
+  import { formatear, idiomaValido } from '../../i18n/idiomas.ts';
+  import { INTERFAZ } from '../../i18n/interfaz.ts';
+  import { VOICINGS } from '../../i18n/voicings.ts';
+  import { borrar, descargar, elegirArchivo, esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { conectarAudio, conectarFiltroArpegio, conectarInstrumento, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { diagramaSVG } from '../../lib/diagrama.ts';
+  import { botonFavorito, favoritos, favoritosPrimero } from '../../lib/favoritos.ts';
+  import { editorTrastes, type EditorTrastes } from '../../lib/editor-trastes.ts';
+  import { secuenciaVoicing, secuenciaVoicingContinua, type ModoVoicing } from '../../lib/secuencias.ts';
+  import { SOSTENIDOS } from '../../lib/audio.ts';
+  import { notaDeGrado, formatNota, parseNota, pitchClass } from '../../lib/teoria.ts';
+  import { transportar, type Traste } from '../../lib/voicings.ts';
 
   interface Grupo {
     id: string;
@@ -133,6 +133,13 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     arpegio: string[];
   }
 
+  const idioma = idiomaValido(document.documentElement.lang);
+  const ingles = idioma === 'en';
+  const T = VOICINGS[idioma];
+  const I = INTERFAZ[idioma];
+  /** Nombre y notas del voicing en el idioma de la página (el inglés, si lo tiene). */
+  const nombreDe = (v: Voicing) => (ingles && v.en?.nombre) || v.nombre;
+  const notasDe = (v: Voicing) => (ingles && v.en?.notas) || v.notas;
   const CLAVE = 'acordes:cambios';
   // Orden elegido en la web (ids de todos los voicings); vacío = el del repositorio.
   const CLAVE_ORDEN = 'acordes:orden';
@@ -192,13 +199,14 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     const c = v.grados.findIndex((g, i) => g === '1' && v.trastes[i] !== 'x');
     return c === -1 ? 'sin' : String(6 - c);
   };
-  const nombreCuerda = (c: string) => (c === 'sin' ? 'Sin tónica' : `Tónica en ${c}ª`);
+  const ordinal = (c: string) => (ingles ? `${c}${['', 'st', 'nd', 'rd'][Number(c)] ?? 'th'}` : `${c}ª`);
+  const nombreCuerda = (c: string) => (c === 'sin' ? T.sinTonica : formatear(T.tonicaEn, { cuerda: ordinal(c) }));
   /** Trastes del voicing en la tónica elegida (los que tienen cuerdas al aire no se mueven). */
   const trastesEn = (v: Voicing): Traste[] => (conAlAire(v) ? v.trastes : transportar(v.trastes, v.tonica, tonicaActual));
   const tonicaDe = (v: Voicing) => (conAlAire(v) ? v.tonica : tonicaActual);
 
   /** Notas que solo dicen de dónde sale el voicing ("De: …"): no se muestran en la ficha. */
-  const esProcedencia = (notas: string) => /^De:/.test(notas.trim());
+  const esProcedencia = (notas: string) => /^(De|From):/.test(notas.trim());
 
   /**
    * Nombre con la tónica delante (Cuerdas al aire, donde no se transporta): pegada si el
@@ -213,33 +221,35 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
     const hermanos = lista.filter((x) => x.grupo === v.grupo && deEstaPagina(x));
     const posicion = hermanos.indexOf(v);
     const notas = tocados.map((g) => formatNota(notaDeGrado(t, g))).join(' ');
+    const nombre = nombreDe(v);
+    const comentario = notasDe(v);
     return `
       <li class="tarjeta voicing" data-id="${esc(v.id)}">
         <div class="diagrama-caja">${diagramaSVG({ trastes: trastesEn(v), grados: v.grados })}</div>
-        ${editando ? '' : botonFavorito(favs.tiene(v.id), v.nombre)}
+        ${editando ? '' : botonFavorito(favs.tiene(v.id), nombre, idioma)}
         <div class="info">
-          <h3>${esc(paginaAlAire ? conTonica(t, v.nombre) : v.nombre)}</h3>
+          <h3>${esc(paginaAlAire ? conTonica(t, nombre) : nombre)}</h3>
           <dl class="detalle">
-            <dt>Grados</dt><dd>${esc(tocados.join(' '))}</dd>
-            <dt>Notas</dt><dd>${esc(notas)}</dd>
+            <dt>${T.grados}</dt><dd>${esc(tocados.join(' '))}</dd>
+            <dt>${T.notasVoicing}</dt><dd>${esc(notas)}</dd>
           </dl>
-          ${v.notas && !esProcedencia(v.notas) ? `<p class="comentario">${esc(v.notas)}</p>` : ''}
+          ${comentario && !esProcedencia(comentario) ? `<p class="comentario">${esc(comentario)}</p>` : ''}
         </div>
         <div class="botones-audio">
-          <button type="button" data-audio="rasgueo" aria-pressed="false">Rasgueo</button>
-          <button type="button" data-audio="arpegiado" aria-pressed="false">Arpegiado</button>
-          <button type="button" data-audio="continuo" aria-pressed="false" title="Suena sin parar hasta pulsar Detener">∞ Continuo</button>
-          <button type="button" data-detener>■ Detener</button>
-          ${editando ? '' : '<button type="button" class="eliminar" data-borrar>Eliminar</button>'}
+          <button type="button" data-audio="rasgueo" aria-pressed="false">${T.rasgueo}</button>
+          <button type="button" data-audio="arpegiado" aria-pressed="false">${T.arpegiado}</button>
+          <button type="button" data-audio="continuo" aria-pressed="false" title="${T.continuoAyuda}">${T.continuo}</button>
+          <button type="button" data-detener>${I.detener}</button>
+          ${editando ? '' : `<button type="button" class="eliminar" data-borrar>${I.eliminar}</button>`}
         </div>
         ${
           editando
             ? `<div class="botones-edicion">
-                <button type="button" class="boton" data-editar>Editar</button>
-                <button type="button" class="boton" data-mover="-1" title="Mover antes" aria-label="Mover antes" ${posicion === 0 ? 'disabled' : ''}>◀</button>
-                <button type="button" class="boton" data-mover="1" title="Mover después" aria-label="Mover después" ${posicion === hermanos.length - 1 ? 'disabled' : ''}>▶</button>
-                <button type="button" class="boton" data-duplicar>Duplicar</button>
-                <button type="button" class="boton peligro" data-borrar>Borrar</button>
+                <button type="button" class="boton" data-editar>${T.editar}</button>
+                <button type="button" class="boton" data-mover="-1" title="${T.moverAntes}" aria-label="${T.moverAntes}" ${posicion === 0 ? 'disabled' : ''}>◀</button>
+                <button type="button" class="boton" data-mover="1" title="${T.moverDespues}" aria-label="${T.moverDespues}" ${posicion === hermanos.length - 1 ? 'disabled' : ''}>▶</button>
+                <button type="button" class="boton" data-duplicar>${T.duplicar}</button>
+                <button type="button" class="boton peligro" data-borrar>${T.borrar}</button>
               </div>`
             : ''
         }
@@ -270,21 +280,21 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         const vs = editando ? filtrados : favoritosPrimero(filtrados, (v) => favs.tiene(v.id));
         const selector =
           cuerdas.length > 1 && !editando
-            ? `<label class="cuerda-tonica"><span class="visualmente-oculto">Cuerda de la tónica</span>
+            ? `<label class="cuerda-tonica"><span class="visualmente-oculto">${T.cuerdaTonica}</span>
                 <select data-cuerda-tonica="${g.id}">
-                  <option value="">Todas las cuerdas</option>
+                  <option value="">${T.todasCuerdas}</option>
                   ${cuerdas.map((c) => `<option value="${c}" ${c === elegida ? 'selected' : ''}>${nombreCuerda(c)}</option>`).join('')}
                 </select></label>`
             : '';
         return `
           <section id="grupo-${g.id}">
             <div class="titulo-grupo"><h2>${esc(g.nombre)}</h2>${selector}</div>
-            ${vs.length ? `<ul class="lista-tarjetas voicings">${vs.map(tarjeta).join('')}</ul>` : '<p class="suave">Sin voicings.</p>'}
-            ${editando ? `<button type="button" class="boton" data-nuevo="${g.id}">+ Voicing ${esc(g.nombre)}</button>` : ''}
+            ${vs.length ? `<ul class="lista-tarjetas voicings">${vs.map(tarjeta).join('')}</ul>` : `<p class="suave">${T.sinVoicings}</p>`}
+            ${editando ? `<button type="button" class="boton" data-nuevo="${g.id}">${formatear(T.nuevoDe, { grupo: esc(g.nombre) })}</button>` : ''}
           </section>`;
       })
       .join('');
-    if (!contenedor.innerHTML.trim() && filtroNota) contenedor.innerHTML = '<p class="suave">No hay voicings con esa nota.</p>';
+    if (!contenedor.innerHTML.trim() && filtroNota) contenedor.innerHTML = `<p class="suave">${T.sinNota}</p>`;
     avisoLocal.hidden = Object.keys(cambios).length === 0 && orden.length === 0;
   }
 
@@ -309,16 +319,18 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 
   function abrir(v: Voicing, id: string | null) {
     editandoId = id;
-    document.querySelector('[data-dialogo-titulo]')!.textContent = id ? 'Editar voicing' : 'Nuevo voicing';
+    document.querySelector('[data-dialogo-titulo]')!.textContent = id ? T.editarVoicing : T.nuevoVoicing;
     campo('grupo').value = v.grupo;
-    campo('nombre').value = v.nombre;
+    // En inglés se editan el nombre y las notas ingleses (los españoles se conservan).
+    campo('nombre').value = nombreDe(v);
     campo('tonica').value = v.tonica;
-    campo('notas').value = v.notas ?? '';
+    campo('notas').value = (ingles ? v.en?.notas : v.notas) ?? '';
     errores.innerHTML = '';
     editor = editorTrastes(document.querySelector('[data-editor-trastes]')!, {
       trastes: v.trastes,
       grados: v.grados,
       gradosEditables: true,
+      idioma,
       calcularGrados: (t) => gradosSugeridos(campo('tonica').value, t, grupoPorId[campo('grupo').value]?.arpegio ?? []),
     });
     dialogo.showModal();
@@ -330,18 +342,25 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
 
   formulario.addEventListener('submit', (e) => {
     const { trastes, grados } = editor.valor();
+    const anterior = editandoId ? porId(editandoId) : null;
+    const nombre = campo('nombre').value.trim();
+    const notas = campo('notas').value.trim();
+    // En inglés, el nombre escrito es el inglés si cambia el español (o el de los dos si es nuevo).
+    const nombreEs = ingles ? anterior?.nombre || nombre : nombre;
+    const notasEs = ingles ? anterior?.notas : notas;
+    const en = limpiarEn(ingles ? { nombre: nombre !== nombreEs ? nombre : '', notas } : anterior?.en);
     const v: Voicing = {
       id: editandoId ?? '',
       grupo: campo('grupo').value,
-      nombre: campo('nombre').value.trim(),
+      nombre: nombreEs,
       tonica: campo('tonica').value,
       trastes,
       grados: grados.map((g, c) => (trastes[c] === 'x' ? '' : g)),
-      ...(campo('notas').value.trim() ? { notas: campo('notas').value.trim() } : {}),
+      ...(notasEs ? { notas: notasEs } : {}),
+      ...(en ? { en } : {}),
     };
-    const anterior = editandoId ? porId(editandoId) : null;
     if (anterior?.dedos) v.dedos = anterior.dedos;
-    const lista_errores = erroresVoicing(v, grupos.map((g) => g.id));
+    const lista_errores = erroresVoicing(v, grupos.map((g) => g.id), idioma);
     if (lista_errores.length) {
       e.preventDefault();
       errores.innerHTML = lista_errores.map((x) => `<li>${esc(x)}</li>`).join('');
@@ -356,7 +375,7 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
   botonEdicion.addEventListener('click', () => {
     editando = !editando;
     botonEdicion.setAttribute('aria-pressed', String(editando));
-    botonEdicion.textContent = editando ? 'Terminar' : 'Editar';
+    botonEdicion.textContent = editando ? T.terminar : T.editar;
     herramientas.hidden = !editando;
     pintar();
   });
@@ -387,9 +406,13 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
       orden = lista.map((v) => v.id);
       guardarJSON(CLAVE_ORDEN, orden);
       pintar();
-    } else if (el.hasAttribute('data-duplicar') && id) abrir({ ...porId(id), nombre: `${porId(id).nombre} (copia)` }, null);
+    } else if (el.hasAttribute('data-duplicar') && id) {
+      const original = porId(id);
+      const copia = (n: string) => formatear(T.copia, { nombre: n });
+      abrir({ ...original, nombre: copia(original.nombre), ...(original.en ? { en: { ...original.en, ...(original.en.nombre ? { nombre: copia(original.en.nombre) } : {}) } } : {}) }, null);
+    }
     else if (el.hasAttribute('data-borrar') && id) {
-      if (!confirm(`¿Borrar el voicing "${porId(id).nombre}"?`)) return;
+      if (!confirm(formatear(T.confirmarBorrar, { nombre: nombreDe(porId(id)) }))) return;
       const nuevos = { ...cambios };
       if (base.some((v) => v.id === id)) nuevos[id] = null;
       else delete nuevos[id];
@@ -402,11 +425,11 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
       try {
         const { parse } = await import('yaml');
         const datos = parse(archivo.texto);
-        if (!Array.isArray(datos)) throw new Error('El archivo debe ser una lista de voicings.');
+        if (!Array.isArray(datos)) throw new Error(T.listaArchivo);
         const importados = datos.map(aVoicing);
-        const malos = importados.flatMap((v) => erroresVoicing(v, grupos.map((g) => g.id)).map((x) => `${v.id}: ${x}`));
+        const malos = importados.flatMap((v) => erroresVoicing(v, grupos.map((g) => g.id), idioma).map((x) => `${v.id}: ${x}`));
         if (malos.length) throw new Error(malos.slice(0, 5).join('\n'));
-        if (!confirm(`Se sustituirán los voicings por los ${importados.length} del archivo. ¿Seguir?`)) return;
+        if (!confirm(formatear(T.confirmarImportar, { n: importados.length }))) return;
         // Los del repositorio que no están en el archivo se marcan como borrados.
         const nuevos: Cambios = Object.fromEntries(base.map((v) => [v.id, null]));
         for (const v of importados) nuevos[v.id] = v;
@@ -416,10 +439,10 @@ const datos = JSON.stringify({ grupos, voicings }).replace(/</g, '\\u003c');
         }
         guardar(nuevos);
       } catch (error) {
-        alert(`No se pudo importar: ${(error as Error).message}`);
+        alert(formatear(T.noImportado, { error: (error as Error).message }));
       }
     } else if (el.hasAttribute('data-restaurar')) {
-      if (confirm('¿Descartar todos los cambios hechos en este navegador y volver a los voicings del repositorio?')) {
+      if (confirm(T.confirmarDescartar)) {
         orden = [];
         borrar(CLAVE_ORDEN);
         guardar({});

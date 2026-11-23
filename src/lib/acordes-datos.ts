@@ -13,6 +13,8 @@ export interface Voicing {
   grados: string[];
   dedos?: (number | 'T' | '')[];
   notas?: string;
+  /** Versión inglesa: nombre (si cambia, como Tríada → Triad) y notas. */
+  en?: { nombre?: string; notas?: string };
 }
 
 /** Ediciones locales: id → voicing cambiado o nuevo, o null si se ha borrado. */
@@ -35,36 +37,64 @@ export function aplicarCambios(base: readonly Voicing[], cambios: Cambios): Voic
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 
-/** Errores de un voicing (lista vacía si es correcto). */
-export function erroresVoicing(v: Voicing, grupos: readonly string[]): string[] {
+const ERRORES = {
+  es: {
+    nombre: 'Falta el nombre.',
+    tipo: 'Tipo de acorde desconocido.',
+    tonica: 'Tónica no válida.',
+    seis: 'Hacen falta 6 cuerdas.',
+    alguna: 'Toca al menos una cuerda.',
+    cuerda: (n: number) => `${n}ª cuerda`,
+    apagada: 'está apagada y tiene grado.',
+    falta: 'falta el grado.',
+    invalido: (g: string) => `grado no válido "${g}".`,
+    distinto: (t: Traste, esperado: string, tonica: string, g: string) => `la nota del traste ${t} es ${esperado} de ${tonica}, no ${g}.`,
+  },
+  en: {
+    nombre: 'The name is missing.',
+    tipo: 'Unknown chord type.',
+    tonica: 'Invalid root.',
+    seis: 'It needs 6 strings.',
+    alguna: 'Play at least one string.',
+    cuerda: (n: number) => `${n}${['', 'st', 'nd', 'rd'][n] ?? 'th'} string`,
+    apagada: 'it is muted but has a degree.',
+    falta: 'the degree is missing.',
+    invalido: (g: string) => `invalid degree "${g}".`,
+    distinto: (t: Traste, esperado: string, tonica: string, g: string) => `the note at fret ${t} is the ${esperado} of ${tonica}, not ${g}.`,
+  },
+};
+
+/** Errores de un voicing (lista vacía si es correcto), en el idioma de la página. */
+export function erroresVoicing(v: Voicing, grupos: readonly string[], idioma: 'es' | 'en' = 'es'): string[] {
+  const E = ERRORES[idioma];
   const errores: string[] = [];
-  if (!v.nombre.trim()) errores.push('Falta el nombre.');
-  if (!grupos.includes(v.grupo)) errores.push('Tipo de acorde desconocido.');
+  if (!v.nombre.trim()) errores.push(E.nombre);
+  if (!grupos.includes(v.grupo)) errores.push(E.tipo);
   let tonica: unknown = null;
   try {
     tonica = parseNota(v.tonica);
   } catch {
-    errores.push('Tónica no válida.');
+    errores.push(E.tonica);
   }
-  if (v.trastes.length !== 6 || v.grados.length !== 6) errores.push('Hacen falta 6 cuerdas.');
-  if (v.trastes.every((t) => t === 'x')) errores.push('Toca al menos una cuerda.');
+  if (v.trastes.length !== 6 || v.grados.length !== 6) errores.push(E.seis);
+  if (v.trastes.every((t) => t === 'x')) errores.push(E.alguna);
   v.trastes.forEach((t, c) => {
     const g = v.grados[c];
-    const cuerda = `${6 - c}ª cuerda`;
+    const cuerda = E.cuerda(6 - c);
     if (t === 'x') {
-      if (g) errores.push(`${cuerda}: está apagada y tiene grado.`);
+      if (g) errores.push(`${cuerda}: ${E.apagada}`);
       return;
     }
-    if (!g) return void errores.push(`${cuerda}: falta el grado.`);
+    if (!g) return void errores.push(`${cuerda}: ${E.falta}`);
     try {
       parseGrado(g);
     } catch {
-      return void errores.push(`${cuerda}: grado no válido "${g}".`);
+      return void errores.push(`${cuerda}: ${E.invalido(g)}`);
     }
     if (!tonica) return;
     const esperado = gradosDeTrastes(v.tonica, cuerdaSola(c, t))[c];
     if (mod(semitonosGrado(g), 12) !== mod(semitonosGrado(esperado), 12)) {
-      errores.push(`${cuerda}: la nota del traste ${t} es ${esperado} de ${v.tonica}, no ${g}.`);
+      errores.push(`${cuerda}: ${E.distinto(t, esperado, v.tonica, g)}`);
     }
   });
   return errores;
@@ -104,6 +134,7 @@ const CABECERA = `# Voicings personales. Cada uno se escribe sobre una tónica d
 #   grados:    de 6ª a 1ª cuerda; '' en las cuerdas apagadas
 #   dedos:     opcional, de 6ª a 1ª; '' donde no aplique
 #   notas:     texto libre
+#   en:        opcional, versión inglesa: { nombre, notas }
 #
 # La cuerda del bajo se deduce: es la primera cuerda tocada empezando por la 6ª.
 # Exportado desde la web: sustituye src/data/acordes.yaml por este archivo.
@@ -126,6 +157,12 @@ export function voicingAYaml(v: Voicing): string {
     if (v.dedos?.some(Boolean)) lineas.push(`  dedos: ${lista(v.dedos)}`);
     if (v.notas?.trim()) {
       lineas.push(v.notas.includes('\n') ? `  notas: |\n${v.notas.replace(/^/gm, '    ')}` : `  notas: ${cadena(v.notas)}`);
+    }
+    const en = limpiarEn(v.en);
+    if (en) {
+      lineas.push('  en:');
+      if (en.nombre) lineas.push(`    nombre: ${cadena(en.nombre)}`);
+      if (en.notas) lineas.push(en.notas.includes('\n') ? `    notas: |\n${en.notas.replace(/^/gm, '      ')}` : `    notas: ${cadena(en.notas)}`);
     }
     return lineas.join('\n');
   }
@@ -151,7 +188,19 @@ export function aVoicing(x: unknown): Voicing {
     grados: v.grados.map((g) => String(g ?? '')),
     ...(v.dedos ? { dedos: v.dedos } : {}),
     ...(v.notas ? { notas: String(v.notas) } : {}),
+    ...(limpiarEn(v.en) ? { en: limpiarEn(v.en) } : {}),
   };
+}
+
+/** La versión inglesa sin campos vacíos, o undefined si no queda nada. */
+export function limpiarEn(en: unknown): Voicing['en'] {
+  if (!en || typeof en !== 'object') return undefined;
+  const { nombre, notas } = en as Record<string, unknown>;
+  const limpio = {
+    ...(typeof nombre === 'string' && nombre.trim() ? { nombre: nombre.trim() } : {}),
+    ...(typeof notas === 'string' && notas.trim() ? { notas: notas.trim() } : {}),
+  };
+  return Object.keys(limpio).length ? limpio : undefined;
 }
 
 /** Clase de altura de la tónica (para comparar Bb con A#). */

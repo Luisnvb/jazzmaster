@@ -87,6 +87,8 @@ const acordes = defineCollection({
       grados: z.array(z.union([grado, z.literal('')])).length(6),
       dedos: z.array(z.union([z.number().int().min(1).max(4), z.literal('T'), z.literal('')])).length(6).optional(),
       notas: z.string().optional(),
+      // Versión inglesa (/en/chords/): nombre si cambia y notas.
+      en: z.object({ nombre: z.string().optional(), notas: z.string().optional() }).optional(),
     })
     .refine((v) => v.trastes.every((t, i) => (t === 'x') === (v.grados[i] === '')), {
       message: 'Cada cuerda apagada (x) debe tener grado vacío, y cada cuerda tocada un grado.',

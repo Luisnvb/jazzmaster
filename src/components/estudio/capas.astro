@@ -11,7 +11,6 @@ import * as es from '../../data/estudio/capas.md';
 import * as en from '../../data/estudio/capas.en.md';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
 import { CUALIDADES_CAPAS, FORMAS_CAGED, nombreCapas } from '../../lib/capas.ts';
-import { ruta } from '../../lib/rutas.ts';
 import { enlacePagina } from '../../lib/secciones.ts';
 import type { Idioma } from '../../i18n/idiomas.ts';
 import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
@@ -28,7 +27,7 @@ const { Content, getHeadings } = idioma === 'en' ? en : es;
 const PAGINAS = {
   arpegios: enlacePagina('estudio/arpegios', idioma),
   triadas: enlacePagina('estudio/triadas', idioma),
-  acordes: ruta('acordes'),
+  acordes: enlacePagina('acordes', idioma),
   escalas: enlacePagina('escalas', idioma),
 };
 const indice = getHeadings().filter((h) => h.depth === 2);
