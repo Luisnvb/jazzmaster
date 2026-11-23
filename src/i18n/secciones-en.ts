@@ -53,7 +53,7 @@ export const PAGINAS_EN: Record<string, PaginaEn> = {
   'estudio/escalas': { nombre: 'Scales on the neck', lema: 'Practise them on the neck, with the chord tones marked', direccion: 'study/scales' },
   'estudio/arpegios': { nombre: 'Arpeggios', lema: 'Every chord degree across the neck', direccion: 'study/arpeggios' },
   'estudio/modos': { nombre: 'Modes', lema: 'Parallel and relative, with their characteristic note', direccion: 'study/modes' },
-  patrones: { nombre: 'Patterns', lema: 'Scale and arpeggio exercises' },
+  patrones: { nombre: 'Patterns', lema: 'Scale and arpeggio exercises', direccion: 'patterns' },
   'estudio/notas-guia': { nombre: 'Guide tones', lema: 'The 3 and the 7: two lines that outline the harmony', direccion: 'study/guide-tones' },
   'estudio/aproximaciones': { nombre: 'Chromatic approaches', lema: 'Reaching chord tones by half step and with enclosures', direccion: 'study/approaches' },
   'estudio/bebop': { nombre: 'Bebop language', lema: 'Bebop scale, enclosures and stock phrases: chord tones on the beats', direccion: 'study/bebop' },

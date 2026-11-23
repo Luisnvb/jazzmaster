@@ -128,6 +128,8 @@ const patrones = defineCollection({
     orden,
     nombre: z.string(),
     descripcion: z.string().optional(),
+    // Versión inglesa (/en/patterns/).
+    en: z.object({ nombre: z.string().optional(), descripcion: z.string().optional() }).optional(),
     sobre: z.enum(['escala', 'arpegio']),
     celula: z
       .array(z.union([z.number().int(), z.string()]).refine(esValido(parsePaso), { message: 'Paso no válido (p. ej. 0, 2, "0-", "1+")' }))

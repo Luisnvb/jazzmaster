@@ -1,0 +1,299 @@
+---
+// Patrones para practicar escalas y arpegios (patrones.yaml, lib/patrones.ts). La usan
+// pages/patrones.astro y pages/en/patterns.astro (textos en i18n/patrones.ts; nombre y
+// descripción ingleses en el campo `en` de cada patrón).
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SelectorTonica from '../SelectorTonica.astro';
+import Tempo from '../Tempo.astro';
+import { porOrden } from '../../lib/orden.ts';
+import { INSTRUMENTOS } from '../../lib/audio.ts';
+import type { Idioma } from '../../i18n/idiomas.ts';
+import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
+import { PATRONES } from '../../i18n/patrones.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const T = PATRONES[idioma];
+const I = INTERFAZ[idioma];
+const ingles = idioma === 'en';
+
+const grupos = porOrden(await getCollection('grupos')).map(({ id, data }) => ({
+  id,
+  nombre: (ingles && data.en?.nombre) || data.nombre,
+  simbolo: data.simbolo,
+  arpegio: data.arpegio,
+}));
+const escalas = porOrden(await getCollection('escalas')).map(({ id, data }) => ({
+  id,
+  nombre: (ingles && data.en?.nombre) || data.nombre,
+  grupo: data.grupo.id,
+  formula: data.formula,
+}));
+const patrones = porOrden(await getCollection('patrones')).map(({ id, data: { en, ...data } }) => ({
+  id,
+  ...data,
+  nombre: (ingles && en?.nombre) || data.nombre,
+  descripcion: (ingles && en?.descripcion) || data.descripcion,
+}));
+// JSON dentro de <script>: se escapa "<" para que ningún texto pueda cerrar la etiqueta.
+const datos = JSON.stringify({ grupos, escalas, patrones }).replace(/</g, '\\u003c');
+---
+
+<Base titulo={T.titulo}>
+  <SelectorTonica clave="patrones" idioma={idioma}>
+    <label
+      >{T.escala}
+      <select data-escala>
+        {
+          grupos.map((g) => (
+            <optgroup label={g.nombre}>
+              {escalas
+                .filter((e) => e.grupo === g.id)
+                .map((e) => (
+                  <option value={e.id}>{e.nombre}</option>
+                ))}
+            </optgroup>
+          ))
+        }
+      </select>
+    </label>
+    <label
+      >{T.arpegio}
+      <select data-arpegio>{grupos.map((g) => <option value={g.id}>{g.nombre}</option>)}</select>
+    </label>
+    <label
+      >{I.sonido}
+      <select data-instrumento>{INSTRUMENTOS.map((i) => <option value={i.id}>{nombreSonido(i, idioma)}</option>)}</select>
+    </label>
+    <Tempo clave="patrones" inicial={90} />
+    <label class="casilla"><input type="checkbox" data-metronomo /> {T.metronomo}</label>
+    <button type="button" class="boton" data-bucle aria-pressed="false" title={T.bucleAyuda}>{T.bucle}</button>
+  </SelectorTonica>
+
+  <div class="eleccion">
+    <button type="button" class="boton" data-restaurar-eliminados hidden>{I.restaurarEliminados}</button>
+  </div>
+
+  <section>
+    <h2>{T.escalas} <span class="sobre" data-sobre-escala></span></h2>
+    <ul class="lista-tarjetas patrones" data-patrones="escala"></ul>
+  </section>
+  <section>
+    <h2>{T.arpegios} <span class="sobre" data-sobre-arpegio></span></h2>
+    <ul class="lista-tarjetas patrones" data-patrones="arpegio"></ul>
+  </section>
+
+  <script type="application/json" id="datos-patrones" set:html={datos} />
+</Base>
+
+<script>
+  import { esc, guardarJSON, leerJSON } from '../../lib/almacen.ts';
+  import { INSTRUMENTOS, type Instrumento } from '../../lib/audio.ts';
+  import { conectarAudio, conectarTempo, conectarTonica } from '../../lib/cliente.ts';
+  import { conectarEliminados } from '../../lib/eliminados.ts';
+  import { etiquetaGrupo, gruposDelPatron, notaDePaso, secuenciaPatron, type Patron } from '../../lib/patrones.ts';
+  import { formatNota, notaDeGrado } from '../../lib/teoria.ts';
+  import { idiomaValido } from '../../i18n/idiomas.ts';
+  import { INTERFAZ } from '../../i18n/interfaz.ts';
+  import { PATRONES } from '../../i18n/patrones.ts';
+
+  const T = PATRONES[idiomaValido(document.documentElement.lang)];
+  const I = INTERFAZ[idiomaValido(document.documentElement.lang)];
+
+  interface Grupo {
+    id: string;
+    nombre: string;
+    simbolo: string;
+    arpegio: string[];
+  }
+  interface Escala {
+    id: string;
+    nombre: string;
+    grupo: string;
+    formula: string[];
+  }
+
+  const { grupos, escalas, patrones }: { grupos: Grupo[]; escalas: Escala[]; patrones: Patron[] } = JSON.parse(
+    document.getElementById('datos-patrones')!.textContent!,
+  );
+  const selEscala = document.querySelector<HTMLSelectElement>('[data-escala]')!;
+  const selArpegio = document.querySelector<HTMLSelectElement>('[data-arpegio]')!;
+  const tempo = conectarTempo();
+  let tonicaActual = 'C';
+  let aplicarEliminados: (() => void) | null = null;
+
+  // Recordar la escala y el arpegio elegidos.
+  const elegidos = leerJSON<{ escala?: string; arpegio?: string }>('patrones:eleccion') ?? {};
+  if (escalas.some((e) => e.id === elegidos.escala)) selEscala.value = elegidos.escala!;
+  if (grupos.some((g) => g.id === elegidos.arpegio)) selArpegio.value = elegidos.arpegio!;
+
+  /** Fórmula sobre la que se aplica cada patrón y su nombre visible. */
+  function material(p: Patron): { formula: string[]; titulo: string } {
+    if (p.sobre === 'escala') {
+      const e = escalas.find((x) => x.id === selEscala.value)!;
+      return { formula: e.formula, titulo: `${tonicaActual} ${e.nombre}` };
+    }
+    const g = grupos.find((x) => x.id === selArpegio.value)!;
+    return { formula: g.arpegio, titulo: formatNota(notaDeGrado(tonicaActual, '1')) + g.simbolo };
+  }
+
+  function tarjeta(p: Patron): string {
+    const { formula } = material(p);
+    const grupos = gruposDelPatron(p, formula.length);
+    const chips = grupos
+      .map(
+        (g, i) =>
+          `<li class="grupo" data-grupo="${i}"><span class="notas">${g.map((paso) => esc(notaDePaso(tonicaActual, formula, paso))).join(' ')}</span><span class="grados">${esc(etiquetaGrupo(formula, g))}</span></li>`,
+      )
+      .join('');
+    return `
+      <li class="tarjeta patron" data-id="${esc(p.id)}" data-eliminable="${esc(p.id)}" data-nombre="${esc(p.nombre)}">
+        <h3>${esc(p.nombre)}</h3>
+        ${p.descripcion ? `<p class="suave">${esc(p.descripcion)}</p>` : ''}
+        <ol class="grupos">${chips}</ol>
+        <div class="botones-audio">
+          <button type="button" data-audio="patron" aria-pressed="false">${T.tocar}</button>
+          <button type="button" data-audio="continuo" aria-pressed="false" title="${T.continuoAyuda}">${T.continuo}</button>
+          <button type="button" data-detener>${I.detener}</button>
+          <button type="button" class="eliminar" data-eliminar>${I.eliminar}</button>
+        </div>
+      </li>`;
+  }
+
+  function pintar() {
+    for (const sobre of ['escala', 'arpegio'] as const) {
+      const lista = patrones.filter((p) => p.sobre === sobre);
+      document.querySelector(`[data-patrones="${sobre}"]`)!.innerHTML = lista.map(tarjeta).join('');
+      const ejemplo = lista[0] ?? ({ sobre } as Patron);
+      document.querySelector(`[data-sobre-${sobre}]`)!.textContent = `· ${material(ejemplo).titulo}`;
+    }
+    guardarJSON('patrones:eleccion', { escala: selEscala.value, arpegio: selArpegio.value });
+    aplicarEliminados?.();
+  }
+
+  // Sonido y metrónomo, recordados en este navegador; el bucle, solo en esta visita.
+  const selInstrumento = document.querySelector<HTMLSelectElement>('[data-instrumento]')!;
+  const casillaMetronomo = document.querySelector<HTMLInputElement>('[data-metronomo]')!;
+  const botonBucle = document.querySelector<HTMLButtonElement>('[data-bucle]')!;
+  const sonido = leerJSON<{ instrumento?: Instrumento; metronomo?: boolean }>('patrones:sonido') ?? {};
+  if (INSTRUMENTOS.some((i) => i.id === sonido.instrumento)) selInstrumento.value = sonido.instrumento!;
+  casillaMetronomo.checked = sonido.metronomo === true;
+  const guardarSonido = () =>
+    guardarJSON('patrones:sonido', { instrumento: selInstrumento.value, metronomo: casillaMetronomo.checked });
+  selInstrumento.addEventListener('change', guardarSonido);
+  casillaMetronomo.addEventListener('change', guardarSonido);
+  const enBucle = () => botonBucle.getAttribute('aria-pressed') === 'true';
+  botonBucle.addEventListener('click', () => botonBucle.setAttribute('aria-pressed', String(!enBucle())));
+
+  selEscala.addEventListener('change', pintar);
+  selArpegio.addEventListener('change', pintar);
+
+  conectarAudio((boton) => {
+    const el = boton.closest<HTMLElement>('[data-id]')!;
+    const p = patrones.find((x) => x.id === el.dataset.id)!;
+    const { formula } = material(p);
+    const { eventos, tramos, duracion } = secuenciaPatron(
+      tonicaActual,
+      formula,
+      gruposDelPatron(p, formula.length),
+      tempo(),
+      casillaMetronomo.checked,
+    );
+    let marcado = -1;
+    const marcar = (k: number) => {
+      if (k === marcado) return;
+      marcado = k;
+      el.querySelector('.grupo.sonando-ahora')?.classList.remove('sonando-ahora');
+      if (k >= 0) el.querySelector(`.grupo[data-grupo="${k}"]`)?.classList.add('sonando-ahora');
+    };
+    return {
+      eventos,
+      instrumento: selInstrumento.value as Instrumento,
+      bucle: boton.dataset.audio === 'continuo' ? () => true : enBucle,
+      duracion,
+      alProgresar: (s) => marcar(tramos.findIndex((t) => s >= t.inicio && s < t.fin)),
+      alTerminar: () => marcar(-1),
+    };
+  });
+
+  conectarTonica((tonica) => {
+    tonicaActual = tonica;
+    pintar();
+  });
+  pintar();
+  aplicarEliminados = conectarEliminados('patrones');
+</script>
+
+<style>
+  .eleccion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .eleccion label:not(.casilla) {
+    display: grid;
+    min-width: 14rem;
+  }
+  .eleccion .casilla {
+    min-height: 2.5rem;
+  }
+  .eleccion [data-restaurar-eliminados] {
+    margin: 0;
+  }
+  h2 {
+    padding-top: 1rem;
+    border-top: 1px solid var(--borde);
+  }
+  /* La primera sección ya queda separada por la barra de controles: sin segunda raya. */
+  .eleccion + section h2 {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .sobre {
+    color: var(--acento);
+  }
+  .patrones {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 32rem), 1fr));
+  }
+  :global(.patron h3) {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  :global(.patron > p) {
+    margin: 0.25rem 0 0.75rem;
+  }
+  :global(.patron .grupos) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  :global(.patron .grupo) {
+    display: grid;
+    justify-items: center;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+  }
+  :global(.patron .notas) {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  :global(.patron .grados) {
+    font-family: var(--fuente);
+    font-size: 0.68rem;
+    color: var(--acento);
+    white-space: nowrap;
+  }
+  :global(.patron .grupo.sonando-ahora) {
+    background: var(--acento-suave);
+    border-color: var(--acento);
+  }
+</style>

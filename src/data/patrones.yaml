@@ -5,6 +5,7 @@
 #               2 = dos más arriba… Con «-» o «+» detrás, un semitono por debajo o por encima
 #               de esa nota (aproximación cromática). Ej.: [0, 1, 2] → 1-2-3, 2-3-4, 3-4-5…
 #   idaYVuelta: false para tocarlo solo subiendo (por defecto sube y baja).
+#   en:         versión inglesa: { nombre, descripcion } (si falta, se usa el español).
 #
 # Los valores con «-» o «+» van entre comillas.
 
@@ -12,48 +13,56 @@
 - id: terceras
   nombre: Terceras
   descripcion: 'Saltos de tercera: 1-3, 2-4, 3-5…'
+  en: { nombre: 'Thirds', descripcion: 'Leaps of a third: 1-3, 2-4, 3-5…' }
   sobre: escala
   celula: [0, 2]
 
 - id: grupos-3
   nombre: Grupos de 3
   descripcion: '1-2-3, 2-3-4, 3-4-5…'
+  en: { nombre: 'Groups of 3' }
   sobre: escala
   celula: [0, 1, 2]
 
 - id: grupos-4
   nombre: Grupos de 4
   descripcion: '1-2-3-4, 2-3-4-5…'
+  en: { nombre: 'Groups of 4' }
   sobre: escala
   celula: [0, 1, 2, 3]
 
 - id: cuartas
   nombre: Cuartas
   descripcion: 'Saltos de cuarta: 1-4, 2-5, 3-6…'
+  en: { nombre: 'Fourths', descripcion: 'Leaps of a fourth: 1-4, 2-5, 3-6…' }
   sobre: escala
   celula: [0, 3]
 
 - id: patron-1235
   nombre: '1-2-3-5'
   descripcion: 'La célula de Coltrane sobre cada grado.'
+  en: { descripcion: 'The Coltrane cell on every degree.' }
   sobre: escala
   celula: [0, 1, 2, 4]
 
 - id: triadas-diatonicas
   nombre: Tríadas diatónicas
   descripcion: 'Tríada sobre cada grado de la escala.'
+  en: { nombre: 'Diatonic triads', descripcion: 'A triad on every degree of the scale.' }
   sobre: escala
   celula: [0, 2, 4]
 
 - id: cuatriadas-diatonicas
   nombre: Cuatriadas diatónicas
   descripcion: 'Arpegio de séptima sobre cada grado de la escala.'
+  en: { nombre: 'Diatonic seventh chords', descripcion: 'A seventh arpeggio on every degree of the scale.' }
   sobre: escala
   celula: [0, 2, 4, 6]
 
 - id: rodeo
   nombre: Rodeo (enclosure)
   descripcion: 'Nota de arriba de la escala, semitono por debajo y la nota.'
+  en: { nombre: 'Enclosure', descripcion: 'The scale note above, a half step below, then the note.' }
   sobre: escala
   celula: [1, '0-', 0]
 
@@ -61,23 +70,27 @@
 - id: arpegio-inversiones
   nombre: Arpegio por inversiones
   descripcion: 'El arpegio empezando en cada una de sus notas: 1-3-5-7, 3-5-7-1…'
+  en: { nombre: 'Arpeggio by inversions', descripcion: 'The arpeggio starting on each of its notes: 1-3-5-7, 3-5-7-1…' }
   sobre: arpegio
   celula: [0, 1, 2, 3]
 
 - id: arpegio-terceras
   nombre: Arpegio a saltos
   descripcion: 'Nota sí, nota no del arpegio: 1-5, 3-7, 5-1…'
+  en: { nombre: 'Skipping arpeggio', descripcion: 'Every other note of the arpeggio: 1-5, 3-7, 5-1…' }
   sobre: arpegio
   celula: [0, 2]
 
 - id: arpegio-cromatico
   nombre: Aproximación cromática al arpegio
   descripcion: 'Cada nota del arpegio, precedida por el semitono de abajo.'
+  en: { nombre: 'Chromatic approach to the arpeggio', descripcion: 'Each arpeggio note, preceded by the half step below.' }
   sobre: arpegio
   celula: ['0-', 0]
 
 - id: arpegio-rodeo
   nombre: Rodeo de cada nota del arpegio
   descripcion: 'Semitono por encima, semitono por debajo y la nota.'
+  en: { nombre: 'Enclosing each arpeggio note', descripcion: 'Half step above, half step below, then the note.' }
   sobre: arpegio
   celula: ['0+', '0-', 0]
