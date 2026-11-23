@@ -32,8 +32,8 @@ const grupos = defineCollection({
     orden,
     nombre: z.string(),
     simbolo: z.string(),
-    // Nombre en la versión inglesa, si cambia (7 alterado → Altered 7).
-    en: z.object({ nombre: z.string() }).optional(),
+    // Versión inglesa: nombre, si cambia (7 alterado → Altered 7), y descripción.
+    en: z.object({ nombre: z.string().optional(), descripcion: z.string().optional() }).optional(),
     descripcion: z.string().optional(),
     arpegio: z.array(grado).min(3),
   }),

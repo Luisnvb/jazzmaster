@@ -45,7 +45,7 @@ export const PAGINAS_EN: Record<string, PaginaEn> = {
   'estudio/ciclos': { nombre: 'Goodrick cycles', lema: 'The chords of the key by cycles, with voice leading', direccion: 'study/cycles' },
   'estudio/comping': { nombre: 'Comping', lema: 'Accompanying: rhythm, voicing and register, fixed or changing by bar', direccion: 'study/comping' },
   'estudio/chord-melody': { nombre: 'Chord melody', lema: 'Melody on top and the chord below: shapes with any note as the top voice', direccion: 'study/chord-melody' },
-  escalas: { nombre: 'Scale dictionary', lema: 'The scales for each chord type' },
+  escalas: { nombre: 'Scale dictionary', lema: 'The scales for each chord type', direccion: 'scales' },
   'estudio/escalas': { nombre: 'Scales on the neck', lema: 'Practise them on the neck, with the chord tones marked', direccion: 'study/scales' },
   'estudio/arpegios': { nombre: 'Arpeggios', lema: 'Every chord degree across the neck', direccion: 'study/arpeggios' },
   'estudio/modos': { nombre: 'Modes', lema: 'Parallel and relative, with their characteristic note', direccion: 'study/modes' },

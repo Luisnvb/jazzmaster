@@ -33,7 +33,7 @@ export const BUSCADOR_ESCALAS = textos(
   {
     titulo: 'Scale finder',
     intro:
-      'Type some notes, a chord or several chords in a row: you will see the scales from the <a href="{diccionario}" hreflang="es">dictionary</a> (in Spanish) that contain them. With one chord, the scales on its root come first, in the usual order; with a progression, the ones that fit every chord at once.',
+      'Type some notes, a chord or several chords in a row: you will see the scales from the <a href="{diccionario}">dictionary</a> that contain them. With one chord, the scales on its root come first, in the usual order; with a progression, the ones that fit every chord at once.',
     buscador: 'Finder',
     notasAcordes: 'Notes or chords',
     ejemplos: 'Examples:',
@@ -56,6 +56,6 @@ export const BUSCADOR_ESCALAS = textos(
     soloEsas: ' · just those notes',
     mismas: 'Same notes as {escala}',
     oir: '▶ Play',
-    enDiccionario: 'In the dictionary (Spanish)',
+    enDiccionario: 'In the dictionary',
   },
 );

@@ -2,6 +2,8 @@
 // La web es estática: eliminar oculta el registro en este navegador y se puede
 // deshacer con «Restaurar eliminados». Para quitarlo del todo, bórralo del archivo de datos.
 import { borrar, guardarJSON, leerJSON } from './almacen.ts';
+import { formatear, idiomaValido } from '../i18n/idiomas.ts';
+import { INTERFAZ } from '../i18n/interfaz.ts';
 
 const clave = (seccion: string) => `eliminados:${seccion}`;
 
@@ -28,6 +30,7 @@ export function restaurarEliminados(seccion: string) {
  */
 export function conectarEliminados(seccion: string, alEliminar?: (id: string, el: HTMLElement) => boolean): () => void {
   const restaurar = document.querySelector<HTMLButtonElement>('[data-restaurar-eliminados]');
+  const T = INTERFAZ[idiomaValido(document.documentElement.lang)];
 
   const aplicar = () => {
     const ids = eliminados(seccion);
@@ -38,7 +41,7 @@ export function conectarEliminados(seccion: string, alEliminar?: (id: string, el
     }
     if (restaurar) {
       restaurar.hidden = ids.size === 0;
-      restaurar.textContent = `Restaurar eliminados (${ids.size})`;
+      restaurar.textContent = formatear(T.restaurarEliminadosN, { n: ids.size });
     }
     // Que el buscador vuelva a filtrar (y oculte los grupos vacíos).
     document.querySelector('[data-buscador]')?.dispatchEvent(new Event('input'));
@@ -55,8 +58,8 @@ export function conectarEliminados(seccion: string, alEliminar?: (id: string, el
     const el = boton?.closest<HTMLElement>('[data-eliminable]');
     if (!boton || !el) return;
     e.preventDefault();
-    const nombre = el.dataset.nombre ?? 'este registro';
-    if (!confirm(`¿Eliminar «${nombre}»?`)) return;
+    const nombre = el.dataset.nombre ?? T.esteRegistro;
+    if (!confirm(formatear(T.confirmarEliminar, { nombre }))) return;
     if (alEliminar?.(el.dataset.eliminable!, el)) return;
     eliminar(seccion, el.dataset.eliminable!);
     aplicar();

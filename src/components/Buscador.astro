@@ -1,13 +1,17 @@
 ---
+import type { Idioma } from '../i18n/idiomas.ts';
+import { INTERFAZ } from '../i18n/interfaz.ts';
+
 interface Props {
   placeholder: string;
+  idioma?: Idioma;
 }
 
-const { placeholder } = Astro.props;
+const { placeholder, idioma = 'es' } = Astro.props;
 ---
 
 <input class="buscador" type="search" data-buscador placeholder={placeholder} aria-label={placeholder} autocomplete="off" />
-<p class="sin-resultados" data-sin-resultados hidden>Sin resultados.</p>
+<p class="sin-resultados" data-sin-resultados hidden>{INTERFAZ[idioma].sinResultados}</p>
 
 <style>
   .buscador {

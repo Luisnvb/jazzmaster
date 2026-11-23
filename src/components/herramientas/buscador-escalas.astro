@@ -10,7 +10,7 @@ import Base from '../../layouts/Base.astro';
 import Tempo from '../../components/Tempo.astro';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
 import { porOrden } from '../../lib/orden.ts';
-import { ruta } from '../../lib/rutas.ts';
+import { enlacePagina } from '../../lib/secciones.ts';
 import { formatear, type Idioma } from '../../i18n/idiomas.ts';
 import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
 import { BUSCADOR_ESCALAS } from '../../i18n/buscador-escalas.ts';
@@ -29,12 +29,13 @@ const escalas = porOrden(await getCollection('escalas')).map((e) => ({
   grupo: e.data.grupo.id,
   formula: e.data.formula,
 }));
-const datos = JSON.stringify({ grupos, escalas, diccionario: ruta('escalas') }).replace(/</g, '\\u003c');
+const diccionario = enlacePagina('escalas', idioma);
+const datos = JSON.stringify({ grupos, escalas, diccionario }).replace(/</g, '\\u003c');
 const EJEMPLOS = ['Dm7', 'G7alt', 'Cmaj7#11', 'Dm7 G7 Cmaj7', 'Bm7b5 E7b9 Am6', 'C E G Bb D'];
 ---
 
 <Base titulo={T.titulo}>
-  <p class="intro" set:html={formatear(T.intro, { diccionario: ruta('escalas') })} />
+  <p class="intro" set:html={formatear(T.intro, { diccionario })} />
 
   <section class="buscador" aria-label={T.buscador}>
     <div class="entrada">
@@ -131,7 +132,7 @@ const EJEMPLOS = ['Dm7', 'G7alt', 'Cmaj7#11', 'Dm7 G7 Cmaj7', 'Bm7b5 E7b9 Am6', 
           ${igual ? `<div class="suave igual">${formatear(T.mismas, { escala: `${esc(bonito(igual.tonica))} ${esc(nombreEscala(igual.escala.nombre))}` })}</div>` : ''}
           <div class="acciones">
             <button type="button" class="boton pequeno" data-tocar="${i}">${T.oir}</button>
-            <a href="${esc(`${diccionario}#grupo-${c.escala.grupo}`)}"${idioma === 'en' ? ' hreflang="es"' : ''}>${T.enDiccionario}</a>
+            <a href="${esc(`${diccionario}#grupo-${c.escala.grupo}`)}">${T.enDiccionario}</a>
           </div>
         </li>`;
       })

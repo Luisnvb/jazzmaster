@@ -41,6 +41,15 @@ export const INTERFAZ = textos(
     // Páginas de estudio
     enEstaPagina: 'En esta página',
     tonica: 'Tónica',
+    // Listas con buscador y registros eliminables (Buscador.astro, lib/eliminados.ts)
+    sinResultados: 'Sin resultados.',
+    eliminar: 'Eliminar',
+    eliminarNombre: 'Eliminar {nombre}',
+    confirmarEliminar: '¿Eliminar «{nombre}»?',
+    esteRegistro: 'este registro',
+    restaurarEliminados: 'Restaurar eliminados',
+    restaurarEliminadosN: 'Restaurar eliminados ({n})',
+    todos: 'Todos',
   },
   {
     inicio: 'Home',
@@ -76,6 +85,14 @@ export const INTERFAZ = textos(
     seguro: 'Sure? Press again',
     enEstaPagina: 'On this page',
     tonica: 'Key',
+    sinResultados: 'No results.',
+    eliminar: 'Remove',
+    eliminarNombre: 'Remove {nombre}',
+    confirmarEliminar: 'Remove “{nombre}”?',
+    esteRegistro: 'this entry',
+    restaurarEliminados: 'Restore removed',
+    restaurarEliminadosN: 'Restore removed ({n})',
+    todos: 'All',
   },
 );
 
