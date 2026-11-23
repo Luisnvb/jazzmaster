@@ -32,7 +32,7 @@ const progresiones = porOrden(await getCollection('progresiones')).map(({ id, da
   compases: data.compases,
 }));
 const datos = JSON.stringify(progresiones).replace(/</g, '\\u003c');
-const AYUDAS = ['oido', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]]);
+const AYUDAS = ['oido', 'lenguaje', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]]);
 ---
 
 <Base titulo={T.titulo}>
@@ -136,6 +136,7 @@ const AYUDAS = ['oido', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]
     DIFICULTADES,
     ESTILOS_DICTADO,
     generarFrase,
+    notasLenguaje,
     notasMastilFrase,
     secuenciaDictado,
     trastesPosicion,
@@ -159,7 +160,7 @@ const AYUDAS = ['oido', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]
     }
   });
 
-  type Ayuda = 'oido' | 'respuesta' | 'siempre';
+  type Ayuda = 'oido' | 'lenguaje' | 'respuesta' | 'siempre';
   interface Opciones {
     contexto: string;
     aspecto: Aspecto;
@@ -188,7 +189,7 @@ const AYUDAS = ['oido', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]
   };
   if (!ASPECTOS.some((a) => a.id === op.aspecto)) op.aspecto = 'arpegios';
   if (!DIFICULTADES.some((d) => d.id === op.dificultad)) op.dificultad = 'facil';
-  if (!['oido', 'respuesta', 'siempre'].includes(op.ayuda)) op.ayuda = 'respuesta';
+  if (!['oido', 'lenguaje', 'respuesta', 'siempre'].includes(op.ayuda)) op.ayuda = 'respuesta';
   if (!ESTILOS_DICTADO.some((e) => e.id === op.acompanamiento)) op.acompanamiento = 'acorde';
   op.posicion = Math.min(12, Math.max(1, Math.round(op.posicion) || 5));
   op.veces = Math.min(3, Math.max(1, Math.round(op.veces) || 1));
@@ -277,7 +278,11 @@ const AYUDAS = ['oido', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]
   /** Pinta la frase `f` en la fase dada, con la nota `actual` marcada y el pulso `pulso` (0…) encendido. */
   function pintar(f: FraseDictado, estado: Fase, actual = -1, pulso = -1) {
     const ver = visible(estado);
-    const clave = `${f.notas.map((n) => n.midi).join(',')}|${f.posicion}|${ver}|${op.rotulo}|${estado}`;
+    // Con «Notas del lenguaje», el material es el del acorde que suena (si el compás tiene dos, cambia a mitad).
+    const lenguaje = !ver && op.ayuda === 'lenguaje';
+    const enCorchea = actual >= 0 ? f.notas[actual].inicio : pulso;
+    const j = lenguaje && enCorchea >= 0 ? Math.max(0, f.acordes.findIndex((a) => enCorchea >= a.desde && enCorchea < a.hasta)) : 0;
+    const clave = `${f.notas.map((n) => n.midi).join(',')}|${f.posicion}|${ver}|${op.rotulo}|${estado}|${lenguaje ? `${op.aspecto}:${j}` : ''}`;
     if (clave !== dibujada) {
       dibujada = clave;
       marcada = -1;
@@ -298,8 +303,9 @@ const AYUDAS = ['oido', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]
                 <span class="nota">${esc(n.nota)}</span><span class="grado">${esc(n.grado)}</span></li>`,
             )
             .join('')
-        : `<li class="oculta" style="grid-column: 1 / span ${pulsos * 2}">${op.ayuda === 'oido' ? T.ocultaOido : T.ocultaRespuesta}</li>`;
-      caja.innerHTML = mastilSVG(ver ? notasMastilFrase(f, op.rotulo) : [], { tipo: 'trastes', ...trastesPosicion(f.posicion) });
+        : `<li class="oculta" style="grid-column: 1 / span ${pulsos * 2}">${op.ayuda === 'oido' ? T.ocultaOido : lenguaje ? T.ocultaLenguaje : T.ocultaRespuesta}</li>`;
+      const notas = ver ? notasMastilFrase(f, op.rotulo) : lenguaje ? notasLenguaje(tonica, f.acordes[j].acorde, op.aspecto, f.posicion, op.rotulo) : [];
+      caja.innerHTML = mastilSVG(notas, { tipo: 'trastes', ...trastesPosicion(f.posicion) });
       mostrarZona(caja);
       botonRevelar.disabled = ver;
     }
@@ -570,6 +576,15 @@ const AYUDAS = ['oido', 'respuesta', 'siempre'].map((id) => [id, ...T.ayudas[id]
   /* El mástil no cabe en el móvil: se desplaza en horizontal dentro de su caja. */
   .mastil-caja {
     overflow-x: auto;
+  }
+  /* Zona de la posición: un tono muy claro con borde, y los trastes más oscuros para que se distingan dentro. */
+  .mastil-caja :global(.mastil .zona) {
+    fill: color-mix(in srgb, var(--acento) 7%, transparent); /* COLOR: zona de la posición en el dictado */
+    stroke: var(--acento);
+    stroke-width: 1.5;
+  }
+  .mastil-caja :global(.mastil .traste) {
+    stroke: color-mix(in srgb, var(--texto-suave) 65%, transparent); /* COLOR: trastes del mástil del dictado */
   }
   .ejemplo :global(.botones-audio) {
     margin-top: 0.5rem;

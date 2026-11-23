@@ -567,6 +567,54 @@ export function notasMastilFrase(f: FraseDictado, rotulo: Rotulo): NotaMastil[] 
   return [...porSitio.values()];
 }
 
+/**
+ * Material de un aspecto del lenguaje sobre un acorde: los grados de los que salen las
+ * notas de la frase (`grados`) y cuáles se destacan como notas de apoyo (`apoyo`). En el
+ * blues, los grados son sobre la tónica de la tonalidad (`sobreTonica`), no sobre el acorde.
+ */
+export function materialLenguaje(tonica: string, acorde: AcordeGrado, aspecto: Aspecto): { grados: string[]; apoyo: string[]; sobreTonica: boolean } {
+  const ctx = contexto(tonica, acorde);
+  switch (aspecto) {
+    case 'arpegios':
+      return { grados: ctx.tonos, apoyo: ctx.tonos, sobreTonica: false };
+    case 'escala':
+    case 'aproximaciones':
+      // En las aproximaciones, los objetivos son las del acorde; se llega a ellas por la escala o por medio tono.
+      return { grados: ctx.escala, apoyo: ctx.tonos, sobreTonica: false };
+    case 'bebop':
+      return { grados: ctx.bebop, apoyo: ctx.tonos, sobreTonica: false };
+    case 'notas-guia':
+      return { grados: ctx.guia, apoyo: ctx.guia, sobreTonica: false };
+    case 'tensiones':
+      return { grados: [...ctx.tonos, ...ctx.tensiones], apoyo: ctx.tonos, sobreTonica: false };
+    case 'blues':
+      return { grados: BLUES, apoyo: ['1', 'b3', '5'], sobreTonica: true };
+  }
+}
+
+/**
+ * Las notas del lenguaje elegido en la posición de la frase, para la ayuda «Notas del
+ * lenguaje»: todas las de su material sobre el acorde que suena, en todas las cuerdas.
+ * Las de apoyo (las del acorde; en notas guía, la 3 y la 7) van rellenas y el resto, en blanco.
+ */
+export function notasLenguaje(tonica: string, acorde: AcordeGrado, aspecto: Aspecto, posicion: number, rotulo: Rotulo): NotaMastil[] {
+  const { grados, apoyo, sobreTonica } = materialLenguaje(tonica, acorde, aspecto);
+  const raiz = sobreTonica ? notaDeGrado(tonica, '1') : contexto(tonica, acorde).raiz;
+  const pc = pitchClass(raiz);
+  const { desde, hasta } = trastesPosicion(posicion);
+  const notas: NotaMastil[] = [];
+  AFINACION.forEach((abierta, cuerda) => {
+    for (let traste = desde; traste <= hasta; traste++) {
+      const midi = abierta + traste;
+      const grado = grados.find((g) => mod(semitonosGrado(g)) === mod(midi - pc));
+      if (!grado) continue;
+      const nota = formatNota(notaDeGrado(raiz, grado));
+      notas.push({ cuerda, traste, midi, grado, nota, delAcorde: apoyo.includes(grado), rotulo: rotulo === 'nota' ? nota : grado, atenuada: false });
+    }
+  });
+  return notas;
+}
+
 // --- Audio ---------------------------------------------------------------------------
 
 export type EstiloDictado = 'ninguno' | 'bajo' | 'acorde';

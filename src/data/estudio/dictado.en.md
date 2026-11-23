@@ -17,10 +17,11 @@ Every phrase fits in the chosen **position** (index finger on that fret, from on
 
 ## Help on the neck
 
-Three levels, from most help to none:
+Four levels, from most help to none:
 
 - **On show:** the phrase is on the neck and in the bar all the time, and the sounding note is marked. Useful to start and for new language: you hear and see at once.
 - **On your turn:** you listen without looking and, when your bar comes, the notes appear and which one to play at each moment. First you try to get it by ear; the help arrives just when you need it.
+- **Language notes:** the phrase is hidden, but the neck shows, in the position, every note it can come from: those of the chosen language over the sounding chord (the scale, the arpeggio, the bebop scale, the 3 and the 7…). The main ones, the chord tones, are filled in. Instead of searching the whole neck you choose among a few notes: the step before playing purely by ear.
 - **By ear:** nothing is shown. If you get stuck, **👁 Show the phrase** reveals it until it changes.
 
 The **label** of each note on the neck can be the **degree** over the chord (the most instructive), the note **name** or the **order** in which it sounds.

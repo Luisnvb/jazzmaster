@@ -26,6 +26,10 @@ export const DICTADO = textos(
       oido: ['De oído', 'El mástil y las notas, ocultos: solo el oído. «Ver la frase» la enseña si te atascas.'],
       respuesta: ['En tu turno', 'Escuchas sin mirar y, en tu compás, ves las notas y cuál toca en cada momento.'],
       siempre: ['A la vista', 'La frase a la vista todo el rato, con la nota que suena marcada.'],
+      lenguaje: [
+        'Notas del lenguaje',
+        'El mástil enseña, en la posición, las notas del lenguaje elegido sobre el acorde que suena (rellenas, las de apoyo); la frase la sacas de oído.',
+      ],
     } as Lista,
     rotulo: 'Rótulo',
     grado: 'Grado',
@@ -58,6 +62,7 @@ export const DICTADO = textos(
     y: 'y',
     ocultaOido: 'De oído: la frase no se ve',
     ocultaRespuesta: 'Escucha: la verás en tu turno',
+    ocultaLenguaje: 'De oído: en el mástil, las notas de las que sale la frase',
   },
   {
     titulo: 'Melodic dictation',
@@ -98,6 +103,10 @@ export const DICTADO = textos(
       oido: ['By ear', 'Neck and notes hidden: just the ear. “Show the phrase” reveals it if you get stuck.'],
       respuesta: ['On your turn', 'You listen without looking and, in your bar, you see the notes and which one to play at each moment.'],
       siempre: ['On show', 'The phrase is visible all the time, with the sounding note marked.'],
+      lenguaje: [
+        'Language notes',
+        'The neck shows, in the position, the notes of the chosen language over the sounding chord (filled in, the main ones); you find the phrase by ear.',
+      ],
     },
     rotulo: 'Label',
     grado: 'Degree',
@@ -134,5 +143,6 @@ export const DICTADO = textos(
     y: '&',
     ocultaOido: 'By ear: the phrase is hidden',
     ocultaRespuesta: 'Listen: you will see it on your turn',
+    ocultaLenguaje: 'By ear: the neck shows the notes the phrase comes from',
   },
 );

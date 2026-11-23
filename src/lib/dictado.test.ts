@@ -10,6 +10,8 @@ import {
   DIFICULTADES,
   digitarEnPosicion,
   generarFrase,
+  materialLenguaje,
+  notasLenguaje,
   notasMastilFrase,
   registro,
   secuenciaDictado,
@@ -203,4 +205,30 @@ test('compás de 3/4: la frase cabe en seis corcheas', () => {
       assert.ok(f.notas.every((n) => n.inicio + n.dur <= 6), `${a} ${d}`);
     }
   }
+});
+
+test('notas del lenguaje: en la posición, y cada nota de la frase sale de ellas', () => {
+  const pcs = (notas: { midi: number }[]) => new Set(notas.map((n) => n.midi % 12));
+  for (const c of CONTEXTOS) {
+    for (const compas of analizarProgresion(c.compases)) {
+      for (const aspecto of ['arpegios', 'escala', 'bebop', 'tensiones', 'blues'] as Aspecto[]) {
+        for (let semilla = 1; semilla <= 10; semilla++) {
+          const f = generarFrase('F', compas, aspecto, 'media', 5, semilla);
+          f.notas.forEach((n) => {
+            const material = pcs(notasLenguaje('F', compas[n.acorde], aspecto, 5, 'grado'));
+            assert.ok(material.has(n.midi % 12), `${c.id} ${aspecto}: ${n.nota} fuera del material`);
+          });
+        }
+      }
+    }
+  }
+  const [iim7] = analizarProgresion(['IIm7'])[0];
+  const { desde, hasta } = trastesPosicion(5);
+  const notas = notasLenguaje('C', iim7, 'escala', 5, 'nota');
+  assert.ok(notas.every((n) => n.traste >= desde && n.traste <= hasta));
+  // Dm7 dórico: 7 notas; las del acorde (D F A C), rellenas.
+  assert.equal(pcs(notas).size, 7);
+  assert.deepEqual(new Set(notas.filter((n) => n.delAcorde).map((n) => n.rotulo)), new Set(['D', 'F', 'A', 'C']));
+  assert.deepEqual(new Set(notasLenguaje('C', iim7, 'notas-guia', 5, 'grado').map((n) => n.grado)), new Set(['b3', 'b7']));
+  assert.equal(materialLenguaje('C', iim7, 'blues').sobreTonica, true);
 });

@@ -17,10 +17,11 @@ Todas las frases caben en la **posición** elegida (el índice en ese traste, de
 
 ## Ayuda en el mástil
 
-Tres niveles, de más ayuda a ninguna:
+Cuatro niveles, de más ayuda a ninguna:
 
 - **A la vista:** la frase está en el mástil y en el compás todo el rato, y la nota que suena se marca. Sirve para empezar y para un lenguaje nuevo: oyes y ves a la vez.
 - **En tu turno:** escuchas sin mirar y, al llegar tu compás, aparecen las notas y cuál toca en cada momento. Primero intentas sacarla de oído; la ayuda llega justo cuando la necesitas.
+- **Notas del lenguaje:** la frase no se ve, pero el mástil enseña, en la posición, todas las notas de las que puede salir: las del lenguaje elegido sobre el acorde que suena (la escala, el arpegio, la escala bebop, la 3 y la 7…). Las de apoyo, las del acorde, van rellenas. Ya no buscas por todo el mástil, sino entre unas pocas notas: el paso intermedio antes de tocar solo de oído.
 - **De oído:** no se ve nada. Si te atascas, **👁 Ver la frase** la enseña hasta que cambie.
 
 El **rótulo** de cada nota en el mástil puede ser el **grado** sobre el acorde (lo que más enseña), el **nombre** de la nota o el **orden** en que suena.
