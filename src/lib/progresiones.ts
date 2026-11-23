@@ -87,6 +87,46 @@ export interface AcordeGrado {
 /** Inversiones: I/3 (primera), I/5 (segunda), V7/7 (tercera). El número es la nota del acorde. */
 const INVERSIONES = ['1', '3', '5', '7'];
 
+/** Mensajes de los errores del análisis, en los dos idiomas (`{texto}`, `{n}`… se rellenan). */
+const MENSAJES = {
+  es: {
+    inversion: 'Inversión no válida en "{texto}": después de la barra va 3, 5 o 7 (la nota del acorde que hace de bajo).',
+    sinNota: '"{texto}": el acorde no tiene {n}ª para ponerla en el bajo.',
+    acorde: 'Acorde no válido: "{texto}" (usa grados romanos: IIm7, V7, bVI7…)',
+    calidad: 'Calidad no reconocida en "{texto}": "{sufijo}". Valen: {sufijos}',
+    sinCompases: 'La progresión no tiene compases.',
+    compasVacio: 'Compás {n} vacío.',
+  },
+  en: {
+    inversion: 'Invalid inversion in "{texto}": after the slash goes 3, 5 or 7 (the chord tone in the bass).',
+    sinNota: '"{texto}": the chord has no {n} to put in the bass.',
+    acorde: 'Invalid chord: "{texto}" (use Roman numerals: IIm7, V7, bVI7…)',
+    calidad: 'Unknown quality in "{texto}": "{sufijo}". Valid ones: {sufijos}',
+    sinCompases: 'The progression has no bars.',
+    compasVacio: 'Bar {n} is empty.',
+  },
+};
+type ClaveError = keyof (typeof MENSAJES)['es'];
+const rellenar = (plantilla: string, valores: Record<string, string | number>) =>
+  plantilla.replace(/\{(\w+)\}/g, (todo, k: string) => (k in valores ? String(valores[k]) : todo));
+
+/** Error del análisis de una progresión: el mensaje va en español; `mensajeError` lo da en otro idioma. */
+export class ErrorProgresion extends Error {
+  readonly clave: ClaveError;
+  readonly valores: Record<string, string | number>;
+  constructor(clave: ClaveError, valores: Record<string, string | number> = {}) {
+    super(rellenar(MENSAJES.es[clave], valores));
+    this.clave = clave;
+    this.valores = valores;
+  }
+}
+
+/** Mensaje de un error en el idioma de la página (los que no son del análisis, tal cual). */
+export function mensajeError(error: unknown, idioma: 'es' | 'en' = 'es'): string {
+  if (error instanceof ErrorProgresion) return rellenar(MENSAJES[idioma][error.clave], error.valores);
+  return error instanceof Error ? error.message : String(error);
+}
+
 export function parseAcordeGrado(texto: string): AcordeGrado {
   // "I/3": acorde y, tras la barra, la nota del acorde que va en el bajo.
   // La barra también está en el cifrado 6/9: si todo el texto es un acorde válido, no es inversión.
@@ -101,32 +141,32 @@ export function parseAcordeGrado(texto: string): AcordeGrado {
   const inversion = limpio.slice(corte + 1);
   const base = parseAcordeSinBajo(limpio, acorde);
   if (!INVERSIONES.includes(inversion)) {
-    throw new Error(`Inversión no válida en "${texto}": después de la barra va 3, 5 o 7 (la nota del acorde que hace de bajo).`);
+    throw new ErrorProgresion('inversion', { texto });
   }
   // La nota con ese número en la fórmula (/3 en un acorde menor es su b3).
   const bajo = base.formula.find((g) => g.replace(/^[b#]+/, '') === inversion);
-  if (!bajo) throw new Error(`"${texto}": el acorde no tiene ${inversion}ª para ponerla en el bajo.`);
+  if (!bajo) throw new ErrorProgresion('sinNota', { texto, n: inversion });
   return bajo === '1' ? base : { ...base, bajo };
 }
 
 function parseAcordeSinBajo(texto: string, acorde: string): AcordeGrado {
   const m = /^(b|#)?(VII|VI|IV|V|III|II|I)(.*)$/i.exec(acorde);
-  if (!m) throw new Error(`Acorde no válido: "${texto}" (usa grados romanos: IIm7, V7, bVI7…)`);
+  if (!m) throw new ErrorProgresion('acorde', { texto });
   const numero = ROMANOS.indexOf(m[2].toUpperCase()) + 1;
   // En minúsculas (ii, vi) y sin sufijo se entiende menor.
   const sufijoEscrito = m[3] === '' && m[2] === m[2].toLowerCase() ? 'm' : m[3];
   const sufijo = SINONIMOS[sufijoEscrito] ?? sufijoEscrito;
   const calidad = CALIDADES[sufijo];
-  if (!calidad) throw new Error(`Calidad no reconocida en "${texto}": "${m[3]}". Valen: ${SUFIJOS.join(', ')}`);
+  if (!calidad) throw new ErrorProgresion('calidad', { texto, sufijo: m[3], sufijos: SUFIJOS.join(', ') });
   return { texto: texto.trim(), grado: `${m[1] ?? ''}${numero}`, sufijo, ...calidad };
 }
 
 /** Compases de una progresión ya analizados. Lanza un error si algo no se entiende. */
 export function analizarProgresion(compases: readonly string[]): AcordeGrado[][] {
-  if (compases.length === 0) throw new Error('La progresión no tiene compases.');
+  if (compases.length === 0) throw new ErrorProgresion('sinCompases');
   return compases.map((c, i) => {
     const acordes = c.trim().split(/\s+/).filter(Boolean);
-    if (acordes.length === 0) throw new Error(`Compás ${i + 1} vacío.`);
+    if (acordes.length === 0) throw new ErrorProgresion('compasVacio', { n: i + 1 });
     return acordes.map(parseAcordeGrado);
   });
 }

@@ -109,3 +109,23 @@ test('cambios locales sobre las del repositorio', () => {
     ['b', 'c'],
   );
 });
+
+test('errores del análisis en los dos idiomas', async () => {
+  const { analizarProgresion, mensajeError } = await import('./progresiones.ts');
+  const error = (compases: string[]) => {
+    try {
+      analizarProgresion(compases);
+    } catch (e) {
+      return e;
+    }
+    assert.fail('debía fallar');
+  };
+  const raro = error(['IIm7 Xz']);
+  assert.match(mensajeError(raro), /Acorde no válido: "Xz"/);
+  assert.match(mensajeError(raro, 'en'), /Invalid chord: "Xz"/);
+  assert.match(mensajeError(error(['I/9']), 'en'), /Invalid inversion in "I\/9"/);
+  assert.match(mensajeError(error(['I/7']), 'en'), /has no 7 to put in the bass/);
+  assert.equal(mensajeError(error([]), 'en'), 'The progression has no bars.');
+  assert.match(mensajeError(error(['IVmaj7x']), 'en'), /Unknown quality in "IVmaj7x"/);
+  assert.equal(mensajeError(new Error('otro')), 'otro');
+});

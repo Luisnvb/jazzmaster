@@ -62,7 +62,7 @@ export const PAGINAS_EN: Record<string, PaginaEn> = {
   'estudio/simetricas': { nombre: 'Diminished and whole tone', lema: 'Symmetric scales: a shape that repeats every 3 or 2 frets', direccion: 'study/symmetric' },
   'estudio/motivos': { nombre: 'Motifs and development', lema: 'Repeat, transpose, invert and displace a short idea', direccion: 'study/motifs' },
   'estudio/outside': { nombre: 'Outside and in', lema: 'Shift a phrase a half step (or a tritone) and come back', direccion: 'study/outside' },
-  progresiones: { nombre: 'Progressions', lema: 'Jazz and classical, in any key' },
+  progresiones: { nombre: 'Progressions', lema: 'Jazz and classical, in any key', direccion: 'progressions' },
   'estudio/armonia': { nombre: 'Functional harmony', lema: 'Tonic, subdominant and dominant; analysing progressions', direccion: 'study/harmony' },
   'estudio/blues': { nombre: 'Blues', lema: 'Basic, jazz, Bird blues and minor, bar by bar', direccion: 'study/blues' },
   'estudio/rearmonizacion': { nombre: 'Reharmonization', lema: 'Substitutions, secondary dominants, tritones and more', direccion: 'study/reharmonization' },

@@ -9,7 +9,7 @@ import Base from '../../layouts/Base.astro';
 import Tempo from '../../components/Tempo.astro';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
 import { NIVELES } from '../../lib/generador-progresiones.ts';
-import { ruta } from '../../lib/rutas.ts';
+import { enlacePagina } from '../../lib/secciones.ts';
 import { formatear, type Idioma } from '../../i18n/idiomas.ts';
 import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
 import { GENERADOR } from '../../i18n/progresiones-aleatorias.ts';
@@ -75,7 +75,7 @@ const I = INTERFAZ[idioma];
     <button type="button" data-detener>{I.detener}</button>
   </div>
 
-  <p class="suave pie" set:html={formatear(T.pie, { progresiones: ruta('progresiones') })} />
+  <p class="suave pie" set:html={formatear(T.pie, { progresiones: enlacePagina('progresiones', idioma) })} />
 </Base>
 
 <script>

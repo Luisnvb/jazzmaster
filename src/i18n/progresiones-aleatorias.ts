@@ -74,7 +74,7 @@ export const GENERADOR = textos(
     metronomo: 'Metronome',
     bucle: 'Loop',
     escuchar: '▶ Listen',
-    pie: 'Once saved it appears in <a href="{progresiones}" hreflang="es">Progressions</a> (in Spanish, written in degrees), where you can see it with voicings and in any key.',
+    pie: 'Once saved it appears in <a href="{progresiones}">Progressions</a> (written in degrees), where you can see it with voicings and in any key.',
     en: 'In {tonica} {modo}',
     modoMayor: 'major',
     modoMenor: 'minor',
