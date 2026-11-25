@@ -51,6 +51,18 @@ const indice = getHeadings().filter((h) => h.depth === 2);
         {FORMAS_CAGED.map((f) => <button type="button" class="boton forma" data-forma={f.letra} aria-pressed="false">{f.letra}</button>)}
         <button type="button" class="boton" data-forma="todo" aria-pressed="false" title={T.todoAyuda}>{T.todoMastil}</button>
       </div>
+      <!-- En el móvil, cualidad y forma van en selectores en vez de botones. -->
+      <div class="selectores-movil">
+        <label>{T.cualidad}
+          <select data-sel-cualidad>{CUALIDADES_CAPAS.map((c) => <option value={c.id}>{nombreCapas(c, idioma)}</option>)}</select>
+        </label>
+        <label>{T.forma}
+          <select data-sel-forma>
+            {FORMAS_CAGED.map((f) => <option value={f.letra}>{f.letra}</option>)}
+            <option value="todo">{T.todoMastil}</option>
+          </select>
+        </label>
+      </div>
       <button type="button" class="boton" data-sortear title={T.sortearAyuda}>{T.sortear}</button>
     </div>
 
@@ -163,6 +175,8 @@ const indice = getHeadings().filter((h) => h.depth === 2);
       b.setAttribute('aria-pressed', String(b.dataset.forma === op.forma));
       if (b.dataset.forma !== 'todo') b.title = formatear(T.formaDe, { forma: b.dataset.forma!, traste: zonaCaged(raiz, b.dataset.forma as FormaCapas).cejilla });
     }
+    $<HTMLSelectElement>('[data-sel-cualidad]').value = c.id;
+    $<HTMLSelectElement>('[data-sel-forma]').value = op.forma;
     $('[data-titulo]').innerHTML =
       `<strong>${esc(simboloCapas(raiz, c))}</strong> · ` + (op.forma === 'todo' ? T.todoMin : formatear(T.formaTrastes, { forma: op.forma, desde: z.desde, hasta: z.hasta }));
 
@@ -246,6 +260,15 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     pintar(Boolean(d.forma || d.cualidad));
   });
 
+  $<HTMLSelectElement>('[data-sel-cualidad]').addEventListener('change', (e) => {
+    op.cualidad = (e.target as HTMLSelectElement).value;
+    pintar(true);
+  });
+  $<HTMLSelectElement>('[data-sel-forma]').addEventListener('change', (e) => {
+    op.forma = (e.target as HTMLSelectElement).value as FormaCapas;
+    pintar(true);
+  });
+
   document.addEventListener('keydown', (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     if ((e.target as Element).closest('input, select, textarea, [contenteditable]')) return;
@@ -317,6 +340,26 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   .grupo-botones .forma {
     min-width: 2.6rem;
     padding: 0;
+  }
+  /* Móvil: selectores de cualidad y forma en vez de sus filas de botones. */
+  .selectores-movil {
+    display: none;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+  .selectores-movil label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  @media (max-width: 40rem) {
+    .opciones > .grupo-botones {
+      display: none;
+    }
+    .selectores-movil {
+      display: flex;
+    }
   }
   .cabecera-capas {
     display: flex;
