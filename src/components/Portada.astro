@@ -5,8 +5,8 @@
 // plegadas. Las páginas favoritas salen las primeras de cada lista
 // (lib/paginas-favoritas.ts, desde layouts/Base.astro). Bajo Rutina va el botón del
 // Registro de práctica (empieza, pausa y termina una sesión con la última actividad
-// elegida, lib/registro.ts) y bajo Herramientas, las notas y los documentos favoritos de
-// Apuntes (lib/apuntes.ts). La usan src/pages/index.astro (español) y src/pages/en/index.astro.
+// elegida, lib/registro.ts; en el móvil va al final, bajo Herramientas) y bajo
+// Herramientas, las notas y los documentos favoritos de Apuntes (lib/apuntes.ts). La usan src/pages/index.astro (español) y src/pages/en/index.astro.
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import MenuSecciones from './MenuSecciones.astro';
@@ -38,7 +38,10 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
   <h2 class="visualmente-oculto">{T.secciones}</h2>
   <div class="portada" data-portada>
     <MenuSecciones idioma={idioma} columnas>
-      <div slot="rutina" class="registro-rapido" aria-label={T.registroPractica} role="group">
+      <div slot="rutina" data-hueco-registro></div>
+      <Fragment slot="herramientas">
+        <div class="favoritos" data-favoritos hidden></div>
+        <div class="registro-rapido" data-registro-rapido aria-label={T.registroPractica} role="group">
           <div data-registro-parado>
             <button type="button" class="boton principal pequeno" data-registro-empezar>{T.registrar}</button>
             <a class="actividad" href={registro} data-registro-ultima title={T.cambiarActividad}></a>
@@ -52,8 +55,8 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
             </div>
           </div>
           <p class="aviso-registro" data-registro-aviso role="status"></p>
-      </div>
-      <div slot="herramientas" class="favoritos" data-favoritos hidden></div>
+        </div>
+      </Fragment>
     </MenuSecciones>
   </div>
   <figure class="cita" data-cita hidden>
@@ -188,7 +191,14 @@ const datos = JSON.stringify(citas).replace(/</g, '\\u003c');
   // Pantalla grande: todas las secciones abiertas y sin plegar; en el móvil, plegadas.
   const grande = matchMedia('(min-width: 60rem)');
   const desplegables = [...document.querySelectorAll<HTMLDetailsElement>('[data-portada] details')];
-  const ajustar = () => desplegables.forEach((d) => (d.open = grande.matches));
+  // El botón del registro va bajo Rutina en pantalla grande y bajo Herramientas en el móvil.
+  const registroRapido = $r('[data-registro-rapido]');
+  const huecoRutina = $r('[data-hueco-registro]');
+  const huecoHerramientas = registroRapido.parentElement!;
+  const ajustar = () => {
+    desplegables.forEach((d) => (d.open = grande.matches));
+    (grande.matches ? huecoRutina : huecoHerramientas).append(registroRapido);
+  };
   grande.addEventListener('change', ajustar);
   ajustar();
   for (const d of desplegables) {
