@@ -21,7 +21,7 @@ export const SECCIONES_EN: Record<string, { nombre: string; lema: string }> = {
 };
 
 export const PAGINAS_EN: Record<string, PaginaEn> = {
-  ruta: { nombre: 'Learning path', lema: 'Seven stages through the site, from the foundations to the modern sound' },
+  ruta: { nombre: 'Learning path', lema: 'Seven stages through the site, from the foundations to the modern sound', direccion: 'learning-path' },
   'estudio/rutina': { nombre: 'Practice routine', lema: 'One note and one quality; repertoire in one position', direccion: 'study/routine' },
   'estudio/capas': { nombre: 'Fretboard in layers', lema: 'Root, triads, arpeggio, pentatonic, scale and chord in one CAGED zone', direccion: 'study/fretboard-layers' },
   'estudio/ritmo': { nombre: 'Rhythm', lema: 'Pulse, subdivisions, swing and comping patterns', direccion: 'study/rhythm' },

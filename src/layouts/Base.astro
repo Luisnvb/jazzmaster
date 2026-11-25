@@ -1,11 +1,12 @@
 ---
 import '../styles/global.css';
 import { archivo, BASE, ruta } from '../lib/rutas.ts';
-import { paginaActual, seccionActual, secciones } from '../lib/secciones.ts';
+import { enlacePagina, paginaActual, seccionActual, secciones } from '../lib/secciones.ts';
 import { conPrefijo, formatear, idiomaDeDireccion } from '../i18n/idiomas.ts';
 import { INTERFAZ } from '../i18n/interfaz.ts';
 import { ARCHIVO_MANIFIESTO } from '../i18n/manifiesto.ts';
-import { PASOS } from '../lib/ruta.ts';
+import { PASOS, textoPaso } from '../lib/ruta.ts';
+import { RUTA } from '../i18n/ruta.ts';
 import MenuSecciones from '../components/MenuSecciones.astro';
 
 interface Props {
@@ -42,8 +43,10 @@ const seccion = seccionActual(actual, idioma);
 const pagina = paginaActual(actual, idioma);
 const favoritable = pagina && pagina.href === actual ? pagina : undefined;
 // Si la página es un paso de la ruta de aprendizaje, un aviso arriba (solo se ve si
-// ya has empezado la ruta) para marcarlo como hecho e ir al siguiente.
-const pasoRuta = idioma === 'es' ? PASOS.find((p) => ruta(p.direccion) === actual) : undefined;
+// ya has empezado la ruta) para marcarlo como hecho e ir al siguiente. En inglés, solo en
+// las páginas ya traducidas (las otras están en español y lo llevan en español).
+const pasoRuta = favoritable && !favoritable.soloEspanol ? PASOS.find((p) => p.direccion === favoritable.direccion) : undefined;
+const R = RUTA[idioma];
 // Enlace al otro idioma: la página equivalente si la hay; si no, su portada.
 const equivalente = Astro.props.otroIdioma ?? (pagina && pagina.href === actual ? pagina.otroIdioma : undefined);
 const enlaceIdioma = equivalente ?? ruta(conPrefijo(otro, ''));
@@ -160,13 +163,13 @@ const TS = INTERFAZ[otro];
       }
       {
         pasoRuta && (
-          <aside class="aviso-ruta" aria-label="Ruta de aprendizaje" data-aviso-ruta={pasoRuta.direccion} hidden>
-            <a class="aviso-ruta-paso" href={`${ruta('ruta')}#paso-${pasoRuta.direccion.replace(/\//g, '-')}`}>
-              Ruta · paso {pasoRuta.numero} de {PASOS.length}
+          <aside class="aviso-ruta" aria-label={R.aviso} data-aviso-ruta={pasoRuta.direccion} hidden>
+            <a class="aviso-ruta-paso" href={`${enlacePagina('ruta', idioma)}#paso-${pasoRuta.direccion.replace(/\//g, '-')}`}>
+              {formatear(R.avisoPaso, { n: pasoRuta.numero, total: PASOS.length })}
             </a>
-            <span class="aviso-ruta-meta">{pasoRuta.meta}</span>
+            <span class="aviso-ruta-meta">{textoPaso(pasoRuta, idioma).meta}</span>
             <label class="aviso-ruta-hecho">
-              <input type="checkbox" data-aviso-ruta-marcar /> Hecho
+              <input type="checkbox" data-aviso-ruta-marcar /> {R.hecho}
             </label>
             <a class="aviso-ruta-siguiente" data-aviso-ruta-siguiente hidden></a>
           </aside>
@@ -178,12 +181,13 @@ const TS = INTERFAZ[otro];
 </html>
 
 <script>
-  import { archivo, ruta } from '../lib/rutas.ts';
-  import { PAGINAS } from '../lib/secciones.ts';
+  import { archivo } from '../lib/rutas.ts';
+  import { paginas } from '../lib/secciones.ts';
   import { progresoRuta, siguientePaso } from '../lib/ruta.ts';
+  import { RUTA } from '../i18n/ruta.ts';
   import { aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
   import { vigilarTitulos } from '../lib/titulos.ts';
-  import { CLAVE_IDIOMA, idiomaSugerido, idiomaValido } from '../i18n/idiomas.ts';
+  import { CLAVE_IDIOMA, formatear, idiomaSugerido, idiomaValido } from '../i18n/idiomas.ts';
   import { guardarJSON, leerJSON } from '../lib/almacen.ts';
   import { INTERFAZ } from '../i18n/interfaz.ts';
 
@@ -247,11 +251,12 @@ const TS = INTERFAZ[otro];
     const pintarAviso = () => {
       caja.checked = progreso.hechos.has(direccion);
       const sig = siguientePaso(progreso.hechos, direccion);
-      const pg = sig && PAGINAS.find((p) => p.href === ruta(sig.direccion));
+      const pg = sig && paginas(idiomaPagina).find((p) => p.direccion === sig.direccion);
       siguiente.hidden = !pg;
       if (pg) {
         siguiente.href = pg.href;
-        siguiente.textContent = `Siguiente: ${pg.nombre} →`;
+        siguiente.hreflang = pg.soloEspanol ? 'es' : '';
+        siguiente.textContent = formatear(RUTA[idiomaPagina].avisoSiguiente, { nombre: pg.nombre });
       }
     };
     aviso.hidden = progreso.hechos.size === 0;
