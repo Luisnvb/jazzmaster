@@ -1,12 +1,10 @@
 ---
 import '../styles/global.css';
 import { archivo, BASE, ruta } from '../lib/rutas.ts';
-import { enlacePagina, paginaActual, seccionActual, secciones } from '../lib/secciones.ts';
+import { paginaActual, seccionActual, secciones } from '../lib/secciones.ts';
 import { conPrefijo, formatear, idiomaDeDireccion } from '../i18n/idiomas.ts';
 import { INTERFAZ } from '../i18n/interfaz.ts';
 import { ARCHIVO_MANIFIESTO } from '../i18n/manifiesto.ts';
-import { PASOS, textoPaso } from '../lib/ruta.ts';
-import { RUTA } from '../i18n/ruta.ts';
 import MenuSecciones from '../components/MenuSecciones.astro';
 
 interface Props {
@@ -42,11 +40,6 @@ const seccion = seccionActual(actual, idioma);
 // la propia página, no en las que cuelgan de ella, como cada canción del Repertorio).
 const pagina = paginaActual(actual, idioma);
 const favoritable = pagina && pagina.href === actual ? pagina : undefined;
-// Si la página es un paso de la ruta de aprendizaje, un aviso arriba (solo se ve si
-// ya has empezado la ruta) para marcarlo como hecho e ir al siguiente. En inglés, solo en
-// las páginas ya traducidas (las otras están en español y lo llevan en español).
-const pasoRuta = favoritable && !favoritable.soloEspanol ? PASOS.find((p) => p.direccion === favoritable.direccion) : undefined;
-const R = RUTA[idioma];
 // Enlace al otro idioma: la página equivalente si la hay; si no, su portada.
 const equivalente = Astro.props.otroIdioma ?? (pagina && pagina.href === actual ? pagina.otroIdioma : undefined);
 const enlaceIdioma = equivalente ?? ruta(conPrefijo(otro, ''));
@@ -161,20 +154,6 @@ const TS = INTERFAZ[otro];
           </aside>
         )
       }
-      {
-        pasoRuta && (
-          <aside class="aviso-ruta" aria-label={R.aviso} data-aviso-ruta={pasoRuta.direccion} hidden>
-            <a class="aviso-ruta-paso" href={`${enlacePagina('ruta', idioma)}#paso-${pasoRuta.direccion.replace(/\//g, '-')}`}>
-              {formatear(R.avisoPaso, { n: pasoRuta.numero, total: PASOS.length })}
-            </a>
-            <span class="aviso-ruta-meta">{textoPaso(pasoRuta, idioma).meta}</span>
-            <label class="aviso-ruta-hecho">
-              <input type="checkbox" data-aviso-ruta-marcar /> {R.hecho}
-            </label>
-            <a class="aviso-ruta-siguiente" data-aviso-ruta-siguiente hidden></a>
-          </aside>
-        )
-      }
       <slot />
     </main>
   </body>
@@ -182,12 +161,9 @@ const TS = INTERFAZ[otro];
 
 <script>
   import { archivo } from '../lib/rutas.ts';
-  import { paginas } from '../lib/secciones.ts';
-  import { progresoRuta, siguientePaso } from '../lib/ruta.ts';
-  import { RUTA } from '../i18n/ruta.ts';
   import { aplicarFavoritas, paginasFavoritas } from '../lib/paginas-favoritas.ts';
   import { vigilarTitulos } from '../lib/titulos.ts';
-  import { CLAVE_IDIOMA, formatear, idiomaSugerido, idiomaValido } from '../i18n/idiomas.ts';
+  import { CLAVE_IDIOMA, idiomaSugerido, idiomaValido } from '../i18n/idiomas.ts';
   import { guardarJSON, leerJSON } from '../lib/almacen.ts';
   import { INTERFAZ } from '../i18n/interfaz.ts';
 
@@ -239,32 +215,6 @@ const TS = INTERFAZ[otro];
     };
     new ResizeObserver(ajustarTitulo).observe(titulo.closest('.cabecera-dentro')!);
     document.fonts?.ready.then(ajustarTitulo);
-  }
-
-  // Aviso de la ruta de aprendizaje (si esta página es un paso y la ruta ya se empezó).
-  const aviso = document.querySelector<HTMLElement>('[data-aviso-ruta]');
-  if (aviso) {
-    const progreso = progresoRuta();
-    const direccion = aviso.dataset.avisoRuta!;
-    const caja = aviso.querySelector<HTMLInputElement>('[data-aviso-ruta-marcar]')!;
-    const siguiente = aviso.querySelector<HTMLAnchorElement>('[data-aviso-ruta-siguiente]')!;
-    const pintarAviso = () => {
-      caja.checked = progreso.hechos.has(direccion);
-      const sig = siguientePaso(progreso.hechos, direccion);
-      const pg = sig && paginas(idiomaPagina).find((p) => p.direccion === sig.direccion);
-      siguiente.hidden = !pg;
-      if (pg) {
-        siguiente.href = pg.href;
-        siguiente.hreflang = pg.soloEspanol ? 'es' : '';
-        siguiente.textContent = formatear(RUTA[idiomaPagina].avisoSiguiente, { nombre: pg.nombre });
-      }
-    };
-    aviso.hidden = progreso.hechos.size === 0;
-    caja.addEventListener('change', () => {
-      progreso.marcar(direccion, caja.checked);
-      pintarAviso();
-    });
-    pintarAviso();
   }
 
   // Menú de secciones (pantalla pequeña): lo abre y lo cierra la guitarra de la cabecera.
@@ -607,40 +557,5 @@ const TS = INTERFAZ[otro];
     padding: 0.3rem 0.7rem;
     font-size: 0.85rem;
     text-decoration: none;
-  }
-  /* Aviso de la ruta de aprendizaje, arriba de las páginas que son un paso. */
-  .aviso-ruta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem 1rem;
-    margin: 0 0 1rem;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.88rem;
-    background: var(--acento-suave);
-    border-radius: var(--radio-tarjeta);
-  }
-  .aviso-ruta[hidden] {
-    display: none;
-  }
-  .aviso-ruta a {
-    font-weight: 700;
-    text-decoration: none;
-  }
-  .aviso-ruta-meta {
-    flex: 1 1 20rem;
-    color: var(--texto-suave);
-  }
-  .aviso-ruta-hecho {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-weight: 700;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  .aviso-ruta-hecho input {
-    margin: 0;
-    accent-color: var(--acento);
   }
 </style>

@@ -4,8 +4,8 @@
 // hechos) se guarda en este navegador.
 // Las direcciones son las de lib/secciones.ts sin la base ('estudio/drop2'); la página de
 // la ruta (components/paginas/ruta.astro) comprueba al compilar que todas existen.
-// Cada etapa y cada paso llevan su texto en inglés (`en`) para /en/learning-path/ y el
-// aviso de las páginas inglesas; textoEtapa y textoPaso dan el del idioma pedido.
+// Cada etapa y cada paso llevan su texto en inglés (`en`) para /en/learning-path/;
+// textoEtapa y textoPaso dan el del idioma pedido.
 import { borrar, guardarJSON, leerJSON } from './almacen.ts';
 import type { Idioma } from '../i18n/idiomas.ts';
 

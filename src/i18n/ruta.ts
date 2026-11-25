@@ -1,11 +1,11 @@
-// Textos de la Ruta de aprendizaje (components/paginas/ruta.astro) y de su aviso en las
-// páginas que son un paso (layouts/Base.astro). Las etapas y los pasos están en lib/ruta.ts.
+// Textos de la Ruta de aprendizaje (components/paginas/ruta.astro). Las etapas y los pasos
+// están en lib/ruta.ts.
 import { textos } from './idiomas.ts';
 
 export const RUTA = textos(
   {
     titulo: 'Ruta de aprendizaje',
-    lema: 'Un orden para recorrer la web: {etapas} etapas y {pasos} pasos, de los cimientos al sonido moderno. Cada paso te lleva a una página y dice cuándo darlo por bueno. Márcalo como hecho aquí o en la propia página; el progreso se guarda en este navegador.',
+    lema: 'Un orden para recorrer la web: {etapas} etapas y {pasos} pasos, de los cimientos al sonido moderno. Cada paso te lleva a una página y dice cuándo darlo por bueno. Márcalo como hecho aquí; el progreso se guarda en este navegador.',
     siguientePaso: 'Siguiente paso',
     etapas: 'Etapas',
     hecho: 'Hecho',
@@ -18,14 +18,10 @@ export const RUTA = textos(
     irPagina: 'Ir a la página',
     marcarHecho: 'Marcar como hecho',
     verEnRuta: 'Ver en la ruta',
-    // Aviso de las páginas que son un paso.
-    aviso: 'Ruta de aprendizaje',
-    avisoPaso: 'Ruta · paso {n} de {total}',
-    avisoSiguiente: 'Siguiente: {nombre} →',
   },
   {
     titulo: 'Learning path',
-    lema: 'An order to work through the site: {etapas} stages and {pasos} steps, from the foundations to the modern sound. Each step takes you to a page and says when you can call it done. Tick it off here or on the page itself; your progress is saved in this browser.',
+    lema: 'An order to work through the site: {etapas} stages and {pasos} steps, from the foundations to the modern sound. Each step takes you to a page and says when you can call it done. Tick it off here; your progress is saved in this browser.',
     siguientePaso: 'Next step',
     etapas: 'Stages',
     hecho: 'Done',
@@ -38,8 +34,5 @@ export const RUTA = textos(
     irPagina: 'Go to the page',
     marcarHecho: 'Mark as done',
     verEnRuta: 'See it in the path',
-    aviso: 'Learning path',
-    avisoPaso: 'Path · step {n} of {total}',
-    avisoSiguiente: 'Next: {nombre} →',
   },
 );
