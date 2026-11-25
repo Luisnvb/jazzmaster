@@ -44,6 +44,21 @@ const LADOS = ['A', 'B'];
         <button type="button" class="boton" data-rotulo="dedo" aria-pressed="false">{T.dedo}</button>
         <button type="button" class="boton" data-rotulo="grado" aria-pressed="false">{T.grado}</button>
       </div>
+      <!-- En el móvil, la escala y el rótulo van en selectores en vez de botones. -->
+      <label class="campo solo-movil">{T.escala}
+        <select data-sel-escala>
+          {ESCALAS_DIGITACION.map((e) => {
+            const nombre = T.escalas[e.id] ?? e.nombre.toLowerCase();
+            return <option value={e.id} data-nombre={nombre}>C {nombre}</option>;
+          })}
+        </select>
+      </label>
+      <label class="campo solo-movil">{T.enCadaNota}
+        <select data-sel-rotulo>
+          <option value="dedo">{T.dedo}</option>
+          <option value="grado">{T.grado}</option>
+        </select>
+      </label>
     </div>
 
     {
@@ -153,9 +168,18 @@ const LADOS = ['A', 'B'];
     ].join('');
   }
 
+  const selEscala = document.querySelector<HTMLSelectElement>('[data-sel-escala]')!;
+  const selRotulo = document.querySelector<HTMLSelectElement>('[data-sel-rotulo]')!;
+  selEscala.addEventListener('change', () => ((op.escala = selEscala.value), pintar()));
+  selRotulo.addEventListener('change', () => ((op.rotulo = selRotulo.value as Opciones['rotulo']), pintar()));
+
   function pintar() {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-escala]')) b.setAttribute('aria-pressed', String(b.dataset.escala === op.escala));
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-rotulo]')) b.setAttribute('aria-pressed', String(b.dataset.rotulo === op.rotulo));
+    // Selectores del móvil: lo mismo que los botones (la escala, con la tónica delante).
+    for (const o of selEscala.options) o.textContent = `${tonica} ${o.dataset.nombre}`;
+    selEscala.value = op.escala;
+    selRotulo.value = op.rotulo;
     const f = escala().formula;
     digitaciones = op.lados.map((l) => digitar(tonica, f, l.sistema, l.forma));
     // Los dos mástiles, del mismo largo para que se puedan comparar.
@@ -290,6 +314,18 @@ const LADOS = ['A', 'B'];
     color: var(--sobre-acento);
     background: var(--acento);
     border-radius: 50%;
+  }
+  /* Móvil: selectores de escala y rótulo en vez de sus filas de botones. */
+  .campo.solo-movil {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .opciones > .grupo-botones {
+      display: none;
+    }
+    .campo.solo-movil {
+      display: flex;
+    }
   }
   .campo {
     display: flex;
