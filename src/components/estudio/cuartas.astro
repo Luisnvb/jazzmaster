@@ -43,6 +43,13 @@ const TIPOS = ['tres', 'cuatro', 'so-what'].map((v, i) => [v, T.tipos[i]]);
         <span class="etiqueta">Voicing</span>
         {TIPOS.map(([v, n]) => <button type="button" class="boton" data-tipo={v} aria-pressed="false">{n}</button>)}
       </div>
+      <!-- En el móvil, el vamp y el voicing van en selectores en vez de botones. -->
+      <label class="campo solo-movil">Vamp
+        <select data-sel-modo>{MODOS_CUARTAS.map((m) => <option value={m.id} data-simbolo={m.simbolo}>C{m.simbolo}</option>)}</select>
+      </label>
+      <label class="campo solo-movil">Voicing
+        <select data-sel-tipo>{TIPOS.map(([v, n]) => <option value={v}>{n}</option>)}</select>
+      </label>
     </div>
     <div class="opciones">
       <label class="campo">{T.cuerdas} <select data-grupo></select></label>
@@ -112,6 +119,8 @@ const TIPOS = ['tres', 'cuatro', 'so-what'].map((v, i) => [v, T.tipos[i]]);
   const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const selGrupo = $<HTMLSelectElement>('[data-grupo]');
   const selPatron = $<HTMLSelectElement>('[data-patron]');
+  const selModo = $<HTMLSelectElement>('[data-sel-modo]');
+  const selTipo = $<HTMLSelectElement>('[data-sel-tipo]');
   const casillaJustas = $<HTMLInputElement>('[data-justas]');
   const lista = $('[data-voicings]');
   const titulo = $('[data-titulo]');
@@ -127,6 +136,10 @@ const TIPOS = ['tres', 'cuatro', 'so-what'].map((v, i) => [v, T.tipos[i]]);
   function pintar() {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-modo]')) b.setAttribute('aria-pressed', String(b.dataset.modo === op.modo));
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tipo]')) b.setAttribute('aria-pressed', String(b.dataset.tipo === op.tipo));
+    // Selectores del móvil: lo mismo que los botones (el vamp, con la tónica delante).
+    for (const o of selModo.options) o.textContent = tonica + o.dataset.simbolo;
+    selModo.value = op.modo;
+    selTipo.value = op.tipo;
     selGrupo.innerHTML = grupos().map((g) => `<option value="${g.id}">${esc(formatear(T.grupo, { cuerdas: g.id.split('').join('-') }))}</option>`).join('');
     if (!grupos().some((g) => g.id === op.grupo[op.tipo])) op.grupo[op.tipo] = grupos()[0].id;
     selGrupo.value = op.grupo[op.tipo];
@@ -148,6 +161,8 @@ const TIPOS = ['tres', 'cuatro', 'so-what'].map((v, i) => [v, T.tipos[i]]);
   }
 
   selGrupo.addEventListener('change', () => ((op.grupo[op.tipo] = selGrupo.value), pintar()));
+  selModo.addEventListener('change', () => ((op.modo = selModo.value), pintar()));
+  selTipo.addEventListener('change', () => ((op.tipo = selTipo.value as TipoCuartas), (op.elegido = 0), pintar()));
   selPatron.addEventListener('change', () => ((op.patron = selPatron.value as Patron), guardarJSON(CLAVE, op)));
   casillaJustas.addEventListener('change', () => ((op.justas = casillaJustas.checked), pintar()));
   document.addEventListener('click', (e) => {
@@ -229,6 +244,18 @@ const TIPOS = ['tres', 'cuatro', 'so-what'].map((v, i) => [v, T.tipos[i]]);
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--texto-suave);
+  }
+  /* Móvil: selectores de vamp y voicing en vez de sus filas de botones. */
+  .campo.solo-movil {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .opciones > .grupo-botones {
+      display: none;
+    }
+    .campo.solo-movil {
+      display: flex;
+    }
   }
   .campo {
     display: flex;
