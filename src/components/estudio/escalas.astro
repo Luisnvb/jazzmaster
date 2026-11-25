@@ -68,6 +68,15 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
         <button type="button" class="boton" data-zona="cuerda" aria-pressed="false">{T.unaCuerda}</button>
         <button type="button" class="boton" data-zona="dos-cuerdas" aria-pressed="false">{T.dosCuerdas}</button>
       </div>
+      <!-- En el móvil, la zona va en un selector en vez de botones. -->
+      <label class="campo solo-movil">{T.zona}
+        <select data-sel-zona>
+          <option value="todo">{T.todo}</option>
+          <option value="posicion">{T.posicion}</option>
+          <option value="cuerda">{T.unaCuerda}</option>
+          <option value="dos-cuerdas">{T.dosCuerdas}</option>
+        </select>
+      </label>
       <label class="campo" data-solo="posicion">{T.desde}
         <select data-desde>{Array.from({ length: ULTIMA_POSICION }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
       </label>
@@ -150,6 +159,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
   const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const selects = {
     escala: $<HTMLSelectElement>('[data-escala]'),
+    zona: $<HTMLSelectElement>('[data-sel-zona]'),
     desde: $<HTMLSelectElement>('[data-desde]'),
     cuerda: $<HTMLSelectElement>('[data-cuerda]'),
     dosCuerdas: $<HTMLSelectElement>('[data-dos-cuerdas]'),
@@ -176,6 +186,7 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
 
   function pintar() {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) b.setAttribute('aria-pressed', String(b.dataset.zona === op.zona));
+    selects.zona.value = op.zona;
     for (const el of document.querySelectorAll<HTMLElement>('[data-solo]')) el.hidden = el.dataset.solo !== op.zona;
     const e = escala();
     titulo.innerHTML = `<strong>${esc(tonica)} ${esc(ingles ? e.nombre : e.nombre.toLowerCase())}</strong> · ${esc(e.formula.join(' '))}`;
@@ -269,6 +280,18 @@ import { ULTIMA_POSICION } from '../../lib/arpegios.ts';
     flex-wrap: wrap;
     align-items: center;
     gap: 0.35rem;
+  }
+  /* Móvil: selector de zona en vez de su fila de botones. */
+  .campo.solo-movil {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .opciones > .grupo-botones {
+      display: none;
+    }
+    .campo.solo-movil {
+      display: flex;
+    }
   }
   .titulo-escala {
     margin: 0 0 0.4rem;
