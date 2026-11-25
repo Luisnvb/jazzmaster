@@ -42,6 +42,10 @@ const FIGURAS = ['escala', 'grupos-3', 'grupos-4', 'saltos'].map((v, i) => [v, T
         <span class="etiqueta">{T.acorde}</span>
         {ACORDES_PENTA.map((a) => <button type="button" class="boton" data-acorde={a.id} aria-pressed="false" title={T.acordes[a.id] ?? a.nombre}><span data-tonica-texto>C</span>{a.simbolo}</button>)}
       </div>
+      <!-- En el móvil, el acorde y la zona van en selectores en vez de botones. -->
+      <label class="campo solo-movil">{T.acorde}
+        <select data-sel-acorde>{ACORDES_PENTA.map((a) => <option value={a.id} data-simbolo={a.simbolo}>C{a.simbolo}</option>)}</select>
+      </label>
     </div>
     <ul class="opciones-penta" data-opciones aria-label={T.paraEste}></ul>
 
@@ -52,6 +56,14 @@ const FIGURAS = ['escala', 'grupos-3', 'grupos-4', 'saltos'].map((v, i) => [v, T
         <button type="button" class="boton" data-zona="cuerda" aria-pressed="false">{T.unaCuerda}</button>
         <button type="button" class="boton" data-zona="dos-cuerdas" aria-pressed="false">{T.dosCuerdas}</button>
       </div>
+      <label class="campo solo-movil">{T.zona}
+        <select data-sel-zona>
+          <option value="todo">{T.todo}</option>
+          <option value="posicion">{T.posicion}</option>
+          <option value="cuerda">{T.unaCuerda}</option>
+          <option value="dos-cuerdas">{T.dosCuerdas}</option>
+        </select>
+      </label>
       <label class="campo" data-solo="posicion">{T.desde}
         <select data-desde>{Array.from({ length: ULTIMA_POSICION }, (_, i) => <option value={i + 1}>{i + 1}</option>)}</select>
       </label>
@@ -132,6 +144,8 @@ const FIGURAS = ['escala', 'grupos-3', 'grupos-4', 'saltos'].map((v, i) => [v, T
     figura: $<HTMLSelectElement>('[data-figura]'),
   };
   for (const [k, sel] of Object.entries(selects)) sel.value = String(op[k as keyof typeof selects]);
+  const selAcorde = $<HTMLSelectElement>('[data-sel-acorde]');
+  const selZona = $<HTMLSelectElement>('[data-sel-zona]');
   const casillaFondo = $<HTMLInputElement>('[data-con-acorde]');
   casillaFondo.checked = op.fondo;
   const listaOpciones = $('[data-opciones]');
@@ -160,6 +174,10 @@ const FIGURAS = ['escala', 'grupos-3', 'grupos-4', 'saltos'].map((v, i) => [v, T
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-acorde]')) b.setAttribute('aria-pressed', String(b.dataset.acorde === op.acorde));
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-zona]')) b.setAttribute('aria-pressed', String(b.dataset.zona === op.zona));
     for (const el of document.querySelectorAll<HTMLElement>('[data-solo]')) el.hidden = el.dataset.solo !== op.zona;
+    // Selectores del móvil: lo mismo que los botones (el acorde, con la tónica delante).
+    for (const o of selAcorde.options) o.textContent = tonica + o.dataset.simbolo;
+    selAcorde.value = op.acorde;
+    selZona.value = op.zona;
     listaOpciones.innerHTML = a.opciones
       .map(
         (x) => `<li><button type="button" class="opcion-penta" data-opcion="${x.id}" aria-pressed="${x.id === o.id}">
@@ -182,6 +200,12 @@ const FIGURAS = ['escala', 'grupos-3', 'grupos-4', 'saltos'].map((v, i) => [v, T
       pintar();
     });
   }
+  selAcorde.addEventListener('change', () => {
+    op.acorde = selAcorde.value;
+    op.opcion = acorde().opciones[0].id;
+    pintar();
+  });
+  selZona.addEventListener('change', () => ((op.zona = selZona.value as Zona['tipo']), pintar()));
   casillaFondo.addEventListener('change', () => ((op.fondo = casillaFondo.checked), guardarJSON(CLAVE, op)));
   document.addEventListener('click', (e) => {
     const el = e.target as Element;
@@ -259,6 +283,18 @@ const FIGURAS = ['escala', 'grupos-3', 'grupos-4', 'saltos'].map((v, i) => [v, T
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--texto-suave);
+  }
+  /* Móvil: selectores de acorde y zona en vez de sus filas de botones. */
+  .campo.solo-movil {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .opciones > .grupo-botones {
+      display: none;
+    }
+    .campo.solo-movil {
+      display: flex;
+    }
   }
   .campo {
     display: flex;
