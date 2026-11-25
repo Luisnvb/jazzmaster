@@ -38,6 +38,10 @@ const indice = getHeadings().filter((h) => h.depth === 2);
         <span class="etiqueta">Vamp</span>
         {ACORDES_OUT.map((a) => <button type="button" class="boton" data-acorde={a.id} aria-pressed="false" title={T.acordes[a.id] ?? a.nombre}><span data-tonica-texto>C</span>{a.simbolo}</button>)}
       </div>
+      <!-- En el móvil, el acorde y la técnica van en selectores en vez de botones. -->
+      <label class="campo solo-movil">Vamp
+        <select data-sel-acorde>{ACORDES_OUT.map((a) => <option value={a.id} data-simbolo={a.simbolo}>C{a.simbolo}</option>)}</select>
+      </label>
       <label class="campo">{T.frase}
         <select data-celula>{CELULAS.map((c) => <option value={c.id}>{T.celulas[c.id] ?? c.nombre}</option>)}</select>
       </label>
@@ -49,6 +53,9 @@ const indice = getHeadings().filter((h) => h.depth === 2);
         <span class="etiqueta">{T.salir}</span>
         {TECNICAS.map((t) => <button type="button" class="boton" data-tecnica={t.id} aria-pressed="false">{T.tecnicas[t.id]?.nombre ?? t.nombre}</button>)}
       </div>
+      <label class="campo solo-movil">{T.salir}
+        <select data-sel-tecnica>{TECNICAS.map((t) => <option value={t.id}>{T.tecnicas[t.id]?.nombre ?? t.nombre}</option>)}</select>
+      </label>
     </div>
     <p class="descripcion" data-descripcion></p>
 
@@ -104,6 +111,8 @@ const indice = getHeadings().filter((h) => h.depth === 2);
 
   const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const selCelula = $<HTMLSelectElement>('[data-celula]');
+  const selAcorde = $<HTMLSelectElement>('[data-sel-acorde]');
+  const selTecnica = $<HTMLSelectElement>('[data-sel-tecnica]');
   const casillaSwing = $<HTMLInputElement>('[data-swing]');
   const casillaFondo = $<HTMLInputElement>('[data-con-acorde]');
   const descripcion = $('[data-descripcion]');
@@ -131,6 +140,10 @@ const indice = getHeadings().filter((h) => h.depth === 2);
   function pintar() {
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-acorde]')) b.setAttribute('aria-pressed', String(b.dataset.acorde === op.acorde));
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-tecnica]')) b.setAttribute('aria-pressed', String(b.dataset.tecnica === op.tecnica));
+    // Selectores del móvil: lo mismo que los botones (el acorde, con la tónica delante).
+    for (const o of selAcorde.options) o.textContent = tonica + o.dataset.simbolo;
+    selAcorde.value = op.acorde;
+    selTecnica.value = op.tecnica;
     const texto = T.tecnicas[tecnica().id] ?? tecnica();
     descripcion.innerHTML = `<strong>${esc(texto.nombre)}:</strong> ${esc(texto.descripcion)}`;
     const { original, salida } = frases();
@@ -139,6 +152,8 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     guardarJSON(CLAVE, op);
   }
 
+  selAcorde.addEventListener('change', () => ((op.acorde = selAcorde.value), pintar()));
+  selTecnica.addEventListener('change', () => ((op.tecnica = selTecnica.value), pintar()));
   selCelula.addEventListener('change', () => ((op.celula = selCelula.value), pintar()));
   casillaSwing.addEventListener('change', () => ((op.swing = casillaSwing.checked), guardarJSON(CLAVE, op)));
   casillaFondo.addEventListener('change', () => ((op.fondo = casillaFondo.checked), guardarJSON(CLAVE, op)));
@@ -214,6 +229,18 @@ const indice = getHeadings().filter((h) => h.depth === 2);
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--texto-suave);
+  }
+  /* Móvil: selectores de acorde y técnica en vez de sus filas de botones. */
+  .campo.solo-movil {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .opciones > .grupo-botones {
+      display: none;
+    }
+    .campo.solo-movil {
+      display: flex;
+    }
   }
   .campo {
     display: flex;
