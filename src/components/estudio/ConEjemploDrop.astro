@@ -21,7 +21,7 @@ interface Props {
   tipos: TipoDrop[];
   /** Si "Raíz en el bajo" empieza marcado (Drop 3). */
   fundamental?: boolean;
-  /** Tríadas: los acordes del modo Inversiones son tríadas (y en el móvil, selectores en vez de botones). */
+  /** Tríadas: los acordes del modo Inversiones son tríadas. */
   triadas?: boolean;
   es: Texto;
   en: Texto;
@@ -50,7 +50,7 @@ const cualidades: [string, string][] | undefined = triadas
     <Tempo clave={clave} inicial={80} />
   </SelectorTonica>
 
-  <EjemploDrop clave={clave} tipos={tipos} fundamental={fundamental} cualidades={cualidades} selectoresMovil={triadas} idioma={idioma} />
+  <EjemploDrop clave={clave} tipos={tipos} fundamental={fundamental} cualidades={cualidades} idioma={idioma} />
 
   <nav class="indice" aria-label={I.enEstaPagina}>
     {indice.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}

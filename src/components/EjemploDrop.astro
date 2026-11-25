@@ -19,8 +19,6 @@ interface Props {
   cualidades?: [string, string][];
   /** Si "Raíz en el bajo" empieza marcado. */
   fundamental?: boolean;
-  /** En el móvil, selectores en vez de las filas de botones (Tríadas). */
-  selectoresMovil?: boolean;
 }
 const idioma = Astro.props.idioma ?? 'es';
 const T = DROP[idioma];
@@ -40,7 +38,6 @@ const {
   clave,
   tipos,
   fundamental = false,
-  selectoresMovil = false,
   cualidades = [
     ['Imaj7', 'maj7'],
     ['I7', '7'],
@@ -56,7 +53,7 @@ const {
 const grupos = gruposDe(...tipos);
 ---
 
-<section class:list={['ejemplo', { 'con-selectores': selectoresMovil }]} aria-label={T.ejemplo} data-ejemplo-drop={clave} data-fundamental-inicial={String(fundamental)} data-grupos={grupos.map((g) => g.id).join(',')}>
+<section class="ejemplo" aria-label={T.ejemplo} data-ejemplo-drop={clave} data-fundamental-inicial={String(fundamental)} data-grupos={grupos.map((g) => g.id).join(',')}>
   <div class="opciones">
     <div class="grupo-botones" role="group" aria-label={T.queVer}>
       <button type="button" class="boton" data-modo="inversiones" aria-pressed="false">{T.inversiones}</button>
@@ -97,37 +94,32 @@ const grupos = gruposDe(...tipos);
       <button type="button" class="boton" data-zona="7" aria-pressed="false">{T.media}</button>
       <button type="button" class="boton" data-zona="11" aria-pressed="false">{T.aguda}</button>
     </div>
-    {
-      selectoresMovil && (
-        <Fragment>
-          <label class="campo solo-movil primero">{T.queVer}
-            <select data-sel-modo>
-              <option value="inversiones">{T.inversiones}</option>
-              <option value="progresion">{T.progresion}</option>
-            </select>
-          </label>
-          <label class="campo solo-movil">{T.cuerdas}
-            <select data-sel-grupo>
-              {tipos.length > 1
-                ? tipos.map((t) => (
-                    <optgroup label={NOMBRE_TIPO[t]}>
-                      {gruposDe(t).map((g) => <option value={g.id}>{g.id.split('').join('-')}</option>)}
-                    </optgroup>
-                  ))
-                : grupos.map((g) => <option value={g.id}>{g.id.split('').join('-')}</option>)}
-              {grupos.length === 2 && <option value="ambos">{T.ambos}</option>}
-            </select>
-          </label>
-          <label class="campo solo-movil" data-solo="progresion">{T.empezarEn}
-            <select data-sel-zona>
-              <option value="3">{T.grave}</option>
-              <option value="7">{T.media}</option>
-              <option value="11">{T.aguda}</option>
-            </select>
-          </label>
-        </Fragment>
-      )
-    }
+    <!-- En el móvil, estos selectores sustituyen a las filas de botones. -->
+    <label class="campo solo-movil primero">{T.queVer}
+      <select data-sel-modo>
+        <option value="inversiones">{T.inversiones}</option>
+        <option value="progresion">{T.progresion}</option>
+      </select>
+    </label>
+    <label class="campo solo-movil">{T.cuerdas}
+      <select data-sel-grupo>
+        {tipos.length > 1
+          ? tipos.map((t) => (
+              <optgroup label={NOMBRE_TIPO[t]}>
+                {gruposDe(t).map((g) => <option value={g.id}>{g.id.split('').join('-')}</option>)}
+              </optgroup>
+            ))
+          : grupos.map((g) => <option value={g.id}>{g.id.split('').join('-')}</option>)}
+        {grupos.length === 2 && <option value="ambos">{T.ambos}</option>}
+      </select>
+    </label>
+    <label class="campo solo-movil" data-solo="progresion">{T.empezarEn}
+      <select data-sel-zona>
+        <option value="3">{T.grave}</option>
+        <option value="7">{T.media}</option>
+        <option value="11">{T.aguda}</option>
+      </select>
+    </label>
     <label class="casilla" data-solo="progresion"><input type="checkbox" data-fundamental /> {T.fundamental}</label>
   </div>
   <ol class="voicings-drop" data-voicings></ol>
@@ -193,6 +185,9 @@ const grupos = gruposDe(...tipos);
   const selCualidad = $<HTMLSelectElement>('[data-cualidad]');
   const selProgresion = $<HTMLSelectElement>('[data-progresion]');
   const casillaFundamental = $<HTMLInputElement>('[data-fundamental]');
+  const selModo = $<HTMLSelectElement>('[data-sel-modo]');
+  const selGrupo = $<HTMLSelectElement>('[data-sel-grupo]');
+  const selZona = $<HTMLSelectElement>('[data-sel-zona]');
   selProgresion.innerHTML = progresiones.map((p) => `<option value="${esc(p.id)}">${esc(p.nombre)}</option>`).join('');
   if (!progresiones.some((p) => p.id === op.progresion)) op.progresion = progresiones[0]?.id ?? '';
   // Si la opción guardada no está entre los acordes de esta página, la primera.
@@ -228,18 +223,12 @@ const grupos = gruposDe(...tipos);
     pulsado('[data-grupo]', (b) => b.dataset.grupo === (op.modo === 'inversiones' && op.grupo === 'ambos' ? gruposTipo[0] : op.grupo));
     pulsado('[data-zona]', (b) => Number(b.dataset.zona) === op.zona);
     for (const el of raiz.querySelectorAll<HTMLElement>('[data-solo]')) el.hidden = el.dataset.solo !== op.modo;
-    // Selectores del móvil (solo en Tríadas): reflejan lo mismo que los botones.
-    const sel = (s: string) => raiz.querySelector<HTMLSelectElement>(s);
-    const selModo = sel('[data-sel-modo]');
-    if (selModo) selModo.value = op.modo;
-    const selGrupo = sel('[data-sel-grupo]');
-    if (selGrupo) {
-      const ambos = selGrupo.querySelector<HTMLOptionElement>('option[value="ambos"]');
-      if (ambos) ambos.disabled = op.modo !== 'progresion';
-      selGrupo.value = op.modo === 'inversiones' && op.grupo === 'ambos' ? gruposTipo[0] : op.grupo;
-    }
-    const selZona = sel('[data-sel-zona]');
-    if (selZona) selZona.value = String(op.zona);
+    // Selectores del móvil: reflejan lo mismo que los botones.
+    selModo.value = op.modo;
+    const ambos = selGrupo.querySelector<HTMLOptionElement>('option[value="ambos"]');
+    if (ambos) ambos.disabled = op.modo !== 'progresion';
+    selGrupo.value = op.modo === 'inversiones' && op.grupo === 'ambos' ? gruposTipo[0] : op.grupo;
+    selZona.value = String(op.zona);
     try {
       lista.innerHTML = calcular()
         .voicings.map(
@@ -337,19 +326,19 @@ const grupos = gruposDe(...tipos);
     align-items: center;
     gap: 0.35rem;
   }
-  /* Tríadas en el móvil: selectores en vez de las filas de botones. */
+  /* En el móvil: selectores en vez de las filas de botones. */
   .campo.solo-movil {
     display: none;
   }
   @media (max-width: 40rem) {
-    .con-selectores .opciones > .grupo-botones {
+    .opciones > .grupo-botones {
       display: none;
     }
-    .con-selectores .campo.solo-movil {
+    .campo.solo-movil {
       display: flex;
     }
     /* «Qué ver» va el primero, donde estaban sus botones. */
-    .con-selectores .primero {
+    .primero {
       order: -1;
     }
   }
