@@ -1,12 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { parse } from 'yaml';
 import { analizarProgresion } from './progresiones.ts';
 import { AFINACION } from './secuencias.ts';
 import { semitonosGrado } from './teoria.ts';
 import { escalaBebopDe, gradosFuertes } from './bebop.ts';
 import {
   ASPECTOS,
+  CADENCIAS,
   CONTEXTOS,
+  CONTEXTOS_ANTIGUOS,
   DIFICULTADES,
   digitarEnPosicion,
   generarFrase,
@@ -18,7 +22,22 @@ import {
   trastesPosicion,
   type Aspecto,
   type Dificultad,
+  VAMPS,
 } from './dictado.ts';
+
+test('contextos: vamps de un acorde, cadencias que no repiten el catálogo y los antiguos apuntan a él', () => {
+  const catalogo = parse(readFileSync(new URL('../data/progresiones.yaml', import.meta.url), 'utf8')) as { id: string; compases: string[] }[];
+  const ids = CONTEXTOS.map((c) => c.id);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const v of VAMPS) assert.deepEqual(v.compases.length, 1, v.id);
+  const clave = (compases: string[]) => compases.join('|');
+  const delCatalogo = new Set(catalogo.map((p) => clave(p.compases)));
+  for (const c of CADENCIAS) assert.ok(!delCatalogo.has(clave(c.compases)), `${c.id} ya está en Progresiones`);
+  for (const [viejo, nuevo] of Object.entries(CONTEXTOS_ANTIGUOS)) {
+    assert.ok(!ids.includes(viejo), viejo);
+    assert.ok(catalogo.some((p) => `prog:${p.id}` === nuevo), `${viejo} → ${nuevo}`);
+  }
+});
 
 const mod = (n: number) => ((n % 12) + 12) % 12;
 

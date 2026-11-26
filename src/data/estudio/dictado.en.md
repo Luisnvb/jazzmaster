@@ -30,11 +30,8 @@ The **label** of each note on the neck can be the **degree** over the chord (the
 
 The same phrase sounds different over another chord, and the ear has to learn to hear it against the harmony:
 
-- **Vamps** (Imaj7, Im7 Dorian, I7): a single chord. The easiest way to start: the ear only follows the melody.
-- **ii–V in one bar**: the phrase crosses the chord change on beat 3.
-- **ii–V–I major and minor**: one chord per bar; each with its call and response.
-- **Turnaround** (Imaj7 VI7 | IIm7 V7) and **jazz blues**: two chords per bar and the twelve-bar form.
-- **Progressions**: any from the [Progressions](../../progresiones/) catalogue, bar by bar (including the ones you have edited).
+- **Vamps**: a single chord. The easiest way to start: the ear only follows the melody. There is one for each colour: major (Imaj7, I6), minor (Im7 Dorian, Im6, ImMaj7), dominant (I7, I7sus4, I7alt, I7#5 augmented), half-diminished (Im7b5) and diminished (I°7).
+- **Cadences**: the **ii–V in one bar** (the phrase crosses the chord change on beat 3) and every one in the [Progressions](../../progresiones/) catalogue, bar by bar (including the ones you have edited): major and minor ii–V–I, turnarounds, blues, rhythm changes…
 
 ## Aspects of the language
 

@@ -23,21 +23,43 @@ export interface ContextoArmonico {
   compases: string[];
 }
 
-export const CONTEXTOS: ContextoArmonico[] = [
-  { id: 'maj7', nombre: 'Vamp Imaj7', descripcion: 'Un solo acorde mayor: el color estable del jónico.', compases: ['Imaj7'] },
-  { id: 'm7', nombre: 'Vamp Im7 (dórico)', descripcion: 'Un acorde menor quieto, como en So What o Impressions.', compases: ['Im7'] },
-  { id: 'dom7', nombre: 'Vamp I7', descripcion: 'Dominante estático: mixolidio y blues.', compases: ['I7'] },
-  { id: 'ii-v', nombre: 'ii–V en un compás', descripcion: 'IIm7 y V7 en el mismo compás: la frase cruza el cambio en el tiempo 3.', compases: ['IIm7 V7'] },
-  { id: 'ii-v-i', nombre: 'ii–V–I mayor', descripcion: 'Un acorde por compás: IIm7, V7 e Imaj7 dos veces.', compases: ['IIm7', 'V7', 'Imaj7', 'Imaj7'] },
-  { id: 'ii-v-i-menor', nombre: 'ii–V–i menor', descripcion: 'IIm7b5, V7alt e Im6: el sonido menor, con tensiones alteradas en el dominante.', compases: ['IIm7b5', 'V7alt', 'Im6', 'Im6'] },
-  { id: 'turnaround', nombre: 'Turnaround I–VI–II–V', descripcion: 'Dos acordes por compás: Imaj7 VI7 | IIm7 V7.', compases: ['Imaj7 VI7', 'IIm7 V7'] },
-  {
-    id: 'blues',
-    nombre: 'Blues de jazz',
-    descripcion: 'Los doce compases del blues de jazz, cada uno con su llamada y su respuesta.',
-    compases: ['I7', 'IV7', 'I7', 'Vm7 I7', 'IV7', '#IV°7', 'I7', 'VI7', 'IIm7', 'V7', 'I7 VI7', 'IIm7 V7'],
-  },
+/**
+ * Vamps: un solo acorde, para oír la frase contra un color fijo. Las cadencias son las
+ * del catálogo de Progresiones (progresiones.yaml, con lo editado en el navegador) más
+ * CADENCIAS, las que no están en él.
+ */
+export const VAMPS: ContextoArmonico[] = [
+  { id: 'maj7', nombre: 'Imaj7 (jónico)', descripcion: 'Un solo acorde mayor: el color estable del jónico.', compases: ['Imaj7'] },
+  { id: 'maj6', nombre: 'I6', descripcion: 'Mayor con sexta: el sonido de swing de los años treinta, sin la 7 que pide resolver.', compases: ['I6'] },
+  { id: 'm7', nombre: 'Im7 (dórico)', descripcion: 'Un acorde menor quieto, como en So What o Impressions.', compases: ['Im7'] },
+  { id: 'm6', nombre: 'Im6 (menor melódica)', descripcion: 'Menor con sexta mayor: la tónica menor del jazz, sobre la escala menor melódica.', compases: ['Im6'] },
+  { id: 'm-maj7', nombre: 'ImMaj7', descripcion: 'Menor con 7 mayor: el color oscuro y tenso de la menor melódica.', compases: ['ImMaj7'] },
+  { id: 'dom7', nombre: 'I7 (mixolidio)', descripcion: 'Dominante estático: mixolidio y blues.', compases: ['I7'] },
+  { id: 'sus', nombre: 'I7sus4', descripcion: 'Dominante suspendido: sin 3, la 4 queda flotando, como en Maiden Voyage.', compases: ['I7sus4'] },
+  { id: 'alt', nombre: 'I7alt', descripcion: 'Dominante alterado: b9, #9 y b13 sobre la escala alterada.', compases: ['I7alt'] },
+  { id: 'aum', nombre: 'I7#5 (aumentado)', descripcion: 'Dominante con la 5 aumentada: el sonido de tonos enteros.', compases: ['I7#5'] },
+  { id: 'm7b5', nombre: 'Im7b5 (semidisminuido)', descripcion: 'Semidisminuido: el ii del menor, sobre el locrio.', compases: ['Im7b5'] },
+  { id: 'dim', nombre: 'I°7 (disminuido)', descripcion: 'Disminuido: terceras menores que se repiten cada tres trastes.', compases: ['I°7'] },
 ];
+
+/** Cadencias propias del dictado que no están en el catálogo de Progresiones. */
+export const CADENCIAS: ContextoArmonico[] = [
+  { id: 'ii-v', nombre: 'ii–V en un compás', descripcion: 'IIm7 y V7 en el mismo compás: la frase cruza el cambio en el tiempo 3.', compases: ['IIm7 V7'] },
+];
+
+/** Todos los contextos propios del dictado (vamps y cadencias). */
+export const CONTEXTOS: ContextoArmonico[] = [...VAMPS, ...CADENCIAS];
+
+/**
+ * Contextos que antes eran propios y ahora salen del catálogo de Progresiones: la opción
+ * guardada en este navegador pasa a su equivalente.
+ */
+export const CONTEXTOS_ANTIGUOS: Record<string, string> = {
+  'ii-v-i': 'prog:ii-v-i-mayor',
+  'ii-v-i-menor': 'prog:ii-v-i-menor',
+  turnaround: 'prog:turnaround',
+  blues: 'prog:blues-jazz',
+};
 
 // --- Aspectos del lenguaje y dificultad -------------------------------------------
 

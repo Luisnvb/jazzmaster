@@ -11,7 +11,7 @@ import Tempo from '../../components/Tempo.astro';
 import * as es from '../../data/estudio/dictado.md';
 import * as en from '../../data/estudio/dictado.en.md';
 import { INSTRUMENTOS } from '../../lib/audio.ts';
-import { ASPECTOS, CONTEXTOS, DIFICULTADES, ESTILOS_DICTADO, POSICIONES } from '../../lib/dictado.ts';
+import { ASPECTOS, CADENCIAS, DIFICULTADES, ESTILOS_DICTADO, POSICIONES, VAMPS } from '../../lib/dictado.ts';
 import { porOrden } from '../../lib/orden.ts';
 import { formatear, type Idioma } from '../../i18n/idiomas.ts';
 import { INTERFAZ, nombreSonido } from '../../i18n/interfaz.ts';
@@ -48,9 +48,12 @@ const AYUDAS = ['oido', 'lenguaje', 'respuesta', 'siempre'].map((id) => [id, ...
       <label class="campo">{T.contexto}
         <select data-contexto>
           <optgroup label={T.vamps}>
-            {CONTEXTOS.map((c) => <option value={c.id}>{T.contextos[c.id]?.[0] ?? c.nombre}</option>)}
+            {VAMPS.map((c) => <option value={c.id}>{T.contextos[c.id]?.[0] ?? c.nombre}</option>)}
           </optgroup>
-          <optgroup label={T.progresiones} data-grupo-progresiones></optgroup>
+          <!-- Las propias del dictado y, detrás, las del catálogo de Progresiones (las pone el script). -->
+          <optgroup label={T.cadencias} data-grupo-cadencias>
+            {CADENCIAS.map((c) => <option value={c.id}>{T.contextos[c.id]?.[0] ?? c.nombre}</option>)}
+          </optgroup>
         </select>
       </label>
       <label class="campo">{T.lenguaje}
@@ -133,6 +136,7 @@ const AYUDAS = ['oido', 'lenguaje', 'respuesta', 'siempre'].map((id) => [id, ...
   import {
     ASPECTOS,
     CONTEXTOS,
+    CONTEXTOS_ANTIGUOS,
     DIFICULTADES,
     ESTILOS_DICTADO,
     generarFrase,
@@ -175,7 +179,7 @@ const AYUDAS = ['oido', 'lenguaje', 'respuesta', 'siempre'].map((id) => [id, ...
   }
   const CLAVE = 'dictado:opciones';
   const op: Opciones = {
-    contexto: 'ii-v-i',
+    contexto: 'prog:ii-v-i-mayor',
     aspecto: 'arpegios',
     dificultad: 'facil',
     posicion: 5,
@@ -217,9 +221,11 @@ const AYUDAS = ['oido', 'lenguaje', 'respuesta', 'siempre'].map((id) => [id, ...
   const caja = $('[data-mastil]');
   const botonRevelar = $<HTMLButtonElement>('[data-revelar]');
 
-  $('[data-grupo-progresiones]').innerHTML = progresiones.map((p) => `<option value="prog:${esc(p.id)}">${esc(p.nombre)}</option>`).join('');
+  $('[data-grupo-cadencias]').insertAdjacentHTML('beforeend', progresiones.map((p) => `<option value="prog:${esc(p.id)}">${esc(p.nombre)}</option>`).join(''));
   const contextoValido = (id: string) => [...selContexto.options].some((o) => o.value === id);
-  if (!contextoValido(op.contexto)) op.contexto = 'ii-v-i';
+  // Los contextos que antes eran propios (ii–V–I, blues…) ahora son los del catálogo.
+  op.contexto = CONTEXTOS_ANTIGUOS[op.contexto] ?? op.contexto;
+  if (!contextoValido(op.contexto)) op.contexto = selContexto.options[0].value;
   selContexto.value = op.contexto;
   selAspecto.value = op.aspecto;
   selDificultad.value = op.dificultad;

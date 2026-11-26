@@ -30,11 +30,8 @@ El **rótulo** de cada nota en el mástil puede ser el **grado** sobre el acorde
 
 La misma frase suena distinta sobre otro acorde, y el oído tiene que aprender a oírla contra la armonía:
 
-- **Vamps** (Imaj7, Im7 dórico, I7): un solo acorde. Lo más fácil para empezar: el oído solo sigue la melodía.
-- **ii–V en un compás**: la frase cruza el cambio de acorde en el tiempo 3.
-- **ii–V–I mayor y menor**: un acorde por compás; cada uno con su llamada y su respuesta.
-- **Turnaround** (Imaj7 VI7 | IIm7 V7) y **blues de jazz**: dos acordes por compás y la forma de doce compases.
-- **Progresiones**: cualquiera del catálogo de [Progresiones](../../progresiones/), compás a compás (también las que hayas editado).
+- **Vamps**: un solo acorde. Lo más fácil para empezar: el oído solo sigue la melodía. Hay uno por cada color: mayor (Imaj7, I6), menor (Im7 dórico, Im6, ImMaj7), dominante (I7, I7sus4, I7alt, I7#5 aumentado), semidisminuido (Im7b5) y disminuido (I°7).
+- **Cadencias**: el **ii–V en un compás** (la frase cruza el cambio de acorde en el tiempo 3) y todas las del catálogo de [Progresiones](../../progresiones/), compás a compás (también las que hayas editado): ii–V–I mayor y menor, turnarounds, blues, rhythm changes…
 
 ## Aspectos del lenguaje
 
